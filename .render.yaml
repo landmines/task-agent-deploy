@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: task-agent
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    buildFilter:
+      paths:
+        - "**/*"
+    envVars:
+      - key: PYTHONPATH
+        value: "."
+
