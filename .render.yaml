@@ -8,6 +8,5 @@ services:
       paths:
         - "**/*"
     envVars:
-      - key: PYTHONPATH
-        value: "."
+      - fromDotEnv: true
 
