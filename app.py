@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Clearly tell Python: "Add current directory to module search path"
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from agent_runner import run_agent
