@@ -3,10 +3,11 @@ services:
     name: task-agent
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    startCommand: "PYTHONPATH=. gunicorn app:app"
     buildFilter:
       paths:
         - "**/*"
     envVars:
-      - fromDotEnv: true
+      - key: PYTHONPATH
+        value: "."
 
