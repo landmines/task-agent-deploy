@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agent_runner import run_agent
+from .agent_runner import run_agent
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS so Hoppscotch can talk to this server
