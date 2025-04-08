@@ -10,17 +10,19 @@ from drive_uploader import upload_log_to_drive
 def confirm_task(task_id):
     logs_dir = "logs"
 
-    # Normalize the task_id: strip microseconds, replace colons/dots with underscores
-    clean_id = task_id.split(".")[0].replace(":", "_").replace(".", "_").strip()
+    # Step 1: Remove microseconds
+    base_ts = task_id.split(".")[0]  # e.g., 2025-04-08T15:48:14
+    base_ts_clean = base_ts.replace(":", "_").replace(".", "_").strip()
 
-    pattern = os.path.join(logs_dir, f"log-*{clean_id}*.json")
+    # Step 2: Create pattern that matches log filename format
+    pattern = os.path.join(logs_dir, f"log-*{base_ts_clean}*.json")
     matching_files = sorted(glob.glob(pattern), reverse=True)
 
     if not matching_files:
         return {
             "success": False,
             "error": f"No log file matched for pattern: {pattern}",
-            "hint": "Ensure your timestamp format matches the log filename prefix"
+            "hint": "Ensure timestamp stops at seconds (not microseconds)"
         }
 
     log_path = matching_files[0]
@@ -54,6 +56,6 @@ def confirm_task(task_id):
 
     return {
         "success": True,
-        "message": f"Task confirmed from {os.path.basename(log_path)}",
+        "message": f"Task confirmed and executed from {os.path.basename(log_path)}",
         "result": result
     }
