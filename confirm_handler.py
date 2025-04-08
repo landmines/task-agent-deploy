@@ -7,20 +7,20 @@ from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
 
 
-def needs_confirmation(action_type):
-    return action_type in {"create_file", "edit_file", "delete_file", "rename_file", "deploy"}
-
-
 def confirm_task(task_id):
     logs_dir = "logs"
-    pattern = os.path.join(logs_dir, f"log-*{task_id}*.json")
+
+    # Normalize the task_id: strip microseconds, replace colons/dots with underscores
+    clean_id = task_id.split(".")[0].replace(":", "_").replace(".", "_").strip()
+
+    pattern = os.path.join(logs_dir, f"log-*{clean_id}*.json")
     matching_files = sorted(glob.glob(pattern), reverse=True)
 
     if not matching_files:
         return {
             "success": False,
             "error": f"No log file matched for pattern: {pattern}",
-            "hint": "Ensure your timestamp format matches the log filename"
+            "hint": "Ensure your timestamp format matches the log filename prefix"
         }
 
     log_path = matching_files[0]
