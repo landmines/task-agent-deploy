@@ -1,8 +1,7 @@
-# task_executor.py
 import os
 
-# ✅ Render-safe writable directory
-WORK_DIR = "/tmp"
+# ✅ Safe and visible path for both Replit and Render deployments
+PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
 
 def execute_task(plan):
     action = plan.get("action")
@@ -27,7 +26,7 @@ def create_file(plan):
             "error": "Invalid filename."
         }
 
-    full_path = os.path.join(WORK_DIR, filename)
+    full_path = os.path.join(PROJECT_ROOT, filename)
 
     try:
         with open(full_path, "w") as f:
@@ -52,7 +51,7 @@ def append_to_file(plan):
             "error": "Invalid filename."
         }
 
-    full_path = os.path.join(WORK_DIR, filename)
+    full_path = os.path.join(PROJECT_ROOT, filename)
 
     if not os.path.exists(full_path):
         return {
