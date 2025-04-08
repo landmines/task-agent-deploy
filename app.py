@@ -42,7 +42,7 @@ def logs():
     log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
     recent_logs = []
 
-    for file in log_files[:5]:  # Show only last 5 logs
+    for file in log_files[:5]:
         try:
             with open(file) as f:
                 content = json.load(f)
@@ -59,19 +59,17 @@ def logs():
 def latest():
     logs_dir = os.path.join(os.getcwd(), "logs")
     log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
-    if not log_files:
-        return jsonify({"error": "No logs found"})
 
-    latest_file = log_files[0]
-    try:
-        with open(latest_file) as f:
-            content = json.load(f)
-            return jsonify({
-                "filename": os.path.basename(latest_file),
-                "content": content
-            })
-    except Exception as e:
-        return jsonify({"error": f"Failed to read {latest_file}", "details": str(e)})
+    for file in log_files:
+        try:
+            with open(file) as f:
+                data = json.load(f)
+                # Return raw task content to match front-end expectations
+                return jsonify(data)
+        except:
+            continue
+
+    return jsonify({"error": "No valid logs found"})
 
 @app.route("/panel")
 def serve_panel():
