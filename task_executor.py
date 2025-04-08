@@ -1,4 +1,3 @@
-# task_executor.py
 import os
 
 def execute_task(plan):
@@ -17,12 +16,20 @@ def execute_task(plan):
 def create_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
+
+    if not filename or "/" in filename or "\\" in filename:
+        return {
+            "success": False,
+            "error": "Invalid filename."
+        }
+
     try:
-        with open(filename, "w") as f:
+        full_path = os.path.join(os.getcwd(), filename)
+        with open(full_path, "w") as f:
             f.write(content)
         return {
             "success": True,
-            "message": f"✅ File '{filename}' created successfully."
+            "message": f"✅ File '{full_path}' created successfully."
         }
     except Exception as e:
         return {
@@ -34,18 +41,26 @@ def append_to_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
 
-    if not os.path.exists(filename):
+    if not filename or "/" in filename or "\\" in filename:
         return {
             "success": False,
-            "error": f"File '{filename}' does not exist. Cannot append."
+            "error": "Invalid filename."
+        }
+
+    full_path = os.path.join(os.getcwd(), filename)
+
+    if not os.path.exists(full_path):
+        return {
+            "success": False,
+            "error": f"File '{full_path}' does not exist. Cannot append."
         }
 
     try:
-        with open(filename, "a") as f:
+        with open(full_path, "a") as f:
             f.write(content)
         return {
             "success": True,
-            "message": f"✅ Content appended to '{filename}'."
+            "message": f"✅ Content appended to '{full_path}'."
         }
     except Exception as e:
         return {
