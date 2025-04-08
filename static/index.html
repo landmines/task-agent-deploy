@@ -24,11 +24,7 @@
       cursor: pointer;
       border-radius: 4px;
     }
-    button:disabled {
-      background-color: #bdc3c7;
-      cursor: not-allowed;
-    }
-    button:hover:enabled {
+    button:hover {
       background-color: #2980b9;
     }
     pre {
@@ -59,9 +55,9 @@
     <button onclick="loadLatest()">Fetch Latest Response</button>
     <div id="latestContainer">
       <pre id="latestResponse">No recent response yet.</pre>
-      <div id="confirmControls" class="confirm-buttons">
-        <button id="confirmBtn" onclick="sendConfirmation(true)" disabled>✅ Confirm</button>
-        <button id="rejectBtn" onclick="sendConfirmation(false)" disabled>❌ Reject</button>
+      <div id="confirmControls" class="confirm-buttons" style="display: none;">
+        <button onclick="sendConfirmation(true)">✅ Confirm</button>
+        <button onclick="sendConfirmation(false)">❌ Reject</button>
       </div>
     </div>
   </section>
@@ -75,7 +71,7 @@
       const logContainer = document.getElementById("logs");
       logContainer.innerHTML = "";
 
-      if (!Array.isArray(data) || data.length === 0) {
+      if (data.length === 0) {
         logContainer.innerText = "No logs found.";
         return;
       }
@@ -91,39 +87,29 @@
       const res = await fetch("/latest");
       const data = await res.json();
       const panel = document.getElementById("latestResponse");
-      const confirmBtn = document.getElementById("confirmBtn");
-      const rejectBtn = document.getElementById("rejectBtn");
 
-      if (!data.content) {
+      if (!data || !data.timestamp) {
         panel.innerText = "No valid response data found.";
-        latestTaskId = null;
-        confirmBtn.disabled = true;
-        rejectBtn.disabled = true;
         return;
       }
 
-      panel.innerText = JSON.stringify(data.content, null, 2);
+      panel.innerText = JSON.stringify(data, null, 2);
 
-      const needsConfirm = data.content.confirmationNeeded;
-      const taskId = data.content.timestamp?.replace(/[:/.]/g, "_");
+      const needsConfirm = data.confirmationNeeded;
+      const timestamp = data.timestamp?.split(".")[0]; // 🔧 Truncate at seconds
+      const taskId = timestamp?.replace(/[:/.]/g, "_");
 
       if (needsConfirm && taskId) {
+        document.getElementById("confirmControls").style.display = "block";
         latestTaskId = taskId;
-        confirmBtn.disabled = false;
-        rejectBtn.disabled = false;
       } else {
+        document.getElementById("confirmControls").style.display = "none";
         latestTaskId = null;
-        confirmBtn.disabled = true;
-        rejectBtn.disabled = true;
       }
     }
 
     async function sendConfirmation(confirm) {
-      if (!latestTaskId) {
-        alert("❌ No task to confirm.");
-        return;
-      }
-
+      if (!latestTaskId) return alert("No task to confirm.");
       const res = await fetch("/confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,11 +118,9 @@
           confirm: confirm
         })
       });
-
       const result = await res.json();
       alert(JSON.stringify(result, null, 2));
-      document.getElementById("confirmBtn").disabled = true;
-      document.getElementById("rejectBtn").disabled = true;
+      document.getElementById("confirmControls").style.display = "none";
       latestTaskId = null;
     }
   </script>
