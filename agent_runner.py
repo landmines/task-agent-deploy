@@ -1,9 +1,9 @@
-# agent_runner.py
 import os
 import json
 from datetime import datetime
 from drive_uploader import upload_log_to_drive
 from sandbox_runner import run_in_sandbox
+from task_executor import execute_task  # Import the executor module
 
 def run_agent(input_data):
     task = input_data.get("task", "No task provided")
@@ -37,6 +37,7 @@ def run_agent(input_data):
         "executionPlanned": None
     }
 
+    # Optional sandbox test
     if code:
         sandbox_result = run_in_sandbox(code)
         response["sandboxTest"] = sandbox_result
@@ -47,15 +48,14 @@ def run_agent(input_data):
             response["simulated"] = f"❌ Sandbox rejected the code: {sandbox_result.get('error')}"
             return response
 
-    # 🔁 Intent-based Execution Plan
+    # 🔁 Build execution plan
     action_plan = dispatch_intent(intent, input_data)
     if action_plan:
         response["executionPlanned"] = action_plan
 
-    # ✅ Execute task if confirmed
-    if input_data.get("confirmed") and response.get("executionPlanned"):
+    # ✅ Execute automatically if no confirmation is required
+    if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
-            from task_executor import execute_task
             execution_result = execute_task(response["executionPlanned"])
             response["executionResult"] = execution_result
         except Exception as e:
@@ -64,7 +64,7 @@ def run_agent(input_data):
                 "error": f"Execution failed: {str(e)}"
             }
 
-    # 💾 Save local log
+    # 💾 Save log locally
     os.makedirs(logs_dir, exist_ok=True)
     try:
         with open(log_filename, "w") as f:
@@ -90,40 +90,33 @@ def run_agent(input_data):
 def dispatch_intent(intent, input_data):
     match intent:
         case "create_file":
-            filename = input_data.get("filename")
-            content = input_data.get("content", "")
             return {
                 "action": "create_file",
-                "filename": filename,
-                "content": content,
+                "filename": input_data.get("filename"),
+                "content": input_data.get("content", ""),
                 "notes": "Will create the file with specified content after confirmation."
             }
 
         case "edit_file":
-            filename = input_data.get("filename")
-            instructions = input_data.get("instructions", "")
             return {
                 "action": "edit_file",
-                "filename": filename,
-                "instructions": instructions,
+                "filename": input_data.get("filename"),
+                "instructions": input_data.get("instructions", ""),
                 "notes": "Will attempt to edit based on natural language instructions."
             }
 
         case "delete_file":
-            filename = input_data.get("filename")
             return {
                 "action": "delete_file",
-                "filename": filename,
+                "filename": input_data.get("filename"),
                 "notes": "Destructive action. Requires explicit confirmation before proceeding."
             }
 
         case "rename_file":
-            old_name = input_data.get("old_name")
-            new_name = input_data.get("new_name")
             return {
                 "action": "rename_file",
-                "old_name": old_name,
-                "new_name": new_name,
+                "old_name": input_data.get("old_name"),
+                "new_name": input_data.get("new_name"),
                 "notes": "Will rename file if both names are valid."
             }
 
