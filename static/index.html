@@ -94,7 +94,7 @@
       const confirmBtn = document.getElementById("confirmBtn");
       const rejectBtn = document.getElementById("rejectBtn");
 
-      if (!data.timestamp) {
+      if (!data.content || !data.content.timestamp) {
         panel.innerText = "No valid response data found.";
         latestTaskId = null;
         confirmBtn.disabled = true;
@@ -102,10 +102,10 @@
         return;
       }
 
-      panel.innerText = JSON.stringify(data, null, 2);
+      panel.innerText = JSON.stringify(data.content, null, 2);
 
-      const needsConfirm = data.confirmationNeeded;
-      const timestamp = data.timestamp.split(".")[0]; // ✅ strip microseconds
+      const needsConfirm = data.content.confirmationNeeded;
+      const timestamp = data.content.timestamp.split(".")[0];
       const taskId = timestamp.replace(/[:/.]/g, "_");
 
       if (needsConfirm && taskId) {
