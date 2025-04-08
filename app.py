@@ -64,11 +64,14 @@ def latest():
         try:
             with open(file) as f:
                 content = json.load(f)
-                return jsonify({ "content": content })  # ✅ Wrap response in 'content'
+                return jsonify({
+                    "filename": os.path.basename(file),
+                    "content": content
+                })
         except Exception as e:
             print(f"Error reading {file}: {e}")
 
-    return jsonify({ "error": "No valid logs found" })
+    return jsonify({"error": "No valid logs found"})
 
 @app.route("/panel")
 def serve_panel():
