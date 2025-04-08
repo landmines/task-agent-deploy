@@ -17,7 +17,11 @@ def confirm_task(task_id):
     matching_files = sorted(glob.glob(pattern), reverse=True)
 
     if not matching_files:
-        return {"success": False, "error": "Log not found."}
+        return {
+            "success": False,
+            "error": f"No log file matched for pattern: {pattern}",
+            "hint": "Ensure your timestamp format matches the log filename"
+        }
 
     log_path = matching_files[0]
 
@@ -50,6 +54,6 @@ def confirm_task(task_id):
 
     return {
         "success": True,
-        "message": f"Task from {os.path.basename(log_path)} confirmed and executed.",
+        "message": f"Task confirmed from {os.path.basename(log_path)}",
         "result": result
     }
