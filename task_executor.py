@@ -1,4 +1,8 @@
+# task_executor.py
 import os
+
+# Adjust this to your actual Replit project path if needed
+REPLIT_PROJECT_ROOT = "/home/runner/task-agent-deploy"  # <--- Update this if your project folder is named differently
 
 def execute_task(plan):
     action = plan.get("action")
@@ -24,7 +28,7 @@ def create_file(plan):
         }
 
     try:
-        full_path = os.path.join(os.getcwd(), filename)
+        full_path = os.path.join(REPLIT_PROJECT_ROOT, filename)
         with open(full_path, "w") as f:
             f.write(content)
         return {
@@ -47,7 +51,7 @@ def append_to_file(plan):
             "error": "Invalid filename."
         }
 
-    full_path = os.path.join(os.getcwd(), filename)
+    full_path = os.path.join(REPLIT_PROJECT_ROOT, filename)
 
     if not os.path.exists(full_path):
         return {
