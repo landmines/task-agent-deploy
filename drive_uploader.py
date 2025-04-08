@@ -1,3 +1,4 @@
+# drive_uploader.py
 import os
 import io
 import json
@@ -19,7 +20,7 @@ def get_drive_service():
 def upload_log_to_drive(log_file_path, subfolder_name):
     service = get_drive_service()
 
-    # Find or create subfolder (e.g., "2025-04-07")
+    # Find or create subfolder (e.g., "2025-04-08")
     folder_id = find_or_create_subfolder(service, subfolder_name)
 
     # Prepare metadata and upload
@@ -58,23 +59,38 @@ def find_or_create_subfolder(service, subfolder_name):
     folder = service.files().create(body=folder_metadata, fields='id').execute()
     return folder.get('id')
 
-# ✅ NEW: List recent logs (by modifiedTime, descending)
 def list_recent_drive_logs(limit=5):
     service = get_drive_service()
-    query = (
+
+    # Step 1: Get all subfolders inside ROOT_FOLDER_ID
+    folder_query = (
         f"'{ROOT_FOLDER_ID}' in parents and "
-        f"mimeType = 'application/json' and trashed = false"
+        f"mimeType = 'application/vnd.google-apps.folder' and trashed = false"
     )
-    results = service.files().list(
-        q=query,
-        orderBy='modifiedTime desc',
-        pageSize=limit,
-        fields="files(id, name, modifiedTime)"
-    ).execute()
+    folder_results = service.files().list(q=folder_query, fields="files(id, name)").execute()
+    folders = folder_results.get('files', [])
 
-    return [file['id'] for file in results.get('files', [])]
+    all_logs = []
 
-# ✅ NEW: Download contents of a Drive log as JSON
+    # Step 2: Look inside each subfolder for JSON logs
+    for folder in folders:
+        folder_id = folder['id']
+        log_query = (
+            f"'{folder_id}' in parents and "
+            f"mimeType = 'application/json' and trashed = false"
+        )
+        log_results = service.files().list(
+            q=log_query,
+            orderBy='modifiedTime desc',
+            fields="files(id, name, modifiedTime)"
+        ).execute()
+
+        all_logs.extend(log_results.get('files', []))
+
+    # Step 3: Sort and limit to most recent logs
+    all_logs_sorted = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
+    return [file['id'] for file in all_logs_sorted[:limit]]
+
 def download_drive_log_file(file_id):
     service = get_drive_service()
     request = service.files().get_media(fileId=file_id)
