@@ -36,6 +36,26 @@ def confirm():
     result = confirm_task(task_id)
     return jsonify(result)
 
+@app.route("/confirm_latest", methods=["POST"])
+def confirm_latest():
+    logs_dir = os.path.join(os.getcwd(), "logs")
+    log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
+
+    for file in log_files:
+        try:
+            task_id = os.path.basename(file).split(".")[0].replace("log-no-", "").replace("/", "").strip()
+            result = confirm_task(task_id)
+            return jsonify({
+                "taskId": task_id,
+                "message": f"✅ Confirmed latest task: {task_id}",
+                "result": result
+            })
+        except Exception as e:
+            print(f"Error in confirm_latest: {e}")
+            return jsonify({"success": False, "error": str(e)})
+
+    return jsonify({"success": False, "error": "No valid logs found to confirm."})
+
 @app.route("/logs", methods=["GET"])
 def logs():
     logs_dir = os.path.join(os.getcwd(), "logs")
