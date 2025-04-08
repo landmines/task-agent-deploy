@@ -1,5 +1,6 @@
 # task_executor.py
 import os
+import re
 
 # ✅ Safe and visible path for both Replit and Render deployments
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
@@ -98,12 +99,63 @@ def edit_file(plan):
         with open(full_path, "r") as f:
             content = f.read()
 
-        if instructions in content:
-            new_content = content.replace(instructions, replacement)
-        else:
+        new_content = content
+        change_made = False
+
+        # 1. Match: replace all 'X' with 'Y'
+        match_replace = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
+        if match_replace:
+            target, repl = match_replace.groups()
+            if target in new_content:
+                new_content = new_content.replace(target, repl)
+                change_made = True
+            else:
+                return {
+                    "success": False,
+                    "error": f"❌ Text '{target}' not found for replacement."
+                }
+
+        # 2. Match: delete line containing 'X'
+        match_delete = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
+        if match_delete:
+            keyword = match_delete.group(1)
+            lines = new_content.splitlines()
+            filtered = [line for line in lines if keyword not in line]
+            if len(lines) != len(filtered):
+                new_content = "\n".join(filtered) + "\n"
+                change_made = True
+            else:
+                return {
+                    "success": False,
+                    "error": f"❌ No lines found containing '{keyword}'"
+                }
+
+        # 3. Match: replace line 'X' with 'Y'
+        match_line_replace = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
+        if match_line_replace:
+            old_line, new_line = match_line_replace.groups()
+            lines = new_content.splitlines()
+            replaced = False
+            updated_lines = []
+            for line in lines:
+                if line.strip() == old_line.strip():
+                    updated_lines.append(new_line)
+                    replaced = True
+                else:
+                    updated_lines.append(line)
+            if replaced:
+                new_content = "\n".join(updated_lines) + "\n"
+                change_made = True
+            else:
+                return {
+                    "success": False,
+                    "error": f"❌ Exact line '{old_line}' not found for replacement."
+                }
+
+        if not change_made:
             return {
                 "success": False,
-                "error": "❌ Instruction text not found in file."
+                "error": "❌ Could not understand or apply edit instructions."
             }
 
         with open(full_path, "w") as f:
@@ -111,7 +163,7 @@ def edit_file(plan):
 
         return {
             "success": True,
-            "message": f"✅ Edited '{full_path}' using instructions."
+            "message": f"✅ File '{filename}' edited using instructions: {instructions}"
         }
 
     except Exception as e:
