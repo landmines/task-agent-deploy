@@ -4,7 +4,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-SERVICE_ACCOUNT_FILE = 'agentdriveuploader-debaa1714b6c.json'
+SERVICE_ACCOUNT_FILE = 'agentdriveuploader.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 ROOT_FOLDER_ID = '1hDKqx9xPpDXBLEWu9i6358hj8jqv9VCq'  # Your AgentLogs folder ID
 
