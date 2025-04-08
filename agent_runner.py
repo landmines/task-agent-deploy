@@ -90,33 +90,50 @@ def run_agent(input_data):
 def dispatch_intent(intent, input_data):
     match intent:
         case "create_file":
+            filename = input_data.get("filename")
+            content = input_data.get("content", "")
             return {
                 "action": "create_file",
-                "filename": input_data.get("filename"),
-                "content": input_data.get("content", ""),
+                "filename": filename,
+                "content": content,
                 "notes": "Will create the file with specified content after confirmation."
             }
 
+        case "append_to_file":
+            filename = input_data.get("filename")
+            content = input_data.get("content", "")
+            return {
+                "action": "append_to_file",
+                "filename": filename,
+                "content": content,
+                "notes": "Will append content to an existing file, if it exists."
+            }
+
         case "edit_file":
+            filename = input_data.get("filename")
+            instructions = input_data.get("instructions", "")
             return {
                 "action": "edit_file",
-                "filename": input_data.get("filename"),
-                "instructions": input_data.get("instructions", ""),
+                "filename": filename,
+                "instructions": instructions,
                 "notes": "Will attempt to edit based on natural language instructions."
             }
 
         case "delete_file":
+            filename = input_data.get("filename")
             return {
                 "action": "delete_file",
-                "filename": input_data.get("filename"),
+                "filename": filename,
                 "notes": "Destructive action. Requires explicit confirmation before proceeding."
             }
 
         case "rename_file":
+            old_name = input_data.get("old_name")
+            new_name = input_data.get("new_name")
             return {
                 "action": "rename_file",
-                "old_name": input_data.get("old_name"),
-                "new_name": input_data.get("new_name"),
+                "old_name": old_name,
+                "new_name": new_name,
                 "notes": "Will rename file if both names are valid."
             }
 
