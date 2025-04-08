@@ -52,6 +52,18 @@ def run_agent(input_data):
     if action_plan:
         response["executionPlanned"] = action_plan
 
+    # ✅ Execute task if confirmed
+    if input_data.get("confirmed") and response.get("executionPlanned"):
+        try:
+            from task_executor import execute_task
+            execution_result = execute_task(response["executionPlanned"])
+            response["executionResult"] = execution_result
+        except Exception as e:
+            response["executionResult"] = {
+                "success": False,
+                "error": f"Execution failed: {str(e)}"
+            }
+
     # 💾 Save local log
     os.makedirs(logs_dir, exist_ok=True)
     try:
