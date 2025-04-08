@@ -1,4 +1,3 @@
-# app.py
 import sys
 import os
 import json
@@ -63,11 +62,14 @@ def latest():
     for file in log_files:
         try:
             with open(file) as f:
-                data = json.load(f)
-                # Return raw task content to match front-end expectations
-                return jsonify(data)
-        except:
-            continue
+                content = json.load(f)
+                # Ensure it's wrapped in 'content' for front-end parsing
+                return jsonify({
+                    "filename": os.path.basename(file),
+                    "content": content
+                })
+        except Exception as e:
+            print(f"Error reading {file}: {e}")
 
     return jsonify({"error": "No valid logs found"})
 
