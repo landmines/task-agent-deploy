@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from agent_runner import run_agent
 from confirm_handler import confirm_task
-from drive_uploader import list_recent_drive_logs, download_drive_log_file  # 🔹 NEW
+from drive_uploader import list_recent_drive_logs, download_drive_log_file  # 🟦 Drive log support
 
 # Ensure current directory is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -103,7 +103,7 @@ def logs_from_drive():
         for file_id in recent_file_ids:
             content = download_drive_log_file(file_id)
             logs.append({
-                "driveFileId": file_id,
+                "fileId": file_id,
                 "content": content
             })
 
