@@ -33,6 +33,13 @@ def create_file(plan):
 def append_to_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
+
+    if not os.path.exists(filename):
+        return {
+            "success": False,
+            "error": f"File '{filename}' does not exist. Cannot append."
+        }
+
     try:
         with open(filename, "a") as f:
             f.write(content)
