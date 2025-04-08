@@ -56,8 +56,8 @@
     <div id="latestContainer">
       <pre id="latestResponse">No recent response yet.</pre>
       <div id="confirmControls" class="confirm-buttons" style="display: none;">
-        <button onclick="sendConfirmation(true)">✅ Confirm</button>
-        <button onclick="sendConfirmation(false)">❌ Reject</button>
+        <button id="confirmBtn">✅ Confirm</button>
+        <button id="rejectBtn">❌ Reject</button>
       </div>
     </div>
   </section>
@@ -93,10 +93,11 @@
         return;
       }
 
-      panel.innerText = JSON.stringify(data.content, null, 2);
+      const content = data.content;
+      panel.innerText = JSON.stringify(content, null, 2);
 
-      const needsConfirm = data.content.confirmationNeeded;
-      const taskId = data.content.timestamp?.replace(/[:/.]/g, "_");
+      const needsConfirm = content.confirmationNeeded;
+      const taskId = content.timestamp?.replace(/[:/.]/g, "_");
 
       if (needsConfirm && taskId) {
         document.getElementById("confirmControls").style.display = "block";
@@ -122,6 +123,12 @@
       document.getElementById("confirmControls").style.display = "none";
       latestTaskId = null;
     }
+
+    // Bind confirm and reject buttons after page load
+    window.onload = () => {
+      document.getElementById("confirmBtn").addEventListener("click", () => sendConfirmation(true));
+      document.getElementById("rejectBtn").addEventListener("click", () => sendConfirmation(false));
+    };
   </script>
 </body>
 </html>
