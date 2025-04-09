@@ -1,4 +1,10 @@
 from flask import Flask, request, jsonify
+
+from flask_cors import CORS  # NEW
+
+app = Flask(__name__)
+CORS(app)  # NEW
+
 import os
 import json
 from agent_runner import run_agent, finalize_task_execution
