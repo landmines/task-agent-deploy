@@ -1,48 +1,52 @@
-[
-  {
-    "task": "Please create a file named phase-3-2-create.txt with the content: 'Create test confirmed.'",
-    "intent": "",
-    "expected": {
-      "action": "create_file",
-      "filename": "phase-3-2-create.txt"
+{
+  "testSuiteName": "Phase 3.2 - Task Planning Core Logic",
+  "created": "2025-04-09",
+  "tests": [
+    {
+      "task": "Please create a file named phase-3-2-create.txt with the content: 'Create test confirmed.'",
+      "intent": "",
+      "expected": {
+        "action": "create_file",
+        "filename": "phase-3-2-create.txt"
+      }
+    },
+    {
+      "task": "Append this line to phase-3-2-create.txt: 'Appended via smart planning.'",
+      "intent": "",
+      "expected": {
+        "action": "append_to_file",
+        "filename": "phase-3-2-create.txt"
+      }
+    },
+    {
+      "task": "Replace 'test' with 'suite' in phase-3-2-create.txt",
+      "intent": "",
+      "expected": {
+        "action": "edit_file",
+        "filename": "phase-3-2-create.txt"
+      }
+    },
+    {
+      "task": "Delete the file phase-3-2-create.txt",
+      "intent": "",
+      "expected": {
+        "action": "delete_file",
+        "filename": "phase-3-2-create.txt"
+      }
+    },
+    {
+      "task": "Awaken the ancient fire serpent",
+      "intent": "",
+      "expected": {
+        "action": "review"
+      }
+    },
+    {
+      "task": "Summarize the following notes into a list...",
+      "intent": "",
+      "expected": {
+        "action": "review"
+      }
     }
-  },
-  {
-    "task": "Append this line to phase-3-2-create.txt: 'Appended via smart planning.'",
-    "intent": "",
-    "expected": {
-      "action": "append_to_file",
-      "filename": "phase-3-2-create.txt"
-    }
-  },
-  {
-    "task": "Replace 'test' with 'suite' in phase-3-2-create.txt",
-    "intent": "",
-    "expected": {
-      "action": "edit_file",
-      "filename": "phase-3-2-create.txt"
-    }
-  },
-  {
-    "task": "Delete the file phase-3-2-create.txt",
-    "intent": "",
-    "expected": {
-      "action": "delete_file",
-      "filename": "phase-3-2-create.txt"
-    }
-  },
-  {
-    "task": "Awaken the ancient fire serpent",
-    "intent": "",
-    "expected": {
-      "action": "review"
-    }
-  },
-  {
-    "task": "Summarize the following notes into a list...",
-    "intent": "",
-    "expected": {
-      "action": "review"
-    }
-  }
-]
+  ]
+}
