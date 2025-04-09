@@ -1,139 +1,109 @@
-import sys
+from flask import Flask, request, jsonify
 import os
 import json
-import glob
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-from agent_runner import run_agent
-from confirm_handler import confirm_task
-from drive_uploader import list_recent_drive_logs, download_drive_log_file
-from context_manager import load_memory  # NEW
+from agent_runner import run_agent, finalize_task_execution
+from context_manager import load_memory
+from pathlib import Path
 
-# Ensure current directory is in the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-app = Flask(__name__, static_folder="static")
-CORS(app)
+app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "✅ Agent is running!"
+    return "✅ Agent is running."
 
 @app.route("/run", methods=["POST"])
 def run():
-    input_data = request.get_json() or {}
-    result = run_agent(input_data)
-    return jsonify(result)
-
-@app.route("/confirm", methods=["POST"])
-def confirm():
-    data = request.get_json() or {}
-    task_id = data.get("taskId", "").replace(":", "_").split(".")[0].replace("/", "").strip()
-    confirm_flag = data.get("confirm", False)
-
-    if not task_id or not confirm_flag:
-        return jsonify({"success": False, "error": "Missing taskId or confirm=true"})
-
-    result = confirm_task(task_id)
-    return jsonify(result)
-
-@app.route("/confirm_latest", methods=["POST"])
-def confirm_latest():
-    logs_dir = os.path.join(os.getcwd(), "logs")
-    log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
-
-    for file in log_files:
-        try:
-            task_id = os.path.basename(file).split(".")[0].replace("log-no-", "").replace("/", "").strip()
-            result = confirm_task(task_id)
-            return jsonify({
-                "taskId": task_id,
-                "message": f"✅ Confirmed latest task: {task_id}",
-                "result": result
-            })
-        except Exception as e:
-            print(f"Error in confirm_latest: {e}")
-            return jsonify({"success": False, "error": str(e)})
-
-    return jsonify({"success": False, "error": "No valid logs found to confirm."})
-
-@app.route("/logs", methods=["GET"])
-def logs():
-    logs_dir = os.path.join(os.getcwd(), "logs")
-    log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
-    recent_logs = []
-
-    for file in log_files[:5]:
-        try:
-            with open(file) as f:
-                content = json.load(f)
-                recent_logs.append({
-                    "filename": os.path.basename(file),
-                    "content": content
-                })
-        except Exception as e:
-            print(f"Failed to read {file}: {e}")
-
-    return jsonify(recent_logs)
+    try:
+        data = request.get_json()
+        result = run_agent(data)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/latest", methods=["GET"])
 def latest():
     logs_dir = os.path.join(os.getcwd(), "logs")
-    log_files = sorted(
-        glob.glob(os.path.join(logs_dir, "log-*.json")),
-        key=os.path.getmtime,
-        reverse=True
-    )
+    files = sorted(Path(logs_dir).glob("*.json"), reverse=True)
 
-    for file in log_files:
+    for file in files:
         try:
-            print(f"Checking file: {file}")
-            with open(file) as f:
+            with open(file, "r") as f:
                 content = json.load(f)
-                print("Loaded content keys:", list(content.keys()))
-                if isinstance(content, dict) and ("taskReceived" in content or "executionPlanned" in content):
-                    print(f"✅ Valid latest log found: {file}")
-                    return jsonify({
-                        "filename": os.path.basename(file),
-                        "content": content
-                    })
+            # Ensure it has core keys before serving
+            if isinstance(content, dict) and "executionPlanned" in content:
+                return jsonify({"file": file.name, "content": content})
         except Exception as e:
-            print(f"❌ Error reading {file}: {e}")
-
-    print("❌ No valid logs found in /latest")
-    return jsonify({
-        "error": "No valid logs found",
-        "content": None
-    })
+            print(f"❌ Error reading {file.name}: {e}")
+    return jsonify({"error": "❌ No valid logs found in /latest"})
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
+    from drive_uploader import list_recent_logs
     try:
-        recent_file_ids = list_recent_drive_logs(limit=5)
-        logs = []
-
-        for file_id in recent_file_ids:
-            content = download_drive_log_file(file_id)
-            logs.append({
-                "fileId": file_id,
-                "content": content
-            })
-
+        logs = list_recent_logs(limit=5)
         return jsonify(logs)
     except Exception as e:
-        return jsonify({"error": f"Failed to load logs from Drive: {str(e)}"}), 500
+        return jsonify({"error": f"Drive fetch failed: {e}"}), 500
 
-@app.route("/memory", methods=["GET"])  # NEW
+@app.route("/confirm", methods=["POST"])
+def confirm():
+    try:
+        data = request.get_json()
+        task_id = data.get("taskId")
+        approve = data.get("confirm")
+
+        if not task_id or approve is None:
+            return jsonify({"error": "Missing taskId or confirm field"}), 400
+
+        logs_dir = os.path.join(os.getcwd(), "logs")
+        log_file = Path(logs_dir) / f"log-{task_id}.json"
+        if not log_file.exists():
+            return jsonify({"error": f"Log file not found: {log_file.name}"}), 404
+
+        with open(log_file, "r") as f:
+            log_data = json.load(f)
+
+        if not approve:
+            log_data["rejected"] = True
+            with open(log_file, "w") as f:
+                json.dump(log_data, f, indent=2)
+            return jsonify({"message": "❌ Task rejected and logged."})
+
+        # Mark as confirmed
+        log_data["confirmationNeeded"] = False
+
+        try:
+            result = execute_task(log_data.get("executionPlanned"))
+            log_data["executionResult"] = result
+            log_data["logs"].append({"execution": result})
+        except Exception as e:
+            result = {"success": False, "error": f"Execution failed: {str(e)}"}
+            log_data["executionResult"] = result
+            log_data["logs"].append({"executionError": result})
+
+        # Save updated log
+        with open(log_file, "w") as f:
+            json.dump(log_data, f, indent=2)
+
+        # ✅ NEW: update memory after confirmed execution
+        finalize_task_execution(log_data)
+
+        return jsonify({
+            "message": f"✅ Task confirmed and executed from: {log_file.name}",
+            "result": result,
+            "success": True
+        })
+
+    except Exception as e:
+        return jsonify({"error": f"Confirm handler failed: {e}"}), 500
+
+@app.route("/memory", methods=["GET"])
 def memory():
     try:
-        mem = load_memory()
-        return jsonify(mem)
+        memory = load_memory()
+        return jsonify(memory)
     except Exception as e:
-        return jsonify({"error": f"Could not load memory: {str(e)}"}), 500
-
-@app.route("/panel")
-def serve_panel():
-    return send_from_directory(app.static_folder, "index.html")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    app.run(debug=True)
