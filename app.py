@@ -7,6 +7,7 @@ from flask_cors import CORS
 from agent_runner import run_agent
 from confirm_handler import confirm_task
 from drive_uploader import list_recent_drive_logs, download_drive_log_file
+from context_manager import load_memory  # NEW
 
 # Ensure current directory is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -121,6 +122,14 @@ def logs_from_drive():
         return jsonify(logs)
     except Exception as e:
         return jsonify({"error": f"Failed to load logs from Drive: {str(e)}"}), 500
+
+@app.route("/memory", methods=["GET"])  # NEW
+def memory():
+    try:
+        mem = load_memory()
+        return jsonify(mem)
+    except Exception as e:
+        return jsonify({"error": f"Could not load memory: {str(e)}"}), 500
 
 @app.route("/panel")
 def serve_panel():
