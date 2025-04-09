@@ -1,4 +1,3 @@
-# task_executor.py
 import os
 import re
 
@@ -6,7 +5,7 @@ import re
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
 
 def execute_task(plan):
-    action = plan.get("action")
+    action = plan.get("action") or plan.get("intent")
 
     if action == "create_file":
         return create_file(plan)
@@ -22,14 +21,11 @@ def execute_task(plan):
             "error": f"Unsupported action: {action}"
         }
 
-def is_invalid_filename(filename):
-    return not filename or any(c in filename for c in ["/", "\\", "..", "~"])
-
 def create_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
 
-    if is_invalid_filename(filename):
+    if not filename or "/" in filename or "\\" in filename:
         return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
@@ -44,7 +40,7 @@ def append_to_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
 
-    if is_invalid_filename(filename):
+    if not filename or "/" in filename or "\\" in filename:
         return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
@@ -58,28 +54,11 @@ def append_to_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def delete_file(plan):
-    filename = plan.get("filename")
-
-    if is_invalid_filename(filename):
-        return {"success": False, "error": "Invalid filename."}
-
-    full_path = os.path.join(PROJECT_ROOT, filename)
-    if not os.path.exists(full_path):
-        return {"success": False, "error": f"File '{full_path}' not found. Nothing to delete."}
-
-    try:
-        os.remove(full_path)
-        return {"success": True, "message": f"🗑️ File deleted: {full_path}"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
 def edit_file(plan):
     filename = plan.get("filename")
     instructions = plan.get("instructions", "")
-    replacement = plan.get("replacement", "")
 
-    if is_invalid_filename(filename):
+    if not filename or "/" in filename or "\\" in filename:
         return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
@@ -93,20 +72,20 @@ def edit_file(plan):
         new_content = content
         change_made = False
 
-        # 1. Match: replace all 'X' with 'Y'
-        match_replace = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
-        if match_replace:
-            target, repl = match_replace.groups()
-            if target in new_content:
-                new_content = new_content.replace(target, repl)
+        # 1. Replace all 'X' with 'Y'
+        match = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
+        if match:
+            target, repl = match.groups()
+            if target in content:
+                new_content = content.replace(target, repl)
                 change_made = True
             else:
                 return {"success": False, "error": f"❌ Text '{target}' not found for replacement."}
 
-        # 2. Match: delete line containing 'X'
-        match_delete = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
-        if match_delete:
-            keyword = match_delete.group(1)
+        # 2. Delete line containing 'X'
+        match = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
+        if match:
+            keyword = match.group(1)
             lines = new_content.splitlines()
             filtered = [line for line in lines if keyword not in line]
             if len(lines) != len(filtered):
@@ -115,13 +94,13 @@ def edit_file(plan):
             else:
                 return {"success": False, "error": f"❌ No lines found containing '{keyword}'"}
 
-        # 3. Match: replace line 'X' with 'Y'
-        match_line_replace = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
-        if match_line_replace:
-            old_line, new_line = match_line_replace.groups()
+        # 3. Replace line 'X' with 'Y'
+        match = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
+        if match:
+            old_line, new_line = match.groups()
             lines = new_content.splitlines()
-            replaced = False
             updated_lines = []
+            replaced = False
             for line in lines:
                 if line.strip() == old_line.strip():
                     updated_lines.append(new_line)
@@ -141,6 +120,20 @@ def edit_file(plan):
             f.write(new_content)
 
         return {"success": True, "message": f"✅ File '{filename}' edited using instructions: {instructions}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
+def delete_file(plan):
+    filename = plan.get("filename")
+    if not filename or "/" in filename or "\\" in filename:
+        return {"success": False, "error": "Invalid filename."}
+
+    full_path = os.path.join(PROJECT_ROOT, filename)
+    if not os.path.exists(full_path):
+        return {"success": False, "error": f"File '{full_path}' not found. Nothing to delete."}
+
+    try:
+        os.remove(full_path)
+        return {"success": True, "message": f"🗑️ File deleted: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
