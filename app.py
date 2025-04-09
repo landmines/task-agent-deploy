@@ -86,16 +86,20 @@ def latest():
 
     for file in log_files:
         try:
+            print(f"Checking file: {file}")
             with open(file) as f:
                 content = json.load(f)
+                print("Loaded content keys:", list(content.keys()))
                 if isinstance(content, dict) and "taskReceived" in content:
+                    print(f"✅ Valid latest log found: {file}")
                     return jsonify({
                         "filename": os.path.basename(file),
                         "content": content
                     })
         except Exception as e:
-            print(f"Error reading {file}: {e}")
+            print(f"❌ Error reading {file}: {e}")
 
+    print("❌ No valid logs found in /latest")
     return jsonify({
         "error": "No valid logs found",
         "content": None
