@@ -1,4 +1,3 @@
-# app.py
 import sys
 import os
 import json
@@ -7,7 +6,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from agent_runner import run_agent
 from confirm_handler import confirm_task
-from drive_uploader import list_recent_drive_logs, download_drive_log_file  # 🟦 Drive log support
+from drive_uploader import list_recent_drive_logs, download_drive_log_file
 
 # Ensure current directory is in the Python path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -79,16 +78,21 @@ def logs():
 @app.route("/latest", methods=["GET"])
 def latest():
     logs_dir = os.path.join(os.getcwd(), "logs")
-    log_files = sorted(glob.glob(os.path.join(logs_dir, "log-*.json")), reverse=True)
+    log_files = sorted(
+        glob.glob(os.path.join(logs_dir, "log-*.json")),
+        key=os.path.getmtime,
+        reverse=True
+    )
 
     for file in log_files:
         try:
             with open(file) as f:
                 content = json.load(f)
-                return jsonify({
-                    "filename": os.path.basename(file),
-                    "content": content
-                })
+                if "timestamp" in content and "taskReceived" in content:
+                    return jsonify({
+                        "filename": os.path.basename(file),
+                        "content": content
+                    })
         except Exception as e:
             print(f"Error reading {file}: {e}")
 
