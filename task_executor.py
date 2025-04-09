@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 # ✅ Safe and visible path for both Replit and Render deployments
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
@@ -67,17 +68,17 @@ def edit_file(plan):
 
     try:
         with open(full_path, "r") as f:
-            content = f.read()
+            original = f.read()
 
-        new_content = content
+        new_content = original
         change_made = False
 
         # 1. Replace all 'X' with 'Y'
         match = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
         if match:
             target, repl = match.groups()
-            if target in content:
-                new_content = content.replace(target, repl)
+            if target in original:
+                new_content = original.replace(target, repl)
                 change_made = True
             else:
                 return {"success": False, "error": f"❌ Text '{target}' not found for replacement."}
@@ -99,27 +100,43 @@ def edit_file(plan):
         if match:
             old_line, new_line = match.groups()
             lines = new_content.splitlines()
-            updated_lines = []
+            updated = []
             replaced = False
             for line in lines:
                 if line.strip() == old_line.strip():
-                    updated_lines.append(new_line)
+                    updated.append(new_line)
                     replaced = True
                 else:
-                    updated_lines.append(line)
+                    updated.append(line)
             if replaced:
-                new_content = "\n".join(updated_lines) + "\n"
+                new_content = "\n".join(updated) + "\n"
                 change_made = True
             else:
-                return {"success": False, "error": f"❌ Exact line '{old_line}' not found for replacement."}
+                return {"success": False, "error": f"❌ Exact line '{old_line}' not found."}
 
         if not change_made:
             return {"success": False, "error": "❌ Could not understand or apply edit instructions."}
 
+        # Create backup
+        timestamp = datetime.utcnow().isoformat().replace(":", "-").split(".")[0]
+        backup_name = f"{filename}_BACKUP_{timestamp}"
+        backup_path = os.path.join(PROJECT_ROOT, backup_name)
+        with open(backup_path, "w") as f:
+            f.write(original)
+
+        # Apply new content
         with open(full_path, "w") as f:
             f.write(new_content)
 
-        return {"success": True, "message": f"✅ File '{filename}' edited using instructions: {instructions}"}
+        return {
+            "success": True,
+            "message": f"✅ File '{filename}' edited with backup created: {backup_name}",
+            "backup": backup_name,
+            "original_file": filename,
+            "instructions": instructions,
+            "timestamp": timestamp
+        }
+
     except Exception as e:
         return {"success": False, "error": str(e)}
 
