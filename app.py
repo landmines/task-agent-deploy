@@ -1,17 +1,15 @@
 from flask import Flask, request, jsonify
-
-from flask_cors import CORS  # NEW
-
-app = Flask(__name__)
-CORS(app)  # NEW
-
+from flask_cors import CORS
 import os
 import json
-from agent_runner import run_agent, finalize_task_execution
-from context_manager import load_memory
 from pathlib import Path
 
+from agent_runner import run_agent, finalize_task_execution
+from context_manager import load_memory
+from task_executor import execute_task  # MISSING BEFORE
+
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 def index():
@@ -35,7 +33,6 @@ def latest():
         try:
             with open(file, "r") as f:
                 content = json.load(f)
-            # Ensure it has core keys before serving
             if isinstance(content, dict) and "executionPlanned" in content:
                 return jsonify({"file": file.name, "content": content})
         except Exception as e:
@@ -75,7 +72,6 @@ def confirm():
                 json.dump(log_data, f, indent=2)
             return jsonify({"message": "❌ Task rejected and logged."})
 
-        # Mark as confirmed
         log_data["confirmationNeeded"] = False
 
         try:
@@ -87,11 +83,9 @@ def confirm():
             log_data["executionResult"] = result
             log_data["logs"].append({"executionError": result})
 
-        # Save updated log
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        # ✅ NEW: update memory after confirmed execution
         finalize_task_execution(log_data)
 
         return jsonify({
