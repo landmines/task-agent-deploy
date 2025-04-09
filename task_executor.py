@@ -14,86 +14,77 @@ def execute_task(plan):
         return append_to_file(plan)
     elif action == "edit_file":
         return edit_file(plan)
+    elif action == "delete_file":
+        return delete_file(plan)
     else:
         return {
             "success": False,
             "error": f"Unsupported action: {action}"
         }
 
+def is_invalid_filename(filename):
+    return not filename or any(c in filename for c in ["/", "\\", "..", "~"])
+
 def create_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
 
-    if not filename or "/" in filename or "\\" in filename:
-        return {
-            "success": False,
-            "error": "Invalid filename."
-        }
+    if is_invalid_filename(filename):
+        return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
-
     try:
         with open(full_path, "w") as f:
             f.write(content)
-        return {
-            "success": True,
-            "message": f"✅ File created at: {full_path}"
-        }
+        return {"success": True, "message": f"✅ File created at: {full_path}"}
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
 
 def append_to_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
 
-    if not filename or "/" in filename or "\\" in filename:
-        return {
-            "success": False,
-            "error": "Invalid filename."
-        }
+    if is_invalid_filename(filename):
+        return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
-
     if not os.path.exists(full_path):
-        return {
-            "success": False,
-            "error": f"File '{full_path}' does not exist. Cannot append."
-        }
+        return {"success": False, "error": f"File '{full_path}' does not exist. Cannot append."}
 
     try:
         with open(full_path, "a") as f:
             f.write(content)
-        return {
-            "success": True,
-            "message": f"✅ Appended to file: {full_path}"
-        }
+        return {"success": True, "message": f"✅ Appended to file: {full_path}"}
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
+
+def delete_file(plan):
+    filename = plan.get("filename")
+
+    if is_invalid_filename(filename):
+        return {"success": False, "error": "Invalid filename."}
+
+    full_path = os.path.join(PROJECT_ROOT, filename)
+    if not os.path.exists(full_path):
+        return {"success": False, "error": f"File '{full_path}' not found. Nothing to delete."}
+
+    try:
+        os.remove(full_path)
+        return {"success": True, "message": f"🗑️ File deleted: {full_path}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 def edit_file(plan):
     filename = plan.get("filename")
     instructions = plan.get("instructions", "")
     replacement = plan.get("replacement", "")
 
-    if not filename or "/" in filename or "\\" in filename:
-        return {
-            "success": False,
-            "error": "Invalid filename."
-        }
+    if is_invalid_filename(filename):
+        return {"success": False, "error": "Invalid filename."}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
-
     if not os.path.exists(full_path):
-        return {
-            "success": False,
-            "error": f"File '{full_path}' does not exist. Cannot edit."
-        }
+        return {"success": False, "error": f"File '{full_path}' does not exist. Cannot edit."}
 
     try:
         with open(full_path, "r") as f:
@@ -110,10 +101,7 @@ def edit_file(plan):
                 new_content = new_content.replace(target, repl)
                 change_made = True
             else:
-                return {
-                    "success": False,
-                    "error": f"❌ Text '{target}' not found for replacement."
-                }
+                return {"success": False, "error": f"❌ Text '{target}' not found for replacement."}
 
         # 2. Match: delete line containing 'X'
         match_delete = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
@@ -125,10 +113,7 @@ def edit_file(plan):
                 new_content = "\n".join(filtered) + "\n"
                 change_made = True
             else:
-                return {
-                    "success": False,
-                    "error": f"❌ No lines found containing '{keyword}'"
-                }
+                return {"success": False, "error": f"❌ No lines found containing '{keyword}'"}
 
         # 3. Match: replace line 'X' with 'Y'
         match_line_replace = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
@@ -147,27 +132,15 @@ def edit_file(plan):
                 new_content = "\n".join(updated_lines) + "\n"
                 change_made = True
             else:
-                return {
-                    "success": False,
-                    "error": f"❌ Exact line '{old_line}' not found for replacement."
-                }
+                return {"success": False, "error": f"❌ Exact line '{old_line}' not found for replacement."}
 
         if not change_made:
-            return {
-                "success": False,
-                "error": "❌ Could not understand or apply edit instructions."
-            }
+            return {"success": False, "error": "❌ Could not understand or apply edit instructions."}
 
         with open(full_path, "w") as f:
             f.write(new_content)
 
-        return {
-            "success": True,
-            "message": f"✅ File '{filename}' edited using instructions: {instructions}"
-        }
+        return {"success": True, "message": f"✅ File '{filename}' edited using instructions: {instructions}"}
 
     except Exception as e:
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
