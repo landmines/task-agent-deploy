@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from datetime import datetime
 from drive_uploader import upload_log_to_drive
@@ -18,7 +19,7 @@ def run_agent(input_data):
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
 
-    # 🧠 Core response log structure (for memory and planning)
+    # 🧠 Structured log
     response = {
         "timestamp": timestamp,
         "taskReceived": task,
@@ -36,7 +37,6 @@ def run_agent(input_data):
         "logs": []
     }
 
-    # 🔍 Optional sandbox test (for code execution)
     if code:
         sandbox_result = run_in_sandbox(code)
         response["logs"].append({"sandboxTest": sandbox_result})
@@ -47,18 +47,16 @@ def run_agent(input_data):
             response["simulated"] = f"❌ Sandbox rejected the code: {sandbox_result.get('error')}"
             return response
 
-    # 📋 Dispatch intent (explicit or inferred)
-    try:
-        action_plan = dispatch_intent(intent, task, input_data)
+    # Intent parsing
+    action_plan, fallback_used = dispatch_intent(intent, task, input_data)
+    if action_plan:
         response["executionPlanned"] = action_plan
         response["logs"].append({"intentDispatch": action_plan})
-        if action_plan.get("notes", "").startswith("Smartly inferred"):
-            response["fallbackUsed"] = True
-    except Exception as e:
-        response["logs"].append({"intentDispatch": f"❌ Dispatch error: {str(e)}"})
-        response["executionPlanned"] = None
+    else:
+        response["logs"].append({"intentDispatch": "⚠️ No valid plan could be generated."})
 
-    # 🚀 Auto-execute only if confirmation not required
+    response["fallbackUsed"] = fallback_used
+
     if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
             result = execute_task(response["executionPlanned"])
@@ -69,7 +67,6 @@ def run_agent(input_data):
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
 
-    # 💾 Save locally
     try:
         with open(log_filename, "w") as f:
             json.dump(response, f, indent=2)
@@ -77,7 +74,6 @@ def run_agent(input_data):
     except Exception as e:
         print(f"❌ Failed to save log: {e}")
 
-    # ☁️ Upload to Drive
     try:
         file_id, file_link = upload_log_to_drive(log_filename, today_str)
         response["driveFileId"] = file_id
@@ -89,14 +85,14 @@ def run_agent(input_data):
 
     return response
 
-# 🔎 Extracts a keyword to use in the log filename
 def extract_keyword(task):
     if "about" in task.lower():
         return task.lower().split("about")[-1].strip().split()[0]
     return task.strip().split()[0].lower() if task else "task"
 
-# 🧠 Smart or explicit dispatch logic
-def dispatch_intent(intent, raw_task, data):
+def dispatch_intent(intent, task, data):
+    fallback_used = False
+
     if intent:
         match intent:
             case "create_file":
@@ -105,70 +101,87 @@ def dispatch_intent(intent, raw_task, data):
                     "filename": data.get("filename"),
                     "content": data.get("content", ""),
                     "notes": "Create file with specified content."
-                }
+                }, fallback_used
             case "append_to_file":
                 return {
                     "action": "append_to_file",
                     "filename": data.get("filename"),
                     "content": data.get("content", ""),
                     "notes": "Append content to an existing file."
-                }
+                }, fallback_used
             case "edit_file":
                 return {
                     "action": "edit_file",
                     "filename": data.get("filename"),
                     "instructions": data.get("instructions", ""),
                     "notes": "Edit the file using natural language instructions."
-                }
+                }, fallback_used
             case "delete_file":
                 return {
                     "action": "delete_file",
                     "filename": data.get("filename"),
                     "notes": "Delete file — confirmation required."
-                }
+                }, fallback_used
             case "rename_file":
                 return {
                     "action": "rename_file",
                     "old_name": data.get("old_name"),
                     "new_name": data.get("new_name"),
                     "notes": "Rename file."
-                }
+                }, fallback_used
             case "run_code_only":
                 return {
                     "action": "run_code_only",
                     "notes": "Will execute code in sandbox only."
-                }
+                }, fallback_used
             case "deploy":
                 return {
                     "action": "deploy",
                     "notes": "Deploy via Git and Render."
-                }
+                }, fallback_used
 
-    # 🧠 Natural language fallback intent detection
-    task_text = raw_task.lower()
-    if "create" in task_text and "file" in task_text:
+    # 🧠 Natural fallback
+    fallback_used = True
+    task_lower = task.lower()
+
+    match_create = re.search(r"create (?:a )?file named ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_append = re.search(r"append .* to ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_edit = re.search(r"replace .* in ['\"]?([\w\-.]+)['\"]?", task_lower)
+
+    if match_create:
+        filename = match_create.group(1)
         return {
             "action": "create_file",
-            "filename": data.get("filename", "newfile.txt"),
+            "filename": filename,
             "content": data.get("content", "Hello World"),
             "notes": "Smartly inferred: create_file"
-        }
-    elif "append" in task_text:
+        }, fallback_used
+
+    if match_append:
+        filename = match_append.group(1)
         return {
             "action": "append_to_file",
-            "filename": data.get("filename", "log.txt"),
+            "filename": filename,
             "content": data.get("content", "Additional content."),
             "notes": "Smartly inferred: append_to_file"
-        }
-    elif "edit" in task_text or "replace" in task_text or "delete line" in task_text:
+        }, fallback_used
+
+    if match_edit:
+        filename = match_edit.group(1)
         return {
             "action": "edit_file",
-            "filename": data.get("filename", "example.txt"),
-            "instructions": data.get("instructions", task_text),
+            "filename": filename,
+            "instructions": data.get("instructions", task),
             "notes": "Smartly inferred: edit_file"
-        }
-    else:
+        }, fallback_used
+
+    if "summarize" in task_lower or "list" in task_lower:
         return {
             "action": "review",
             "notes": "Task could not be mapped. Review needed before execution."
-        }
+        }, fallback_used
+
+    return {
+        "action": "review",
+        "notes": "Task could not be mapped. Review needed before execution."
+    }, fallback_used
