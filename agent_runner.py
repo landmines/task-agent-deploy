@@ -1,3 +1,4 @@
+# agent_runner.py
 import os
 import re
 import json
@@ -7,6 +8,7 @@ from sandbox_runner import run_in_sandbox
 from task_executor import execute_task
 
 def run_agent(input_data):
+    # Special case: test suite trigger
     if input_data.get("intent") == "run_tests_from_file":
         return run_test_suite(input_data.get("filename", "test_suite.json"))
 
@@ -216,22 +218,14 @@ def run_test_suite(filename):
             "passed": comparison
         })
 
-    summary = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "testFile": filename,
-        "totalTests": len(results),
-        "passed": passed,
-        "failed": failed,
-        "results": results
-    }
-
-    safe_time = summary["timestamp"].replace(":", "_").split(".")[0]
+    timestamp = datetime.utcnow().isoformat()
+    safe_time = timestamp.replace(":", "_").split(".")[0]
     logs_dir = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-test-suite-{safe_time}.json")
 
     wrapped = {
-        "timestamp": summary["timestamp"],
+        "timestamp": timestamp,
         "confirmationNeeded": False,
         "executionPlanned": {
             "action": "run_tests_from_file",
@@ -247,5 +241,9 @@ def run_test_suite(filename):
     with open(log_filename, "w") as f:
         json.dump(wrapped, f, indent=2)
 
-    upload_log_to_drive(log_filename, summary["timestamp"].split("T")[0])
-    return wrapped
+    upload_log_to_drive(log_filename, timestamp.split("T")[0])
+
+    return {
+        "filename": os.path.basename(log_filename),
+        "content": wrapped
+    }
