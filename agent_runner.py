@@ -18,7 +18,7 @@ def run_agent(input_data):
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
 
-    # 🧠 START LOG STRUCTURE
+    # 🧠 Core response log structure (for memory and planning)
     response = {
         "timestamp": timestamp,
         "taskReceived": task,
@@ -36,6 +36,7 @@ def run_agent(input_data):
         "logs": []
     }
 
+    # 🔍 Optional sandbox test (for code execution)
     if code:
         sandbox_result = run_in_sandbox(code)
         response["logs"].append({"sandboxTest": sandbox_result})
@@ -46,15 +47,18 @@ def run_agent(input_data):
             response["simulated"] = f"❌ Sandbox rejected the code: {sandbox_result.get('error')}"
             return response
 
-    # Plan execution
-    action_plan = dispatch_intent(intent, task, input_data)
-    if action_plan:
+    # 📋 Dispatch intent (explicit or inferred)
+    try:
+        action_plan = dispatch_intent(intent, task, input_data)
         response["executionPlanned"] = action_plan
         response["logs"].append({"intentDispatch": action_plan})
-    else:
-        response["logs"].append({"intentDispatch": "⚠️ No valid plan could be generated."})
+        if action_plan.get("notes", "").startswith("Smartly inferred"):
+            response["fallbackUsed"] = True
+    except Exception as e:
+        response["logs"].append({"intentDispatch": f"❌ Dispatch error: {str(e)}"})
+        response["executionPlanned"] = None
 
-    # Execute if no confirmation needed
+    # 🚀 Auto-execute only if confirmation not required
     if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
             result = execute_task(response["executionPlanned"])
@@ -65,7 +69,7 @@ def run_agent(input_data):
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
 
-    # Save locally
+    # 💾 Save locally
     try:
         with open(log_filename, "w") as f:
             json.dump(response, f, indent=2)
@@ -73,7 +77,7 @@ def run_agent(input_data):
     except Exception as e:
         print(f"❌ Failed to save log: {e}")
 
-    # Upload to Drive
+    # ☁️ Upload to Drive
     try:
         file_id, file_link = upload_log_to_drive(log_filename, today_str)
         response["driveFileId"] = file_id
@@ -85,11 +89,13 @@ def run_agent(input_data):
 
     return response
 
+# 🔎 Extracts a keyword to use in the log filename
 def extract_keyword(task):
     if "about" in task.lower():
         return task.lower().split("about")[-1].strip().split()[0]
     return task.strip().split()[0].lower() if task else "task"
 
+# 🧠 Smart or explicit dispatch logic
 def dispatch_intent(intent, raw_task, data):
     if intent:
         match intent:
@@ -138,7 +144,7 @@ def dispatch_intent(intent, raw_task, data):
                     "notes": "Deploy via Git and Render."
                 }
 
-    # Smart fallback (natural interpretation)
+    # 🧠 Natural language fallback intent detection
     task_text = raw_task.lower()
     if "create" in task_text and "file" in task_text:
         return {
