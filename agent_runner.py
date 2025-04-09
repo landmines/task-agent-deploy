@@ -9,63 +9,63 @@ def run_agent(input_data):
     task = input_data.get("task", "No task provided")
     code = input_data.get("code", "")
     intent = input_data.get("intent", "").strip().lower()
-    timestamp = datetime.utcnow().replace(microsecond=0).isoformat()  # strip microseconds
+    timestamp = datetime.utcnow().replace(microsecond=0).isoformat()
     today_str = timestamp.split("T")[0]
 
-    keyword = "task"
-    if "about" in task.lower():
-        keyword = task.lower().split("about")[-1].strip().split()[0]
-    elif task:
-        keyword = task.strip().split()[0].lower()
-
+    keyword = extract_keyword(task)
     safe_time = timestamp.replace(":", "_")
     logs_dir = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
 
+    # 🧠 START LOG STRUCTURE
     response = {
         "timestamp": timestamp,
-        "intro": "Hi, I'm Task Executor. How can I help you today?",
-        "behavior": (
-            "You are a helpful assistant that receives tasks in natural language. "
-            "You carefully analyze each request to understand what the user wants. "
-            "You simulate results, request confirmation, and act responsibly. "
-            "You maintain logs, follow user intent, and support deployment."
-        ),
         "taskReceived": task,
-        "simulated": f"Simulating task: '{task}'...",
+        "codeBlock": bool(code),
+        "phase": "Phase 3.2 – Natural Task Planning",
+        "overallGoal": "Create a self-evolving task agent with confirmation and execution control.",
+        "roadmap": {
+            "currentPhase": "Phase 3.2",
+            "nextPhase": "Phase 3.3 – Planning Memory",
+            "subgoal": "Interpret general tasks and simulate actions before execution"
+        },
         "confirmationNeeded": True,
-        "executionPlanned": None
+        "executionPlanned": None,
+        "executionResult": None,
+        "logs": []
     }
 
-    # Optional: Run sandbox test
     if code:
         sandbox_result = run_in_sandbox(code)
-        response["sandboxTest"] = sandbox_result
+        response["logs"].append({"sandboxTest": sandbox_result})
         if sandbox_result["success"] and not sandbox_result.get("error"):
-            response["simulated"] = "✅ Code passed sandbox test. Ready to execute with your approval."
             response["confirmationNeeded"] = False
+            response["simulated"] = "✅ Code passed sandbox test. Ready to execute."
         else:
             response["simulated"] = f"❌ Sandbox rejected the code: {sandbox_result.get('error')}"
             return response
 
-    # Build action plan
-    action_plan = dispatch_intent(intent, input_data)
+    # Plan execution
+    action_plan = dispatch_intent(intent, task, input_data)
     if action_plan:
         response["executionPlanned"] = action_plan
+        response["logs"].append({"intentDispatch": action_plan})
+    else:
+        response["logs"].append({"intentDispatch": "⚠️ No valid plan could be generated."})
 
-    # Execute now if no confirmation needed
+    # Execute if no confirmation needed
     if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
             result = execute_task(response["executionPlanned"])
             response["executionResult"] = result
+            response["logs"].append({"execution": result})
         except Exception as e:
-            response["executionResult"] = {
-                "success": False,
-                "error": f"Execution failed: {str(e)}"
-            }
+            error = {"success": False, "error": f"Execution failed: {str(e)}"}
+            response["executionResult"] = error
+            response["logs"].append({"executionError": error})
 
-    # Save log locally
+    # Save locally
     try:
         with open(log_filename, "w") as f:
             json.dump(response, f, indent=2)
@@ -85,60 +85,84 @@ def run_agent(input_data):
 
     return response
 
-# Dispatcher
-def dispatch_intent(intent, input_data):
-    match intent:
-        case "create_file":
-            return {
-                "action": "create_file",
-                "filename": input_data.get("filename"),
-                "content": input_data.get("content", ""),
-                "notes": "Will create the file with specified content after confirmation."
-            }
-        case "append_to_file":
-            return {
-                "action": "append_to_file",
-                "filename": input_data.get("filename"),
-                "content": input_data.get("content", ""),
-                "notes": "Will append content to an existing file, if it exists."
-            }
-        case "edit_file":
-            return {
-                "action": "edit_file",
-                "filename": input_data.get("filename"),
-                "instructions": input_data.get("instructions", ""),
-                "notes": "Will attempt to edit based on natural language instructions."
-            }
-        case "delete_file":
-            return {
-                "action": "delete_file",
-                "filename": input_data.get("filename"),
-                "notes": "Destructive action. Requires explicit confirmation before proceeding."
-            }
-        case "rename_file":
-            return {
-                "action": "rename_file",
-                "old_name": input_data.get("old_name"),
-                "new_name": input_data.get("new_name"),
-                "notes": "Will rename file if both names are valid."
-            }
-        case "deploy":
-            return {
-                "action": "deploy",
-                "notes": "Triggering deployment via Git and Render."
-            }
-        case "run_code_only":
-            return {
-                "action": "run_code_only",
-                "notes": "Will execute the provided code in a sandbox environment."
-            }
-        case "general_task" | "":
-            return {
-                "action": "review",
-                "notes": "No specific intent found. Will prompt user for clarification or manual guidance."
-            }
-        case _:
-            return {
-                "action": "unknown",
-                "notes": f"Intent '{intent}' not recognized. Will request user help."
-            }
+def extract_keyword(task):
+    if "about" in task.lower():
+        return task.lower().split("about")[-1].strip().split()[0]
+    return task.strip().split()[0].lower() if task else "task"
+
+def dispatch_intent(intent, raw_task, data):
+    if intent:
+        match intent:
+            case "create_file":
+                return {
+                    "action": "create_file",
+                    "filename": data.get("filename"),
+                    "content": data.get("content", ""),
+                    "notes": "Create file with specified content."
+                }
+            case "append_to_file":
+                return {
+                    "action": "append_to_file",
+                    "filename": data.get("filename"),
+                    "content": data.get("content", ""),
+                    "notes": "Append content to an existing file."
+                }
+            case "edit_file":
+                return {
+                    "action": "edit_file",
+                    "filename": data.get("filename"),
+                    "instructions": data.get("instructions", ""),
+                    "notes": "Edit the file using natural language instructions."
+                }
+            case "delete_file":
+                return {
+                    "action": "delete_file",
+                    "filename": data.get("filename"),
+                    "notes": "Delete file — confirmation required."
+                }
+            case "rename_file":
+                return {
+                    "action": "rename_file",
+                    "old_name": data.get("old_name"),
+                    "new_name": data.get("new_name"),
+                    "notes": "Rename file."
+                }
+            case "run_code_only":
+                return {
+                    "action": "run_code_only",
+                    "notes": "Will execute code in sandbox only."
+                }
+            case "deploy":
+                return {
+                    "action": "deploy",
+                    "notes": "Deploy via Git and Render."
+                }
+
+    # Smart fallback (natural interpretation)
+    task_text = raw_task.lower()
+    if "create" in task_text and "file" in task_text:
+        return {
+            "action": "create_file",
+            "filename": data.get("filename", "newfile.txt"),
+            "content": data.get("content", "Hello World"),
+            "notes": "Smartly inferred: create_file"
+        }
+    elif "append" in task_text:
+        return {
+            "action": "append_to_file",
+            "filename": data.get("filename", "log.txt"),
+            "content": data.get("content", "Additional content."),
+            "notes": "Smartly inferred: append_to_file"
+        }
+    elif "edit" in task_text or "replace" in task_text or "delete line" in task_text:
+        return {
+            "action": "edit_file",
+            "filename": data.get("filename", "example.txt"),
+            "instructions": data.get("instructions", task_text),
+            "notes": "Smartly inferred: edit_file"
+        }
+    else:
+        return {
+            "action": "review",
+            "notes": "Task could not be mapped. Review needed before execution."
+        }
