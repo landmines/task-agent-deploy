@@ -6,21 +6,19 @@ from drive_uploader import upload_log_to_drive
 from sandbox_runner import run_in_sandbox
 from task_executor import execute_task
 
-PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
-
 def run_agent(input_data):
-    intent = input_data.get("intent", "").strip().lower()
-
-    if intent == "run_tests_from_file":
+    if input_data.get("intent") == "run_tests_from_file":
         return run_test_suite(input_data.get("filename", "test_suite.json"))
 
     task = input_data.get("task", "No task provided")
     code = input_data.get("code", "")
+    intent = input_data.get("intent", "").strip().lower()
     timestamp = datetime.utcnow().replace(microsecond=0).isoformat()
     today_str = timestamp.split("T")[0]
+
     keyword = extract_keyword(task)
     safe_time = timestamp.replace(":", "_")
-    logs_dir = os.path.join(PROJECT_ROOT, "logs")
+    logs_dir = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
 
@@ -52,13 +50,13 @@ def run_agent(input_data):
             return response
 
     action_plan, fallback_used = dispatch_intent(intent, task, input_data)
-    response["fallbackUsed"] = fallback_used
-
     if action_plan:
         response["executionPlanned"] = action_plan
         response["logs"].append({"intentDispatch": action_plan})
     else:
         response["logs"].append({"intentDispatch": "⚠️ No valid plan could be generated."})
+
+    response["fallbackUsed"] = fallback_used
 
     if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
@@ -87,67 +85,6 @@ def run_agent(input_data):
         print(f"❌ Drive upload failed: {e}")
 
     return response
-
-def run_test_suite(filename):
-    suite_path = os.path.join(PROJECT_ROOT, filename)
-    try:
-        with open(suite_path) as f:
-            tests = json.load(f)
-    except Exception as e:
-        return {"success": False, "error": f"Failed to load test suite: {e}"}
-
-    results = []
-    passed = 0
-    failed = 0
-
-    for i, test in enumerate(tests, 1):
-        task = test.get("task", "")
-        intent = test.get("intent", "")
-        expected = test.get("expected", {})
-        plan, fallback_used = dispatch_intent(intent, task, test)
-
-        success = (
-            plan.get("action") == expected.get("action") and
-            plan.get("filename") == expected.get("filename")
-        )
-
-        result = {
-            "test": i,
-            "task": task,
-            "intent": intent,
-            "expected": expected,
-            "actual": plan,
-            "passed": success
-        }
-
-        results.append(result)
-        passed += 1 if success else 0
-        failed += 0 if success else 1
-
-    summary = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "testFile": filename,
-        "totalTests": len(tests),
-        "passed": passed,
-        "failed": failed,
-        "results": results
-    }
-
-    # Write test results to log
-    safe_time = datetime.utcnow().isoformat().replace(":", "_").split(".")[0]
-    logs_dir = os.path.join(PROJECT_ROOT, "logs")
-    os.makedirs(logs_dir, exist_ok=True)
-    log_filename = os.path.join(logs_dir, f"test-results-{safe_time}.json")
-
-    with open(log_filename, "w") as f:
-        json.dump(summary, f, indent=2)
-
-    try:
-        upload_log_to_drive(log_filename, datetime.utcnow().strftime("%Y-%m-%d"))
-    except Exception as e:
-        print("Drive upload failed:", str(e))
-
-    return summary
 
 def extract_keyword(task):
     if "about" in task.lower():
@@ -204,7 +141,6 @@ def dispatch_intent(intent, task, data):
                     "notes": "Deploy via Git and Render."
                 }, fallback_used
 
-    # 🧠 Natural fallback
     fallback_used = True
     task_lower = task.lower()
 
@@ -249,3 +185,67 @@ def dispatch_intent(intent, task, data):
         "action": "review",
         "notes": "Task could not be mapped. Review needed before execution."
     }, fallback_used
+
+def run_test_suite(filename):
+    with open(filename, "r") as f:
+        test_suite = json.load(f)
+
+    results = []
+    passed = 0
+    failed = 0
+
+    for i, test in enumerate(test_suite.get("tests", []), 1):
+        task = test.get("task", "")
+        intent = test.get("intent", "")
+        expected = test.get("expected", {})
+
+        result, _ = dispatch_intent(intent, task, test)
+        comparison = all(result.get(k) == v for k, v in expected.items())
+
+        if comparison:
+            passed += 1
+        else:
+            failed += 1
+
+        results.append({
+            "test": i,
+            "task": task,
+            "intent": intent,
+            "expected": expected,
+            "actual": result,
+            "passed": comparison
+        })
+
+    summary = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "testFile": filename,
+        "totalTests": len(results),
+        "passed": passed,
+        "failed": failed,
+        "results": results
+    }
+
+    safe_time = summary["timestamp"].replace(":", "_").split(".")[0]
+    logs_dir = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+    log_filename = os.path.join(logs_dir, f"log-test-suite-{safe_time}.json")
+
+    wrapped = {
+        "timestamp": summary["timestamp"],
+        "confirmationNeeded": False,
+        "executionPlanned": {
+            "action": "run_tests_from_file",
+            "notes": f"Ran test suite from {filename}"
+        },
+        "executionResult": {
+            "success": failed == 0,
+            "summary": f"{passed} passed, {failed} failed",
+            "results": results
+        }
+    }
+
+    with open(log_filename, "w") as f:
+        json.dump(wrapped, f, indent=2)
+
+    upload_log_to_drive(log_filename, summary["timestamp"].split("T")[0])
+    return wrapped
