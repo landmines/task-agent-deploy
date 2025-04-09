@@ -88,15 +88,20 @@ def latest():
         try:
             with open(file) as f:
                 content = json.load(f)
-                if "timestamp" in content and "taskReceived" in content:
-                    return jsonify({
-                        "filename": os.path.basename(file),
-                        "content": content
-                    })
+                if isinstance(content, dict) and "taskReceived" in content:
+                    # Ensure content has something the panel needs to show
+                    if "confirmationNeeded" in content or "executionResult" in content:
+                        return jsonify({
+                            "filename": os.path.basename(file),
+                            "content": content
+                        })
         except Exception as e:
             print(f"Error reading {file}: {e}")
 
-    return jsonify({"error": "No valid logs found"})
+    return jsonify({
+        "error": "No valid logs found",
+        "content": None
+    })
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
