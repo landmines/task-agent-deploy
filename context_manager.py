@@ -33,7 +33,8 @@ def initialize_memory():
         "confirmed_count": 0,
         "rejected_count": 0,
         "failure_patterns": [],
-        "notes": []
+        "notes": [],
+        "self_edits": []
     }
 
 def update_memory(memory, task_result):
@@ -47,8 +48,8 @@ def update_memory(memory, task_result):
         "intent": task_result.get("executionPlanned", {}).get("action", "unknown")
     }
 
-    # Append recent task
-    memory["recent_tasks"] = (memory.get("recent_tasks") or [])[-9:]  # keep last 10
+    # Append to recent tasks
+    memory["recent_tasks"] = (memory.get("recent_tasks") or [])[-9:]
     memory["recent_tasks"].append(memory["last_result"])
 
     # Track confirmation
@@ -56,5 +57,22 @@ def update_memory(memory, task_result):
         memory["confirmed_count"] += 1
     if "rejected" in str(task_result).lower():
         memory["rejected_count"] += 1
+
+    # ✅ Track self-edits if edit_file + confirmed + backup exists
+    if (
+        task_result.get("confirmationNeeded") is False and
+        task_result.get("executionPlanned", {}).get("action") == "edit_file"
+    ):
+        result = task_result.get("executionResult", {})
+        if result.get("success") and result.get("backup"):
+            edit_record = {
+                "file": result.get("original_file"),
+                "backup": result.get("backup"),
+                "instructions": result.get("instructions"),
+                "timestamp": result.get("timestamp"),
+                "notes": result.get("message")
+            }
+            memory["self_edits"] = (memory.get("self_edits") or [])[-9:]
+            memory["self_edits"].append(edit_record)
 
     return memory
