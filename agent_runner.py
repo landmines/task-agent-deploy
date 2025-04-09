@@ -5,8 +5,11 @@ from datetime import datetime
 from drive_uploader import upload_log_to_drive
 from sandbox_runner import run_in_sandbox
 from task_executor import execute_task
+from context_manager import load_memory, save_memory, update_memory
 
 def run_agent(input_data):
+    memory = load_memory()
+
     # Special case: test suite trigger
     if input_data.get("intent") == "run_tests_from_file":
         return run_test_suite(input_data.get("filename", "test_suite.json"))
@@ -27,16 +30,17 @@ def run_agent(input_data):
         "timestamp": timestamp,
         "taskReceived": task,
         "codeBlock": bool(code),
-        "phase": "Phase 3.2 – Natural Task Planning",
-        "overallGoal": "Create a self-evolving task agent with confirmation and execution control.",
+        "phase": "Phase 3.3 – Planning Memory",
+        "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
         "roadmap": {
-            "currentPhase": "Phase 3.2",
-            "nextPhase": "Phase 3.3 – Planning Memory",
-            "subgoal": "Interpret general tasks and simulate actions before execution"
+            "currentPhase": "Phase 3.3",
+            "nextPhase": "Phase 4 – Self-Modifying Agent",
+            "subgoal": "Track recent task behavior, decisions, and outcomes."
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
         "executionResult": None,
+        "memory": memory,
         "logs": []
     }
 
@@ -68,6 +72,11 @@ def run_agent(input_data):
             error = {"success": False, "error": f"Execution failed: {str(e)}"}
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
+
+    # Update memory and save
+    memory = update_memory(memory, response)
+    save_memory(memory)
+    response["memory"] = memory
 
     try:
         with open(log_filename, "w") as f:
@@ -148,7 +157,6 @@ def dispatch_intent(intent, task, data):
     match_create = re.search(r"create (?:a )?file named ['\"]?([\w\-.]+)['\"]?", task_lower)
     match_append = re.search(r"append .* to ['\"]?([\w\-.]+)['\"]?", task_lower)
     match_edit = re.search(r"replace .* in ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_delete = re.search(r"(?:delete|remove)(?: the)? file ['\"]?([\w\-.]+)['\"]?", task_lower)
 
     if match_create:
         filename = match_create.group(1)
@@ -175,14 +183,6 @@ def dispatch_intent(intent, task, data):
             "filename": filename,
             "instructions": data.get("instructions", task),
             "notes": "Smartly inferred: edit_file"
-        }, fallback_used
-
-    if match_delete:
-        filename = match_delete.group(1)
-        return {
-            "action": "delete_file",
-            "filename": filename,
-            "notes": "Smartly inferred: delete_file"
         }, fallback_used
 
     if "summarize" in task_lower or "list" in task_lower:
