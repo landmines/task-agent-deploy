@@ -89,12 +89,10 @@ def latest():
             with open(file) as f:
                 content = json.load(f)
                 if isinstance(content, dict) and "taskReceived" in content:
-                    # Ensure content has something the panel needs to show
-                    if "confirmationNeeded" in content or "executionResult" in content:
-                        return jsonify({
-                            "filename": os.path.basename(file),
-                            "content": content
-                        })
+                    return jsonify({
+                        "filename": os.path.basename(file),
+                        "content": content
+                    })
         except Exception as e:
             print(f"Error reading {file}: {e}")
 
