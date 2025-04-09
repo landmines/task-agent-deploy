@@ -90,7 +90,7 @@ def latest():
             with open(file) as f:
                 content = json.load(f)
                 print("Loaded content keys:", list(content.keys()))
-                if isinstance(content, dict) and "taskReceived" in content:
+                if isinstance(content, dict) and ("taskReceived" in content or "executionPlanned" in content):
                     print(f"✅ Valid latest log found: {file}")
                     return jsonify({
                         "filename": os.path.basename(file),
