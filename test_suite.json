@@ -1,0 +1,39 @@
+{
+  "tests": [
+    {
+      "name": "Smart Create Inference",
+      "task": "Please create a file named phase-3-2-create.txt with the content: 'Create test confirmed.'",
+      "expectedIntent": "create_file",
+      "expectedFilename": "phase-3-2-create.txt",
+      "expectedContent": "Create test confirmed."
+    },
+    {
+      "name": "Smart Append Inference",
+      "task": "Add this line to phase-3-2-create.txt: 'Appended via smart planning.'",
+      "expectedIntent": "append_to_file",
+      "expectedFilename": "phase-3-2-create.txt",
+      "expectedContent": "Appended via smart planning."
+    },
+    {
+      "name": "Smart Edit Inference",
+      "task": "Replace 'test' with 'suite' in phase-3-2-create.txt",
+      "expectedIntent": "edit_file",
+      "expectedInstructions": "replace 'test' with 'suite' in phase-3-2-create.txt"
+    },
+    {
+      "name": "Explicit Delete",
+      "intent": "delete_file",
+      "filename": "phase-3-2-create.txt"
+    },
+    {
+      "name": "Unmappable: Mythical Task",
+      "task": "Awaken the ancient fire serpent",
+      "expectedIntent": "review"
+    },
+    {
+      "name": "Unmappable: Vague Summary",
+      "task": "Summarize the following notes into a list...",
+      "expectedIntent": "review"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-entrypoint = "main.py"
+run = "python main.py"
 modules = ["python-3.11"]
 
 [nix]
@@ -11,5 +11,9 @@ language = "python3"
 requiredFiles = [".replit", "replit.nix"]
 
 [deployment]
-run = ["python3", "main.py"]
+run = ["python", "main.py"]
 deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3000
+externalPort = 80

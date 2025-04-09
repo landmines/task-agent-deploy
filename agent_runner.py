@@ -1,3 +1,4 @@
+# agent_runner.py
 import os
 import re
 import json
@@ -144,9 +145,10 @@ def dispatch_intent(intent, task, data):
     fallback_used = True
     task_lower = task.lower()
 
-    match_create = re.search(r"create (?:a )?file named ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_append = re.search(r"append .* to ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_edit = re.search(r"replace .* in ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_create = re.search(r"(?:create|make) (?:a )?file(?: named)? ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_append = re.search(r"(?:append|add).*to ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_edit = re.search(r"(?:replace|edit).*in ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_delete = re.search(r"(?:delete|remove) ['\"]?([\w\-.]+)['\"]?", task_lower)
 
     if match_create:
         filename = match_create.group(1)
@@ -173,6 +175,14 @@ def dispatch_intent(intent, task, data):
             "filename": filename,
             "instructions": data.get("instructions", task),
             "notes": "Smartly inferred: edit_file"
+        }, fallback_used
+
+    if match_delete:
+        filename = match_delete.group(1)
+        return {
+            "action": "delete_file",
+            "filename": filename,
+            "notes": "Smartly inferred: delete_file"
         }, fallback_used
 
     if "summarize" in task_lower or "list" in task_lower:
