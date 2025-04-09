@@ -134,7 +134,7 @@ def run_test_suite(filename):
     }
 
     # Write test results to log
-    safe_time = datetime.utcnow().replace(":", "_").split(".")[0]
+    safe_time = datetime.utcnow().isoformat().replace(":", "_").split(".")[0]
     logs_dir = os.path.join(PROJECT_ROOT, "logs")
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"test-results-{safe_time}.json")
