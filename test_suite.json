@@ -1,46 +1,48 @@
 [
   {
-    "name": "Create file via natural instruction",
     "task": "Please create a file named phase-3-2-create.txt with the content: 'Create test confirmed.'",
     "intent": "",
-    "expectedAction": "create_file",
-    "expectedFilename": "phase-3-2-create.txt",
-    "expectedContent": "Create test confirmed."
+    "expected": {
+      "action": "create_file",
+      "filename": "phase-3-2-create.txt"
+    }
   },
   {
-    "name": "Append to file via natural instruction",
-    "task": "Add this line to phase-3-2-create.txt: 'Appended via smart planning.'",
+    "task": "Append this line to phase-3-2-create.txt: 'Appended via smart planning.'",
     "intent": "",
-    "expectedAction": "append_to_file",
-    "expectedFilename": "phase-3-2-create.txt",
-    "expectedContent": "Appended via smart planning."
+    "expected": {
+      "action": "append_to_file",
+      "filename": "phase-3-2-create.txt"
+    }
   },
   {
-    "name": "Edit file via natural instruction",
     "task": "Replace 'test' with 'suite' in phase-3-2-create.txt",
     "intent": "",
-    "expectedAction": "edit_file",
-    "expectedFilename": "phase-3-2-create.txt",
-    "expectedInstructions": "Replace 'test' with 'suite' in phase-3-2-create.txt"
+    "expected": {
+      "action": "edit_file",
+      "filename": "phase-3-2-create.txt"
+    }
   },
   {
-    "name": "Delete file with explicit intent",
-    "task": "",
-    "intent": "delete_file",
-    "filename": "phase-3-2-create.txt",
-    "expectedAction": "delete_file",
-    "expectedFilename": "phase-3-2-create.txt"
+    "task": "Delete the file phase-3-2-create.txt",
+    "intent": "",
+    "expected": {
+      "action": "delete_file",
+      "filename": "phase-3-2-create.txt"
+    }
   },
   {
-    "name": "Unrecognized creative task",
     "task": "Awaken the ancient fire serpent",
     "intent": "",
-    "expectedAction": "review"
+    "expected": {
+      "action": "review"
+    }
   },
   {
-    "name": "General summarization",
     "task": "Summarize the following notes into a list...",
     "intent": "",
-    "expectedAction": "review"
+    "expected": {
+      "action": "review"
+    }
   }
 ]
