@@ -8,9 +8,7 @@ from task_executor import execute_task
 from context_manager import load_memory, save_memory, update_memory
 
 def run_agent(input_data):
-    memory = load_memory()
-
-    # Special case: test suite trigger
+    # Test suite shortcut
     if input_data.get("intent") == "run_tests_from_file":
         return run_test_suite(input_data.get("filename", "test_suite.json"))
 
@@ -30,17 +28,16 @@ def run_agent(input_data):
         "timestamp": timestamp,
         "taskReceived": task,
         "codeBlock": bool(code),
-        "phase": "Phase 3.3 – Planning Memory",
+        "phase": "Phase 4 – Self-Modifying Agent",
         "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
         "roadmap": {
-            "currentPhase": "Phase 3.3",
-            "nextPhase": "Phase 4 – Self-Modifying Agent",
-            "subgoal": "Track recent task behavior, decisions, and outcomes."
+            "currentPhase": "Phase 4",
+            "nextPhase": "Phase 5 – Autonomous Builder",
+            "subgoal": "Safely allow confirmed edits with rollback protection"
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
         "executionResult": None,
-        "memory": memory,
         "logs": []
     }
 
@@ -63,6 +60,7 @@ def run_agent(input_data):
 
     response["fallbackUsed"] = fallback_used
 
+    # Only execute immediately if sandbox or code-only
     if not response["confirmationNeeded"] and response["executionPlanned"]:
         try:
             result = execute_task(response["executionPlanned"])
@@ -72,11 +70,6 @@ def run_agent(input_data):
             error = {"success": False, "error": f"Execution failed: {str(e)}"}
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
-
-    # Update memory and save
-    memory = update_memory(memory, response)
-    save_memory(memory)
-    response["memory"] = memory
 
     try:
         with open(log_filename, "w") as f:
@@ -133,23 +126,6 @@ def dispatch_intent(intent, task, data):
                     "filename": data.get("filename"),
                     "notes": "Delete file — confirmation required."
                 }, fallback_used
-            case "rename_file":
-                return {
-                    "action": "rename_file",
-                    "old_name": data.get("old_name"),
-                    "new_name": data.get("new_name"),
-                    "notes": "Rename file."
-                }, fallback_used
-            case "run_code_only":
-                return {
-                    "action": "run_code_only",
-                    "notes": "Will execute code in sandbox only."
-                }, fallback_used
-            case "deploy":
-                return {
-                    "action": "deploy",
-                    "notes": "Deploy via Git and Render."
-                }, fallback_used
 
     fallback_used = True
     task_lower = task.lower()
@@ -183,12 +159,6 @@ def dispatch_intent(intent, task, data):
             "filename": filename,
             "instructions": data.get("instructions", task),
             "notes": "Smartly inferred: edit_file"
-        }, fallback_used
-
-    if "summarize" in task_lower or "list" in task_lower:
-        return {
-            "action": "review",
-            "notes": "Task could not be mapped. Review needed before execution."
         }, fallback_used
 
     return {
@@ -255,3 +225,12 @@ def run_test_suite(filename):
         "filename": os.path.basename(log_filename),
         "content": wrapped
     }
+
+# ✅ New: Post-confirm memory sync helper
+def finalize_task_execution(log_data):
+    if not log_data:
+        return
+
+    memory = load_memory()
+    updated = update_memory(memory, log_data)
+    save_memory(updated)
