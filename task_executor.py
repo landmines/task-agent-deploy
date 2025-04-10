@@ -52,12 +52,19 @@ def append_to_file(plan):
     if not filename or "/" in filename or "\\" in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
-    if not os.path.exists(full_path):
-        return {"success": False, "error": f"File '{full_path}' does not exist. Cannot append."}
     try:
+        if not os.path.exists(full_path):
+            with open(full_path, "w") as f:
+                f.write("")  # Create an empty file
+            was_created = True
+        else:
+            was_created = False
         with open(full_path, "a") as f:
             f.write("\n" + content)
-        return {"success": True, "message": f"✅ Appended to file: {full_path}"}
+        msg = f"✅ Appended to file: {full_path}"
+        if was_created:
+            msg += " (file was auto-created)"
+        return {"success": True, "message": msg}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
