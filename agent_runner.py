@@ -1,349 +1,207 @@
-# agent_runner.py
-
 import os
-import re
 import json
-import subprocess
+import shutil
 from datetime import datetime
-from drive_uploader import upload_log_to_drive
-from sandbox_runner import run_in_sandbox
-from task_executor import execute_task
 from context_manager import (
-    load_memory_context,
+    load_memory,
     save_memory_context,
-    record_intent_stats,
-    append_self_note,
-    increment_confirmed,
-    increment_rejected,
-    track_failure_pattern,
+    get_current_goal,
+    record_last_result,
+    add_failure_pattern,
+    add_recent_task,
+    add_self_note,
+    get_next_step,
     add_next_step,
-    clear_next_steps
+    track_confirmed,
+    track_rejected,
 )
+from task_executor import execute_task
+from drive_uploader import upload_log_to_drive
 
-AGENT_CORE_FILES = {"agent_runner.py", "app.py", "context_manager.py", "task_executor.py"}
+MEMORY_PATH = "context.json"
+LOG_DIR = "logs"
+TEST_SUITE_FILE = "test_suite.json"
+AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
+
+os.makedirs(LOG_DIR, exist_ok=True)
+
 
 def run_agent(input_data):
-    memory = load_memory_context()
+    memory = load_memory()
 
-    if input_data.get("intent") == "run_tests_from_file":
-        return run_test_suite(input_data.get("filename", "test_suite.json"))
+    # === NEW INTENT HANDLER: queue_task ===
+    if input_data.get("intent") == "queue_task":
+        task = input_data.get("task")
+        if not task:
+            return {"success": False, "error": "Missing 'task' for queue_task intent."}
+        add_next_step(memory, task)
+        save_memory_context(memory)
+        return {
+            "success": True,
+            "message": "✅ Task added to queue.",
+            "queued_task": task,
+            "memory_snapshot": memory.get("next_steps", [])
+        }
 
-    task = input_data.get("task", "No task provided")
-    code = input_data.get("code", "")
-    intent = input_data.get("intent", "").strip().lower()
-    timestamp = datetime.utcnow().replace(microsecond=0).isoformat()
-    today_str = timestamp.split("T")[0]
+    # === Phase 4.6: Execution + fallback planning ===
+    plan = input_data.get("executionPlanned") or input_data.get("plan") or input_data.get("task") or input_data
 
-    keyword = extract_keyword(task)
-    safe_time = timestamp.replace(":", "_")
-    logs_dir = os.path.join(os.getcwd(), "logs")
-    os.makedirs(logs_dir, exist_ok=True)
-    log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
+    fallback_used = False
+    if "action" not in plan and "intent" in input_data:
+        plan["action"] = input_data["intent"]
+        fallback_used = True
 
-    response = {
-        "timestamp": timestamp,
-        "taskReceived": task,
-        "codeBlock": bool(code),
-        "phase": "Phase 4.6 – Self Awareness and Parallelism",
-        "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
+    result = execute_task(plan)
+    record_last_result(memory, plan, result, fallback_used)
+
+    task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} – {plan.get('notes', '')}".strip()
+    status = "success" if result.get("success") else "fail"
+    memory["recent_tasks"].append({
+        "task": task_summary,
+        "intent": plan.get("intent") or plan.get("action"),
+        "result": result,
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": status
+    })
+
+    if not result.get("success"):
+        add_failure_pattern(memory, {"task": task_summary, "result": result})
+
+    save_memory_context(memory)
+
+    log_path = os.path.join(LOG_DIR, f"log-no-{datetime.utcnow().isoformat().replace(':', '_')}.json")
+    with open(log_path, "w") as f:
+        json.dump({
+            "timestamp": datetime.utcnow().isoformat(),
+            "input": input_data,
+            "execution": plan,
+            "result": result,
+            "memory": memory
+        }, f, indent=2)
+    upload_log_to_drive(log_path)
+
+    return {
+        "result": result,
+        "executionPlanned": plan,
+        "fallbackUsed": fallback_used,
+        "memory": memory,
         "roadmap": {
             "currentPhase": "Phase 4.6",
             "nextPhase": "Phase 4.7 – External Tools + Test Suites",
             "subgoal": "Enable self-awareness and task parallelism tracking."
         },
-        "confirmationNeeded": True,
-        "executionPlanned": None,
-        "executionResult": None,
-        "fallbackUsed": False,
-        "logs": [],
-        "memory": memory
+        "overallGoal": get_current_goal(memory),
+        "phase": "Phase 4.6 – Self Awareness and Parallelism",
+        "timestamp": datetime.utcnow().isoformat()
     }
 
-    if code:
-        sandbox_result = run_in_sandbox(code)
-        response["logs"].append({"sandboxTest": sandbox_result})
-        if sandbox_result["success"] and not sandbox_result.get("error"):
-            response["confirmationNeeded"] = False
-            response["simulated"] = "✅ Code passed sandbox test. Ready to execute."
-        else:
-            response["simulated"] = f"❌ Sandbox rejected the code: {sandbox_result.get('error')}"
-            return response
 
-    action_plan, fallback_used = dispatch_intent(intent, task, input_data)
-    response["executionPlanned"] = action_plan
-    response["fallbackUsed"] = fallback_used
-    response["logs"].append({"intentDispatch": action_plan or "⚠️ No valid plan"})
+def run_next():
+    memory = load_memory()
+    task = get_next_step(memory)
+    if not task:
+        return {"error": "⚠️ No queued tasks in memory."}
 
-    if not response["confirmationNeeded"] and action_plan:
-        try:
-            result = execute_task(action_plan)
-            response["executionResult"] = result
-            response["logs"].append({"execution": result})
-            finalize_task_execution(response)
-        except Exception as e:
-            error = {"success": False, "error": f"Execution failed: {str(e)}"}
-            response["executionResult"] = error
-            response["logs"].append({"executionError": error})
-            finalize_task_execution(response)
+    result = execute_task(task)
+    record_last_result(memory, task, result)
 
-    try:
-        with open(log_filename, "w") as f:
-            json.dump(response, f, indent=2)
-        print(f"📁 Log saved: {log_filename}")
-    except Exception as e:
-        print(f"❌ Failed to save log: {e}")
+    summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip()
+    memory["recent_tasks"].append({
+        "task": summary,
+        "intent": task.get("intent") or task.get("action"),
+        "result": result,
+        "timestamp": datetime.utcnow().isoformat(),
+        "status": "success" if result.get("success") else "fail"
+    })
 
-    try:
-        file_id, file_link = upload_log_to_drive(log_filename, today_str)
-        response["driveFileId"] = file_id
-        response["driveFileLink"] = file_link
-        print(f"✅ Uploaded to Google Drive: {file_link}")
-    except Exception as e:
-        response["driveUploadError"] = str(e)
-        print(f"❌ Drive upload failed: {e}")
-
-    return response
-
-def finalize_task_execution(log_data):
-    if not log_data:
-        return
-
-    memory = load_memory_context()
-    task = log_data.get("taskReceived")
-    result = log_data.get("executionResult") or {}
-    success = result.get("success", False)
-    planned = log_data.get("executionPlanned") or {}
-    intent = planned.get("action", "unknown")
-    filename = planned.get("filename")
-    instructions = result.get("instructions") or planned.get("instructions") or planned.get("notes", "")
-
-    if not task or task == "No task provided":
-        summary = f"[{intent}] {filename or 'unknown'} – {instructions[:80]}"
-        task = summary.strip()
-
-    memory["last_updated"] = datetime.utcnow().isoformat()
-    memory["last_result"] = {
-        "task": task,
-        "intent": intent,
-        "status": "success" if success else "fail",
-        "timestamp": memory["last_updated"],
-        "result": result
-    }
-
-    memory["recent_tasks"].append(memory["last_result"])
-    if len(memory["recent_tasks"]) > 10:
-        memory["recent_tasks"] = memory["recent_tasks"][-10:]
-
-    record_intent_stats(memory, intent, success)
-
-    if success:
-        increment_confirmed(memory)
-        if intent == "edit_file" and filename in AGENT_CORE_FILES:
-            commit_result = self_commit_changes(filename, result)
-            append_self_note(memory, f"📌 Self-edit committed for `{filename}`: {commit_result}")
-        elif intent == "push_changes":
-            push_result = self_push_changes()
-            append_self_note(memory, f"🚀 Git push result: {push_result}")
-
-        # Phase 4.6 addition: queue next step
-        if planned.get("next"):
-            add_next_step(memory, planned["next"])
-
-    else:
-        track_failure_pattern(memory, task, str(result))
-        append_self_note(memory, f"❌ Task failed: {task}")
+    if not result.get("success"):
+        add_failure_pattern(memory, {"task": summary, "result": result})
 
     save_memory_context(memory)
 
-def self_commit_changes(filename, result):
-    instructions = result.get("instructions", "updated code")
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
-    commit_msg = f"feat(agent): self-edit '{filename}' – {instructions}"
-    try:
-        subprocess.run(["git", "add", filename], check=True)
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
-        return f"Committed '{filename}' at {timestamp}."
-    except subprocess.CalledProcessError as e:
-        return f"❌ Git commit failed: {str(e)}"
-
-def self_push_changes():
-    try:
-        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if not status.stdout.strip():
-            return "⚠️ No new changes to push."
-        subprocess.run(["git", "push"], check=True)
-        return "✅ Changes pushed to remote."
-    except subprocess.CalledProcessError as e:
-        return f"❌ Push failed: {str(e)}"
-
-def extract_keyword(task):
-    if "about" in task.lower():
-        return task.lower().split("about")[-1].strip().split()[0]
-    return task.strip().split()[0].lower() if task else "task"
-
-def dispatch_intent(intent, task, data):
-    fallback_used = False
-
-    if intent:
-        match intent:
-            case "create_file":
-                return {
-                    "action": "create_file",
-                    "filename": data.get("filename"),
-                    "content": data.get("content", ""),
-                    "notes": "Create file with specified content."
-                }, fallback_used
-            case "append_to_file":
-                return {
-                    "action": "append_to_file",
-                    "filename": data.get("filename"),
-                    "content": data.get("content", ""),
-                    "notes": "Append content to an existing file."
-                }, fallback_used
-            case "edit_file":
-                return {
-                    "action": "edit_file",
-                    "filename": data.get("filename"),
-                    "instructions": data.get("instructions", ""),
-                    "notes": "Edit the file using natural language instructions."
-                }, fallback_used
-            case "delete_file":
-                return {
-                    "action": "delete_file",
-                    "filename": data.get("filename"),
-                    "notes": "Delete file"
-                }, fallback_used
-            case "rename_file":
-                return {
-                    "action": "rename_file",
-                    "old_name": data.get("old_name"),
-                    "new_name": data.get("new_name"),
-                    "notes": "Rename file."
-                }, fallback_used
-            case "deploy":
-                return {
-                    "action": "deploy",
-                    "notes": "Deploy via Git and Render."
-                }, fallback_used
-            case "push_changes":
-                return {
-                    "action": "push_changes",
-                    "notes": "Push committed changes to GitHub."
-                }, fallback_used
-
-    fallback_used = True
-    task_lower = task.lower()
-
-    match_create = re.search(r"create (?:a )?file named ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_append = re.search(r"append .* to ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_edit = re.search(r"replace .* in ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_delete = re.search(r"(?:delete|remove) (?:the )?file ['\"]?([\w\-.]+)['\"]?", task_lower)
-
-    if match_create:
-        filename = match_create.group(1)
-        return {
-            "action": "create_file",
-            "filename": filename,
-            "content": data.get("content", "Hello World"),
-            "notes": "Smartly inferred: create_file"
-        }, fallback_used
-
-    if match_append:
-        filename = match_append.group(1)
-        return {
-            "action": "append_to_file",
-            "filename": filename,
-            "content": data.get("content", "Additional content."),
-            "notes": "Smartly inferred: append_to_file"
-        }, fallback_used
-
-    if match_edit:
-        filename = match_edit.group(1)
-        return {
-            "action": "edit_file",
-            "filename": filename,
-            "instructions": data.get("instructions", task),
-            "notes": "Smartly inferred: edit_file"
-        }, fallback_used
-
-    if match_delete:
-        filename = match_delete.group(1)
-        return {
-            "action": "delete_file",
-            "filename": filename,
-            "notes": "Smartly inferred: delete_file"
-        }, fallback_used
-
-    if "summarize" in task_lower or "list" in task_lower:
-        return {
-            "action": "review",
-            "notes": "Task could not be mapped. Review needed before execution."
-        }, fallback_used
+    log_path = os.path.join(LOG_DIR, f"log-no-{datetime.utcnow().isoformat().replace(':', '_')}.json")
+    with open(log_path, "w") as f:
+        json.dump({
+            "timestamp": datetime.utcnow().isoformat(),
+            "execution": task,
+            "result": result,
+            "memory": memory
+        }, f, indent=2)
+    upload_log_to_drive(log_path)
 
     return {
-        "action": "review",
-        "notes": "Task could not be mapped. Review needed before execution."
-    }, fallback_used
+        "message": "✅ Ran next task from memory queue.",
+        "task": task,
+        "result": result
+    }
 
-def run_test_suite(filename):
-    with open(filename, "r") as f:
+
+def run_tests_from_file():
+    memory = load_memory()
+
+    if not os.path.exists(TEST_SUITE_FILE):
+        return {"error": "No test_suite.json found."}
+
+    with open(TEST_SUITE_FILE, "r") as f:
         test_suite = json.load(f)
 
-    results = []
-    passed = 0
-    failed = 0
-
-    for i, test in enumerate(test_suite.get("tests", []), 1):
-        task = test.get("task", "")
-        intent = test.get("intent", "")
-        expected = test.get("expected", {})
-
-        result, _ = dispatch_intent(intent, task, test)
-        comparison = all(result.get(k) == v for k, v in expected.items())
-
-        log_data = {
-            "taskReceived": task,
-            "executionPlanned": result,
-            "executionResult": {"success": comparison}
-        }
-
-        finalize_task_execution(log_data)
-
-        results.append({
-            "test": i,
-            "task": task,
-            "intent": intent,
-            "expected": expected,
-            "actual": result,
-            "passed": comparison
+    test_results = []
+    for i, test in enumerate(test_suite):
+        result = execute_task(test)
+        passed = result.get("success", False)
+        test_results.append({
+            "index": i,
+            "test": test,
+            "passed": passed,
+            "result": result
         })
 
-    timestamp = datetime.utcnow().isoformat()
-    safe_time = timestamp.replace(":", "_").split(".")[0]
-    logs_dir = os.path.join(os.getcwd(), "logs")
-    os.makedirs(logs_dir, exist_ok=True)
-    log_filename = os.path.join(logs_dir, f"log-test-suite-{safe_time}.json")
+        memory["recent_tasks"].append({
+            "task": f"[test_{i}] {test.get('filename', '')}",
+            "intent": test.get("intent") or test.get("action"),
+            "result": result,
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": "success" if passed else "fail"
+        })
 
-    wrapped = {
-        "timestamp": timestamp,
-        "confirmationNeeded": False,
-        "executionPlanned": {
-            "action": "run_tests_from_file",
-            "notes": f"Ran test suite from {filename}"
-        },
-        "executionResult": {
-            "success": failed == 0,
-            "summary": f"{passed} passed, {failed} failed",
-            "results": results
-        }
-    }
+        if not passed:
+            add_failure_pattern(memory, {
+                "test_index": i,
+                "test": test,
+                "result": result
+            })
 
-    with open(log_filename, "w") as f:
-        json.dump(wrapped, f, indent=2)
-
-    upload_log_to_drive(log_filename, timestamp.split("T")[0])
+    save_memory_context(memory)
 
     return {
-        "filename": os.path.basename(log_filename),
-        "content": wrapped
+        "message": f"✅ Ran {len(test_results)} tests.",
+        "results": test_results
     }
+
+
+def finalize_task_execution(status, task_info=None):
+    memory = load_memory()
+    if status == "confirmed":
+        track_confirmed(memory)
+    elif status == "rejected":
+        track_rejected(memory)
+        if task_info:
+            add_failure_pattern(memory, {"task": task_info})
+    save_memory_context(memory)
+
+
+def modify_self(filename, updated_code):
+    backup_name = f"{filename}.bak.{datetime.utcnow().isoformat().replace(':', '_')}"
+    shutil.copy(filename, backup_name)
+    with open(filename, "w") as f:
+        f.write(updated_code)
+
+    memory = load_memory()
+    memory["self_edits"].append({
+        "filename": filename,
+        "backup": backup_name,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    save_memory_context(memory)
+
+    return {"success": True, "message": f"✅ Modified {filename}, backup saved as {backup_name}"}
