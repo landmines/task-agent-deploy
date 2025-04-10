@@ -1,4 +1,4 @@
-# task_executor.py (with push_changes intent added)
+# task_executor.py (Simulated Git push version)
 
 import os
 import re
@@ -31,7 +31,7 @@ def execute_task(plan):
     elif action == "delete_file":
         return delete_file(plan)
     elif action == "push_changes":
-        return push_changes()
+        return simulate_push()
     else:
         return {"success": False, "error": f"Unsupported action: {action}"}
 
@@ -118,10 +118,7 @@ def edit_file(plan):
         if not change_made:
             return {"success": False, "error": "❌ Could not understand or apply edit instructions."}
 
-        # Create backup
         backup_path = backup_file(full_path)
-
-        # Apply new content
         with open(full_path, "w") as f:
             f.write(new_content)
 
@@ -150,12 +147,9 @@ def delete_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def push_changes():
-    try:
-        result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if not result.stdout.strip():
-            return {"success": False, "error": "⚠️ No new changes to push."}
-        subprocess.run(["git", "push"], check=True)
-        return {"success": True, "message": "✅ Changes pushed to remote."}
-    except subprocess.CalledProcessError as e:
-        return {"success": False, "error": f"❌ Push failed: {str(e)}"}
+def simulate_push():
+    return {
+        "success": True,
+        "message": "🧪 Simulated push: Git command not run (unsupported in current environment).",
+        "note": "Try again after migrating to Vercel or enabling Git credentials."
+    }
