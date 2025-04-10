@@ -25,6 +25,10 @@ def load_memory():
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
 
+# Alias for backward compatibility with agent_runner
+def load_memory_context():
+    return load_memory()
+
 # Save memory context to file
 def save_memory(context):
     with open(MEMORY_FILE, "w") as f:
