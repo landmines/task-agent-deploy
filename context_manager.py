@@ -69,6 +69,14 @@ def update_memory_context(context, task, intent, success):
     record_intent_stats(context, intent, success)
     save_memory(context)
 
+# Finalize a confirmed task execution and update memory
+def finalize_task_execution(task, intent, success, result):
+    context = load_memory()
+    update_memory_context(context, task=task, intent=intent, success=success)
+    if not success:
+        append_self_note(context, f"❌ Failed task: {task}\nReason: {result.get('error')}")
+    save_memory(context)
+
 # Optional: provide summarized view
 def summarize_memory(context):
     return {
