@@ -1,5 +1,3 @@
-# context_manager.py
-
 import json
 import os
 from datetime import datetime
@@ -118,3 +116,9 @@ def summarize_memory(context):
             "queued": context.get("next_steps", []),
         }
     }
+
+def get_current_goal(context):
+    if context.get("next_steps"):
+        step = context["next_steps"][0].get("step", {})
+        return f"Next: {step.get('intent', 'unknown')}"
+    return "Idle – no current goal."
