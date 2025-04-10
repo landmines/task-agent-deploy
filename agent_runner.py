@@ -1,5 +1,3 @@
-# agent_runner.py (Full – with Git Push + Self-Edit Logic)
-
 import os
 import re
 import json
