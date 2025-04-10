@@ -25,18 +25,17 @@ def load_memory():
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
 
-# Alias for compatibility
+# Aliases for compatibility
 def load_memory_context():
     return load_memory()
+
+def save_memory_context(context):
+    return save_memory(context)
 
 # Save memory context to file
 def save_memory(context):
     with open(MEMORY_FILE, "w") as f:
         json.dump(context, f, indent=2)
-
-# Alias for compatibility
-def save_memory_context(context):
-    return save_memory(context)
 
 # Record outcome of confirmed task
 def record_intent_stats(context, intent, success):
@@ -54,7 +53,7 @@ def append_self_note(context, note):
         "timestamp": datetime.utcnow().isoformat()
     })
 
-# Update memory after any task (used in finalize_task_execution)
+# Update memory after any task (used by finalize_task_execution or agent directly)
 def update_memory_context(context, task, intent, success):
     context["last_updated"] = datetime.utcnow().isoformat()
     context["last_result"] = {
@@ -69,21 +68,9 @@ def update_memory_context(context, task, intent, success):
     record_intent_stats(context, intent, success)
     save_memory(context)
 
-# Finalize a confirmed task execution and update memory
-def finalize_task_execution(task, intent, success, result):
+# Used by confirm route to finalize confirmed task result
+def finalize_task_execution(task, intent, success, result=None):
     context = load_memory()
-    update_memory_context(context, task=task, intent=intent, success=success)
-    if not success:
-        append_self_note(context, f"❌ Failed task: {task}\nReason: {result.get('error')}")
+    context["confirmed_count"] += 1
+    update_memory_context(context, task, intent, success)
     save_memory(context)
-
-# Optional: provide summarized view
-def summarize_memory(context):
-    return {
-        "summary": {
-            "total_confirmed": context["confirmed_count"],
-            "total_rejected": context["rejected_count"],
-            "intents": context["intent_stats"],
-            "last_task": context["last_result"]
-        }
-    }
