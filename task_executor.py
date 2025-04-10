@@ -1,7 +1,8 @@
-# task_executor.py
+# task_executor.py (with push_changes intent added)
 
 import os
 import re
+import subprocess
 from datetime import datetime
 
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
@@ -29,6 +30,8 @@ def execute_task(plan):
         return edit_file(plan)
     elif action == "delete_file":
         return delete_file(plan)
+    elif action == "push_changes":
+        return push_changes()
     else:
         return {"success": False, "error": f"Unsupported action: {action}"}
 
@@ -146,3 +149,13 @@ def delete_file(plan):
         return {"success": True, "message": f"🗑️ File deleted: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+def push_changes():
+    try:
+        result = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+        if not result.stdout.strip():
+            return {"success": False, "error": "⚠️ No new changes to push."}
+        subprocess.run(["git", "push"], check=True)
+        return {"success": True, "message": "✅ Changes pushed to remote."}
+    except subprocess.CalledProcessError as e:
+        return {"success": False, "error": f"❌ Push failed: {str(e)}"}
