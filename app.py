@@ -6,7 +6,7 @@ from pathlib import Path
 
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory
-from task_executor import execute_task  # MISSING BEFORE
+from task_executor import execute_task
 
 app = Flask(__name__)
 CORS(app)
@@ -86,7 +86,12 @@ def confirm():
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        finalize_task_execution(log_data)
+        finalize_task_execution(
+            task=log_data.get("taskReceived"),
+            intent=(log_data.get("executionPlanned") or {}).get("action", "unknown"),
+            success=result.get("success", False),
+            result=result
+        )
 
         return jsonify({
             "message": f"✅ Task confirmed and executed from: {log_file.name}",
