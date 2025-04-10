@@ -1,3 +1,5 @@
+# agent_runner.py
+
 import os
 import re
 import json
@@ -71,18 +73,13 @@ def run_agent(input_data):
             response["executionResult"] = result
             response["logs"].append({"execution": result})
 
-            finalize_task_execution(
-                task=task,
-                intent=intent or action_plan["action"],
-                success=result.get("success", False),
-                result=result
-            )
+            finalize_task_execution(response)
 
         except Exception as e:
             error = {"success": False, "error": f"Execution failed: {str(e)}"}
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
-            finalize_task_execution(task, intent or "unknown", False, error)
+            finalize_task_execution(response)
 
     try:
         with open(log_filename, "w") as f:
@@ -102,11 +99,20 @@ def run_agent(input_data):
 
     return response
 
-def finalize_task_execution(task, intent, success, result=None):
-    record_intent_stats(intent, success)
-    update_memory_context(task, intent, success, result)
-    if not success:
-        append_self_note(f"❌ Task failed: {task}")
+def finalize_task_execution(log_data):
+    if not log_data:
+        return
+    memory = load_memory_context()
+    updated = update_memory_context(
+        memory,
+        task=log_data.get("taskReceived"),
+        intent=(log_data.get("executionPlanned") or {}).get("action", "unknown"),
+        success=(log_data.get("executionResult") or {}).get("success", False)
+    )
+    save_memory_context(updated)
+
+    if not (log_data.get("executionResult") or {}).get("success", False):
+        append_self_note(memory, f"❌ Task failed: {log_data.get('taskReceived')}")
 
 def extract_keyword(task):
     if "about" in task.lower():
@@ -228,12 +234,13 @@ def run_test_suite(filename):
         result, _ = dispatch_intent(intent, task, test)
         comparison = all(result.get(k) == v for k, v in expected.items())
 
-        if comparison:
-            passed += 1
-        else:
-            failed += 1
+        log_data = {
+            "taskReceived": task,
+            "executionPlanned": result,
+            "executionResult": {"success": comparison}
+        }
 
-        finalize_task_execution(task, intent or result["action"], comparison, result)
+        finalize_task_execution(log_data)
 
         results.append({
             "test": i,

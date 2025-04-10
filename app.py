@@ -1,3 +1,5 @@
+# app.py
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -58,7 +60,7 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
-        logs_dir = os.path.join(os.getcwd(), "logs")  # ✅ FIX: define this before using it
+        logs_dir = os.path.join(os.getcwd(), "logs")
         matching_files = [f for f in Path(logs_dir).glob("log-*.json") if task_id in f.name]
         if not matching_files:
             return jsonify({"error": f"No matching log file found for ID: {task_id}"}), 404
@@ -88,12 +90,8 @@ def confirm():
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        finalize_task_execution(
-            task=log_data.get("taskReceived"),
-            intent=(log_data.get("executionPlanned") or {}).get("action", "unknown"),
-            success=result.get("success", False),
-            result=result
-        )
+        # ✅ Updated to pass the full log object, not individual params
+        finalize_task_execution(log_data)
 
         return jsonify({
             "message": f"✅ Task confirmed and executed from: {log_file.name}",

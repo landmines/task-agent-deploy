@@ -4,7 +4,6 @@ from datetime import datetime
 
 MEMORY_FILE = "context.json"
 
-# Load memory context from file or initialize fresh
 def load_memory():
     if not os.path.exists(MEMORY_FILE):
         return {
@@ -25,19 +24,16 @@ def load_memory():
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
 
-# Aliases for compatibility
+def save_memory(context):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(context, f, indent=2)
+
 def load_memory_context():
     return load_memory()
 
 def save_memory_context(context):
     return save_memory(context)
 
-# Save memory context to file
-def save_memory(context):
-    with open(MEMORY_FILE, "w") as f:
-        json.dump(context, f, indent=2)
-
-# Record outcome of confirmed task
 def record_intent_stats(context, intent, success):
     if intent not in context["intent_stats"]:
         context["intent_stats"][intent] = {"success": 0, "fail": 0}
@@ -46,15 +42,17 @@ def record_intent_stats(context, intent, success):
     else:
         context["intent_stats"][intent]["fail"] += 1
 
-# Append strategic insight or learning note
 def append_self_note(context, note):
     context["self_notes"].append({
         "note": note,
         "timestamp": datetime.utcnow().isoformat()
     })
 
-# Update memory after any task (used by finalize_task_execution or agent directly)
-def update_memory_context(context, task, intent, success):
+def update_memory(context, log_data):
+    intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
+    success = (log_data.get("executionResult") or {}).get("success", False)
+    task = log_data.get("taskReceived", "")
+
     context["last_updated"] = datetime.utcnow().isoformat()
     context["last_result"] = {
         "task": task,
@@ -66,11 +64,14 @@ def update_memory_context(context, task, intent, success):
     if len(context["recent_tasks"]) > 10:
         context["recent_tasks"] = context["recent_tasks"][-10:]
     record_intent_stats(context, intent, success)
-    save_memory(context)
+    return context
 
-# Used by confirm route to finalize confirmed task result
-def finalize_task_execution(task, intent, success, result=None):
-    context = load_memory()
-    context["confirmed_count"] += 1
-    update_memory_context(context, task, intent, success)
-    save_memory(context)
+def summarize_memory(context):
+    return {
+        "summary": {
+            "total_confirmed": context["confirmed_count"],
+            "total_rejected": context["rejected_count"],
+            "intents": context["intent_stats"],
+            "last_task": context["last_result"]
+        }
+    }
