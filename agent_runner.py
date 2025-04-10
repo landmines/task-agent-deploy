@@ -71,22 +71,19 @@ def run_agent(input_data):
             response["executionResult"] = result
             response["logs"].append({"execution": result})
 
-            success = result.get("success", False)
-            record_intent_stats(intent or action_plan["action"], success)
-
-            update_memory_context(task=task, intent=intent or action_plan["action"], success=success, result=result)
-
-            if not success:
-                append_self_note(f"❌ Task failed: {task}")
+            finalize_task_execution(
+                task=task,
+                intent=intent or action_plan["action"],
+                success=result.get("success", False),
+                result=result
+            )
 
         except Exception as e:
             error = {"success": False, "error": f"Execution failed: {str(e)}"}
             response["executionResult"] = error
             response["logs"].append({"executionError": error})
-            record_intent_stats(intent or "unknown", False)
-            append_self_note(f"⚠️ Exception during execution: {str(e)}")
+            finalize_task_execution(task, intent or "unknown", False, error)
 
-    # Always write log locally
     try:
         with open(log_filename, "w") as f:
             json.dump(response, f, indent=2)
@@ -94,7 +91,6 @@ def run_agent(input_data):
     except Exception as e:
         print(f"❌ Failed to save log: {e}")
 
-    # Attempt to upload to Drive
     try:
         file_id, file_link = upload_log_to_drive(log_filename, today_str)
         response["driveFileId"] = file_id
@@ -105,6 +101,12 @@ def run_agent(input_data):
         print(f"❌ Drive upload failed: {e}")
 
     return response
+
+def finalize_task_execution(task, intent, success, result=None):
+    record_intent_stats(intent, success)
+    update_memory_context(task, intent, success, result)
+    if not success:
+        append_self_note(f"❌ Task failed: {task}")
 
 def extract_keyword(task):
     if "about" in task.lower():
@@ -211,7 +213,6 @@ def dispatch_intent(intent, task, data):
     }, fallback_used
 
 def run_test_suite(filename):
-    from context_manager import record_intent_stats, update_memory_context
     with open(filename, "r") as f:
         test_suite = json.load(f)
 
@@ -232,8 +233,7 @@ def run_test_suite(filename):
         else:
             failed += 1
 
-        record_intent_stats(intent or result["action"], comparison)
-        update_memory_context(task, intent or result["action"], comparison, result)
+        finalize_task_execution(task, intent or result["action"], comparison, result)
 
         results.append({
             "test": i,
