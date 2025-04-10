@@ -39,12 +39,12 @@ def run_agent(input_data):
         "timestamp": timestamp,
         "taskReceived": task,
         "codeBlock": bool(code),
-        "phase": "Phase 3.3 – Planning Memory",
+        "phase": "Phase 4.4 – Agent Self-Editing",
         "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
         "roadmap": {
-            "currentPhase": "Phase 3.3",
-            "nextPhase": "Phase 4 – Self-Modifying Agent",
-            "subgoal": "Track recent task behavior, decisions, and outcomes."
+            "currentPhase": "Phase 4.4",
+            "nextPhase": "Phase 4.5 – Git-based Self Updates",
+            "subgoal": "Enable safe self-editing of agent code through instructions."
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
@@ -74,9 +74,7 @@ def run_agent(input_data):
             result = execute_task(action_plan)
             response["executionResult"] = result
             response["logs"].append({"execution": result})
-
             finalize_task_execution(response)
-
         except Exception as e:
             error = {"success": False, "error": f"Execution failed: {str(e)}"}
             response["executionResult"] = error
@@ -111,7 +109,6 @@ def finalize_task_execution(log_data):
     success = result.get("success", False)
     intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
 
-    # Inline memory update logic to avoid stale context
     memory["last_updated"] = datetime.utcnow().isoformat()
     memory["last_result"] = {
         "task": task,
@@ -165,6 +162,13 @@ def dispatch_intent(intent, task, data):
                     "filename": data.get("filename"),
                     "instructions": data.get("instructions", ""),
                     "notes": "Edit the file using natural language instructions."
+                }, fallback_used
+            case "self_edit_file":
+                return {
+                    "action": "edit_file",
+                    "filename": data.get("filename"),
+                    "instructions": data.get("instructions", ""),
+                    "notes": "Self-edit initiated on agent file."
                 }, fallback_used
             case "delete_file":
                 return {
