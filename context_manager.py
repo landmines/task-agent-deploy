@@ -25,7 +25,7 @@ def load_memory():
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
 
-# Alias for backward compatibility with agent_runner
+# Alias for compatibility
 def load_memory_context():
     return load_memory()
 
@@ -33,6 +33,10 @@ def load_memory_context():
 def save_memory(context):
     with open(MEMORY_FILE, "w") as f:
         json.dump(context, f, indent=2)
+
+# Alias for compatibility
+def save_memory_context(context):
+    return save_memory(context)
 
 # Record outcome of confirmed task
 def record_intent_stats(context, intent, success):
