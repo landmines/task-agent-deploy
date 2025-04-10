@@ -1,78 +1,73 @@
-import os
 import json
+import os
 from datetime import datetime
 
-MEMORY_FILE = "memory.json"
+MEMORY_FILE = "context.json"
 
+# Load memory context from file or initialize fresh
 def load_memory():
     if not os.path.exists(MEMORY_FILE):
-        return initialize_memory()
-    try:
-        with open(MEMORY_FILE, "r") as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"❌ Failed to load memory: {e}")
-        return initialize_memory()
+        return {
+            "confirmed_count": 0,
+            "rejected_count": 0,
+            "created": datetime.utcnow().isoformat(),
+            "last_updated": None,
+            "last_result": None,
+            "recent_tasks": [],
+            "failure_patterns": [],
+            "intent_stats": {},
+            "self_notes": [],
+            "task_links": [],
+            "self_edits": [],
+            "project_name": "Task Agent",
+            "purpose": "Build and manage projects via user or ChatGPT instructions."
+        }
+    with open(MEMORY_FILE, "r") as f:
+        return json.load(f)
 
-def save_memory(memory):
-    try:
-        with open(MEMORY_FILE, "w") as f:
-            json.dump(memory, f, indent=2)
-        print("✅ Memory saved.")
-    except Exception as e:
-        print(f"❌ Failed to save memory: {e}")
+# Save memory context to file
+def save_memory(context):
+    with open(MEMORY_FILE, "w") as f:
+        json.dump(context, f, indent=2)
 
-def initialize_memory():
+# Record outcome of confirmed task
+def record_intent_stats(context, intent, success):
+    if intent not in context["intent_stats"]:
+        context["intent_stats"][intent] = {"success": 0, "fail": 0}
+    if success:
+        context["intent_stats"][intent]["success"] += 1
+    else:
+        context["intent_stats"][intent]["fail"] += 1
+
+# Append strategic insight or learning note
+def append_self_note(context, note):
+    context["self_notes"].append({
+        "note": note,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
+# Update memory after any task (used in finalize_task_execution)
+def update_memory_context(context, task, intent, success):
+    context["last_updated"] = datetime.utcnow().isoformat()
+    context["last_result"] = {
+        "task": task,
+        "intent": intent,
+        "status": "success" if success else "fail",
+        "timestamp": context["last_updated"]
+    }
+    context["recent_tasks"].append(context["last_result"])
+    if len(context["recent_tasks"]) > 10:
+        context["recent_tasks"] = context["recent_tasks"][-10:]
+    record_intent_stats(context, intent, success)
+    save_memory(context)
+
+# Optional: provide summarized view
+def summarize_memory(context):
     return {
-        "created": datetime.utcnow().isoformat(),
-        "last_updated": None,
-        "project_name": "Task Agent",
-        "purpose": "Build and manage projects via user or ChatGPT instructions.",
-        "recent_tasks": [],
-        "last_result": None,
-        "confirmed_count": 0,
-        "rejected_count": 0,
-        "failure_patterns": [],
-        "notes": [],
-        "self_edits": []
+        "summary": {
+            "total_confirmed": context["confirmed_count"],
+            "total_rejected": context["rejected_count"],
+            "intents": context["intent_stats"],
+            "last_task": context["last_result"]
+        }
     }
-
-def update_memory(memory, task_result):
-    memory["last_updated"] = datetime.utcnow().isoformat()
-
-    # Track result of last task
-    memory["last_result"] = {
-        "timestamp": memory["last_updated"],
-        "task": task_result.get("taskReceived"),
-        "status": task_result.get("executionResult", {}),
-        "intent": task_result.get("executionPlanned", {}).get("action", "unknown")
-    }
-
-    # Append to recent tasks
-    memory["recent_tasks"] = (memory.get("recent_tasks") or [])[-9:]
-    memory["recent_tasks"].append(memory["last_result"])
-
-    # Track confirmation
-    if task_result.get("confirmationNeeded") is False:
-        memory["confirmed_count"] += 1
-    if "rejected" in str(task_result).lower():
-        memory["rejected_count"] += 1
-
-    # ✅ Track self-edits if edit_file + confirmed + backup exists
-    if (
-        task_result.get("confirmationNeeded") is False and
-        task_result.get("executionPlanned", {}).get("action") == "edit_file"
-    ):
-        result = task_result.get("executionResult", {})
-        if result.get("success") and result.get("backup"):
-            edit_record = {
-                "file": result.get("original_file"),
-                "backup": result.get("backup"),
-                "instructions": result.get("instructions"),
-                "timestamp": result.get("timestamp"),
-                "notes": result.get("message")
-            }
-            memory["self_edits"] = (memory.get("self_edits") or [])[-9:]
-            memory["self_edits"].append(edit_record)
-
-    return memory

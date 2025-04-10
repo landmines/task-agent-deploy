@@ -5,11 +5,17 @@ from datetime import datetime
 from drive_uploader import upload_log_to_drive
 from sandbox_runner import run_in_sandbox
 from task_executor import execute_task
-from context_manager import load_memory, save_memory
-
+from context_manager import (
+    load_memory_context,
+    save_memory_context,
+    record_intent_stats,
+    append_self_note,
+    update_memory_context
+)
 
 def run_agent(input_data):
-    # Special case: test suite trigger
+    memory = load_memory_context()
+
     if input_data.get("intent") == "run_tests_from_file":
         return run_test_suite(input_data.get("filename", "test_suite.json"))
 
@@ -24,11 +30,6 @@ def run_agent(input_data):
     logs_dir = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_dir, exist_ok=True)
     log_filename = os.path.join(logs_dir, f"log-{keyword}-{safe_time}.json")
-
-    memory = load_memory()
-    memory["last_updated"] = timestamp
-    memory["last_result"] = {"intent": intent, "task": task, "timestamp": timestamp, "status": None}
-    memory["recent_tasks"].append(memory["last_result"])
 
     response = {
         "timestamp": timestamp,
@@ -60,14 +61,32 @@ def run_agent(input_data):
             return response
 
     action_plan, fallback_used = dispatch_intent(intent, task, input_data)
+    response["executionPlanned"] = action_plan
     response["fallbackUsed"] = fallback_used
+    response["logs"].append({"intentDispatch": action_plan or "⚠️ No valid plan"})
 
-    if action_plan:
-        response["executionPlanned"] = action_plan
-        response["logs"].append({"intentDispatch": action_plan})
-    else:
-        response["logs"].append({"intentDispatch": "⚠️ No valid plan could be generated."})
+    if not response["confirmationNeeded"] and action_plan:
+        try:
+            result = execute_task(action_plan)
+            response["executionResult"] = result
+            response["logs"].append({"execution": result})
 
+            success = result.get("success", False)
+            record_intent_stats(intent or action_plan["action"], success)
+
+            update_memory_context(task=task, intent=intent or action_plan["action"], success=success, result=result)
+
+            if not success:
+                append_self_note(f"❌ Task failed: {task}")
+
+        except Exception as e:
+            error = {"success": False, "error": f"Execution failed: {str(e)}"}
+            response["executionResult"] = error
+            response["logs"].append({"executionError": error})
+            record_intent_stats(intent or "unknown", False)
+            append_self_note(f"⚠️ Exception during execution: {str(e)}")
+
+    # Always write log locally
     try:
         with open(log_filename, "w") as f:
             json.dump(response, f, indent=2)
@@ -75,6 +94,7 @@ def run_agent(input_data):
     except Exception as e:
         print(f"❌ Failed to save log: {e}")
 
+    # Attempt to upload to Drive
     try:
         file_id, file_link = upload_log_to_drive(log_filename, today_str)
         response["driveFileId"] = file_id
@@ -86,12 +106,10 @@ def run_agent(input_data):
 
     return response
 
-
 def extract_keyword(task):
     if "about" in task.lower():
         return task.lower().split("about")[-1].strip().split()[0]
     return task.strip().split()[0].lower() if task else "task"
-
 
 def dispatch_intent(intent, task, data):
     fallback_used = False
@@ -123,7 +141,19 @@ def dispatch_intent(intent, task, data):
                 return {
                     "action": "delete_file",
                     "filename": data.get("filename"),
-                    "notes": "Delete file — confirmation required."
+                    "notes": "Smartly inferred: delete_file"
+                }, fallback_used
+            case "rename_file":
+                return {
+                    "action": "rename_file",
+                    "old_name": data.get("old_name"),
+                    "new_name": data.get("new_name"),
+                    "notes": "Rename file."
+                }, fallback_used
+            case "deploy":
+                return {
+                    "action": "deploy",
+                    "notes": "Deploy via Git and Render."
                 }, fallback_used
 
     fallback_used = True
@@ -132,7 +162,7 @@ def dispatch_intent(intent, task, data):
     match_create = re.search(r"create (?:a )?file named ['\"]?([\w\-.]+)['\"]?", task_lower)
     match_append = re.search(r"append .* to ['\"]?([\w\-.]+)['\"]?", task_lower)
     match_edit = re.search(r"replace .* in ['\"]?([\w\-.]+)['\"]?", task_lower)
-    match_delete = re.search(r"(?:delete|remove|erase)(?: the)? file ['\"]?([\w\-.]+)['\"]?", task_lower)
+    match_delete = re.search(r"(?:delete|remove) (?:the )?file ['\"]?([\w\-.]+)['\"]?", task_lower)
 
     if match_create:
         filename = match_create.group(1)
@@ -169,13 +199,19 @@ def dispatch_intent(intent, task, data):
             "notes": "Smartly inferred: delete_file"
         }, fallback_used
 
+    if "summarize" in task_lower or "list" in task_lower:
+        return {
+            "action": "review",
+            "notes": "Task could not be mapped. Review needed before execution."
+        }, fallback_used
+
     return {
         "action": "review",
         "notes": "Task could not be mapped. Review needed before execution."
     }, fallback_used
 
-
 def run_test_suite(filename):
+    from context_manager import record_intent_stats, update_memory_context
     with open(filename, "r") as f:
         test_suite = json.load(f)
 
@@ -195,6 +231,9 @@ def run_test_suite(filename):
             passed += 1
         else:
             failed += 1
+
+        record_intent_stats(intent or result["action"], comparison)
+        update_memory_context(task, intent or result["action"], comparison, result)
 
         results.append({
             "test": i,
@@ -229,29 +268,8 @@ def run_test_suite(filename):
         json.dump(wrapped, f, indent=2)
 
     upload_log_to_drive(log_filename, timestamp.split("T")[0])
-    return { "filename": os.path.basename(log_filename), "content": wrapped }
 
-
-def finalize_task_execution(log_data):
-    result = log_data.get("executionResult", {})
-    memory = load_memory()
-    timestamp = log_data.get("timestamp")
-
-    memory["last_updated"] = timestamp
-    memory["last_result"] = {
-        "intent": log_data.get("executionPlanned", {}).get("action"),
-        "task": log_data.get("taskReceived"),
-        "status": result.get("success"),
-        "timestamp": timestamp
+    return {
+        "filename": os.path.basename(log_filename),
+        "content": wrapped
     }
-
-    if result.get("success") is True:
-        memory["confirmed_count"] += 1
-    elif result.get("success") is False:
-        memory["failure_patterns"].append({
-            "task": log_data.get("taskReceived"),
-            "error": result.get("error"),
-            "timestamp": timestamp
-        })
-
-    save_memory(memory)
