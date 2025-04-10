@@ -3,6 +3,7 @@
 import os
 import re
 import json
+import subprocess
 from datetime import datetime
 from drive_uploader import upload_log_to_drive
 from sandbox_runner import run_in_sandbox
@@ -16,6 +17,8 @@ from context_manager import (
     increment_rejected,
     track_failure_pattern
 )
+
+AGENT_CORE_FILES = {"agent_runner.py", "app.py", "context_manager.py", "task_executor.py"}
 
 def run_agent(input_data):
     memory = load_memory_context()
@@ -39,12 +42,12 @@ def run_agent(input_data):
         "timestamp": timestamp,
         "taskReceived": task,
         "codeBlock": bool(code),
-        "phase": "Phase 4.4 – Agent Self-Editing",
+        "phase": "Phase 4.5 – Git-Based Self Updates",
         "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
         "roadmap": {
-            "currentPhase": "Phase 4.4",
-            "nextPhase": "Phase 4.5 – Git-based Self Updates",
-            "subgoal": "Enable safe self-editing of agent code through instructions."
+            "currentPhase": "Phase 4.5",
+            "nextPhase": "Phase 4.6 – Self Awareness and Parallelism",
+            "subgoal": "Let agent commit successful self-edits automatically to Git."
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
@@ -108,6 +111,7 @@ def finalize_task_execution(log_data):
     result = log_data.get("executionResult") or {}
     success = result.get("success", False)
     intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
+    filename = (log_data.get("executionPlanned") or {}).get("filename")
 
     memory["last_updated"] = datetime.utcnow().isoformat()
     memory["last_result"] = {
@@ -126,11 +130,26 @@ def finalize_task_execution(log_data):
 
     if success:
         increment_confirmed(memory)
+        if intent == "edit_file" and filename in AGENT_CORE_FILES:
+            commit_result = self_commit_changes(filename, result)
+            append_self_note(memory, f"📌 Self-edit committed for `{filename}`: {commit_result}")
     else:
         track_failure_pattern(memory, task, str(result))
         append_self_note(memory, f"❌ Task failed: {task}")
 
     save_memory_context(memory)
+
+def self_commit_changes(filename, result):
+    instructions = result.get("instructions", "updated code")
+    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    commit_msg = f"feat(agent): self-edit '{filename}' – {instructions}"
+
+    try:
+        subprocess.run(["git", "add", filename], check=True)
+        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        return f"Committed '{filename}' at {timestamp}."
+    except subprocess.CalledProcessError as e:
+        return f"❌ Git commit failed: {str(e)}"
 
 def extract_keyword(task):
     if "about" in task.lower():
