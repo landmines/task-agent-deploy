@@ -36,6 +36,16 @@ def load_memory_context():
 def save_memory_context(context):
     return save_memory(context)
 
+def record_last_result(context, task, result, fallback=False):
+    context["last_result"] = {
+        "task": f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip(),
+        "intent": task.get("intent") or task.get("action"),
+        "result": result,
+        "status": "success" if result.get("success") else "fail",
+        "fallbackUsed": fallback,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
 def increment_confirmed(context):
     context["confirmed_count"] += 1
 
