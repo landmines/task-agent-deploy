@@ -110,8 +110,15 @@ def finalize_task_execution(log_data):
     task = log_data.get("taskReceived")
     result = log_data.get("executionResult") or {}
     success = result.get("success", False)
-    intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
-    filename = (log_data.get("executionPlanned") or {}).get("filename")
+    planned = log_data.get("executionPlanned") or {}
+    intent = planned.get("action", "unknown")
+    filename = planned.get("filename")
+    instructions = result.get("instructions") or planned.get("instructions") or planned.get("notes", "")
+
+    # If task is missing or default, construct a smart label
+    if not task or task == "No task provided":
+        summary = f"[{intent}] {filename or 'unknown'} – {instructions[:80]}"
+        task = summary.strip()
 
     memory["last_updated"] = datetime.utcnow().isoformat()
     memory["last_result"] = {
