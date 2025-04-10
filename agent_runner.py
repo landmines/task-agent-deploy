@@ -12,7 +12,6 @@ from context_manager import (
     save_memory_context,
     record_intent_stats,
     append_self_note,
-    update_memory_context,
     increment_confirmed,
     increment_rejected,
     track_failure_pattern
@@ -112,12 +111,21 @@ def finalize_task_execution(log_data):
     success = result.get("success", False)
     intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
 
-    update_memory_context(
-        task=task,
-        intent=intent,
-        success=success,
-        result=result
-    )
+    # Inline memory update logic to avoid stale context
+    memory["last_updated"] = datetime.utcnow().isoformat()
+    memory["last_result"] = {
+        "task": task,
+        "intent": intent,
+        "status": "success" if success else "fail",
+        "timestamp": memory["last_updated"],
+        "result": result
+    }
+
+    memory["recent_tasks"].append(memory["last_result"])
+    if len(memory["recent_tasks"]) > 10:
+        memory["recent_tasks"] = memory["recent_tasks"][-10:]
+
+    record_intent_stats(memory, intent, success)
 
     if success:
         increment_confirmed(memory)
