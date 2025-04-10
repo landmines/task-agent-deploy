@@ -58,11 +58,12 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
-        logs_dir = os.path.join(os.getcwd(), "logs")
-        log_file = Path(logs_dir) / f"log-{task_id}.json"
-        if not log_file.exists():
-            return jsonify({"error": f"Log file not found: {log_file.name}"}), 404
+        matching_files = [f for f in Path(logs_dir).glob("log-*.json") if task_id in f.name]
+        if not matching_files:
+            return jsonify({"error": f"No matching log file found for ID: {task_id}"}), 404
 
+        log_file = matching_files[0]  # Use the first match
+     
         with open(log_file, "r") as f:
             log_data = json.load(f)
 
