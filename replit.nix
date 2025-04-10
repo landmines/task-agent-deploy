@@ -1,0 +1,10 @@
+{ pkgs }: {
+  deps = [
+    pkgs.python311
+    pkgs.python311Packages.flask
+    pkgs.python311Packages.google-api-python-client
+    pkgs.python311Packages.google-auth
+    pkgs.python311Packages.google-auth-httplib2
+    pkgs.python311Packages.google-auth-oauthlib
+  ];
+}

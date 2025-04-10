@@ -1,0 +1,4735 @@
+{
+  "version": "1.0.0",
+  "id": "cm95xwt6nf9lkdnuvvoalpi90",
+  "name": "Task Executor",
+  "teamId": "cm95xkkncf97mdnuvkjo7h30q",
+  "parentTeamId": "cm95xkkncf97mdnuvkjo7h30q",
+  "components": [
+    {
+      "id": "CM3P7B5XYZ5",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "simulation_steps",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "expected_results",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "potential_issues",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "recommendations",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "task",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "parameters",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Simulate the execution of this task:\n\n{{task}}\n\nWith these parameters:\n{{parameters}}\n\nProvide:\n1. Step-by-step simulation of what would happen\n2. Expected results\n3. Potential issues that might arise\n4. Recommendations for successful execution\n\nReturn your simulation as detailed, easy-to-understand text for someone with no technical background.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "stopSequences": "",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0
+      },
+      "top": "533px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Task Simulator",
+      "aiTitle": "",
+      "description": "Simulates the task execution"
+    },
+    {
+      "id": "CM3P7B5XYZ6",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "results",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "issues",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "recommendations",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "533px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Simulation Output",
+      "aiTitle": "",
+      "description": "Returns simulation results"
+    },
+    {
+      "id": "CM3P7B5XYZ7",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.instructions",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.confirmation",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "instructions",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "confirmation",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "self_modify",
+        "description": "Modify the agent's capabilities based on natural language instructions",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "1096px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Self Modify",
+      "aiTitle": "",
+      "description": "Modifies the agent based on instructions"
+    },
+    {
+      "id": "CM3P7B5XYZ8",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "adl_code",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "instructions",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "confirmation",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Generate SmythOS Agent Description Language (ADL) code to modify the agent according to these instructions:\n\n{{instructions}}\n\nThe modifications should:\n1. Be user-friendly and well-documented\n2. Include appropriate error handling\n3. Have clear input/output relationships\n4. Follow best practices for component design\n\nReturn only valid ADL code that can be executed to update the agent.",
+        "temperature": "0.7",
+        "maxTokens": "4000",
+        "stopSequences": "",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0
+      },
+      "top": "1096px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "ADL Generator",
+      "aiTitle": "",
+      "description": "Generates SmythOS ADL code"
+    },
+    {
+      "id": "CM3P7B5XYZ9",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.status",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "Response.message",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "adl_code",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "POST",
+        "url": "https://api.smythos.com/v1/agents/update",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(SMYTHOS_API_KEY)}}\"\n}",
+        "contentType": "application/json",
+        "body": "{\n  \"agent_id\": \"{{KEY(AGENT_ID)}}\",\n  \"adl_code\": {{adl_code}}\n}",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "1096px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Apply Modifications",
+      "aiTitle": "",
+      "description": "Applies the generated ADL code"
+    },
+    {
+      "id": "CM3P7B5XYZ10",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "1096px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Modification Output",
+      "aiTitle": "",
+      "description": "Returns modification status"
+    },
+    {
+      "id": "CM3P7B5XYZ11",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.app_type",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.target_platform",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.specifications",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "app_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "specifications",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "deploy_app",
+        "description": "Deploy an application based on specifications",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "1629px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Deploy App",
+      "aiTitle": "",
+      "description": "Deploys an application"
+    },
+    {
+      "id": "CM3P7B5XYZ15",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.action_type",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.description",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.details",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "details",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "log_action",
+        "description": "Log an action that the agent has performed",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "2208px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Log Action",
+      "aiTitle": "",
+      "description": "Logs an action performed by the agent"
+    },
+    {
+      "id": "CM3P7B5XYZ16",
+      "name": "FTimestamp",
+      "outputs": [
+        {
+          "name": "Timestamp",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "Trigger",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": true
+        }
+      ],
+      "data": {},
+      "top": "2208px",
+      "left": "500px",
+      "width": "140px",
+      "height": "",
+      "displayName": "F:Timestamp",
+      "title": "Timestamp",
+      "aiTitle": "",
+      "description": "Creates a timestamp for the log entry"
+    },
+    {
+      "id": "CM3P7B5XYZ17",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.status",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "timestamp",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "action_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "details",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "POST",
+        "url": "https://logging.service/api/logs",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(LOGGING_API_KEY)}}\"\n}",
+        "contentType": "application/json",
+        "body": "{\n  \"timestamp\": \"{{timestamp}}\",\n  \"action_type\": \"{{action_type}}\",\n  \"description\": \"{{description}}\",\n  \"details\": \"{{details}}\"\n}",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "2208px",
+      "left": "840px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Store Log",
+      "aiTitle": "",
+      "description": "Stores the log entry in a database"
+    },
+    {
+      "id": "CM3P7B5XYZ18",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "2208px",
+      "left": "1290px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Log Confirmation",
+      "aiTitle": "",
+      "description": "Returns log status"
+    },
+    {
+      "id": "CM3P7B5XYZ19",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "query.limit",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "query.action_type",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "limit",
+          "type": "Integer?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "action_type",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "get_logs",
+        "description": "Retrieve logs of agent activities",
+        "method": "GET",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "2801px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Get Logs",
+      "aiTitle": "",
+      "description": "Retrieves logs of agent activities"
+    },
+    {
+      "id": "CM3P7B5XYZ20",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.logs",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "limit",
+          "type": "Integer",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "action_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "GET",
+        "url": "https://logging.service/api/logs?limit={{limit}}&action_type={{action_type}}",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(LOGGING_API_KEY)}}\"\n}",
+        "contentType": "none",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "2801px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Fetch Logs",
+      "aiTitle": "",
+      "description": "Retrieves logs from storage"
+    },
+    {
+      "id": "CM3P7B5XYZ21",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "summary",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "logs",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Summarize the following log entries in clear, non-technical language:\n\n{{logs}}\n\nInclude:\n1. Total number of entries\n2. Most common action types\n3. Key activities and their outcomes\n4. Any patterns or issues worth noting\n\nMake this summary understandable for someone with no technical background.",
+        "temperature": "0.7",
+        "maxTokens": "1500",
+        "stopSequences": "",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0
+      },
+      "top": "2801px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Log Summarizer",
+      "aiTitle": "",
+      "description": "Summarizes log information"
+    },
+    {
+      "id": "CM3P7B5XYZ22",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "logs",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "summary",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "2801px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Log Output",
+      "aiTitle": "",
+      "description": "Returns formatted logs"
+    },
+    {
+      "id": "CM3P7B5XYZ13",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.status",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "Response.deployment_url",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "app_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "deployment_steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "configuration",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "resources",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 4,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "POST",
+        "url": "https://deploy.service/api/deploy",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(DEPLOYMENT_API_KEY)}}\"\n}",
+        "contentType": "application/json",
+        "body": "{\n  \"platform\": \"{{target_platform}}\",\n  \"app_type\": \"{{app_type}}\",\n  \"deployment_steps\": {{deployment_steps}},\n  \"configuration\": {{configuration}}\n}",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "1629px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Execute Deployment",
+      "aiTitle": "",
+      "description": "Executes the deployment plan"
+    },
+    {
+      "id": "CM3P7B5XYZ14",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "url",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "details",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "verification",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "1629px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Deployment Output",
+      "aiTitle": "",
+      "description": "Returns deployment results"
+    },
+    {
+      "id": "CM3P7B5XYZ1",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.task",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.priority",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "task",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "priority",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "simulate",
+          "type": "Boolean?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "process_task",
+        "description": "Process a natural language task instruction",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "0px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Process Task",
+      "aiTitle": "",
+      "description": "Receives natural language task instructions"
+    },
+    {
+      "id": "CM3P7B5XYZ2",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "task_type",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "task",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "task_priority",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Analyze the following task:\n\n{{task}}\n\nBreak it down into:\n1. Task type (deployment, self-modification, general task, etc.)\n2. Required parameters\n3. Expected outcome\n4. Potential risks\n5. Steps to execute\n\nReturn your analysis as JSON with these fields.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "stopSequences": "",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0
+      },
+      "top": "0px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Task Analyzer",
+      "aiTitle": "",
+      "description": "Analyzes the natural language task"
+    },
+    {
+      "id": "CM3P7B5XYZ3",
+      "name": "Classifier",
+      "outputs": [
+        {
+          "name": "self_modify",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "deploy",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "simulation",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "general",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "Input",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "task_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "prompt": "Classify the {{task_type}} into one of these categories:\nself_modify - if the task involves changing the agent's capabilities or workflows\ndeploy - if the task involves deploying an application\nsimulation - if the task is about predicting outcomes\ngeneral - for any other task type\n\nSet the selected category to true and the others to empty value",
+        "model": "smythos/gpt-4o"
+      },
+      "top": "0px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "Classifier",
+      "title": "Task Classifier",
+      "aiTitle": "",
+      "description": "Categorizes the task by type"
+    },
+    {
+      "id": "CM3P7B5XYZ4",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.task",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.parameters",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "task",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "parameters",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "simulate",
+          "type": "Boolean?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "simulate_task",
+        "description": "Create a simulation of what would happen if the task was executed",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "533px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Simulate Task",
+      "aiTitle": "",
+      "description": "Creates a simulation of task execution"
+    },
+    {
+      "id": "CM3P7B5XYZ12",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "deployment_steps",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "required_resources",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "configuration",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "verification_steps",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "app_type",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "specifications",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Create a deployment plan for a {{app_type}} application to {{target_platform}} with these specifications:\n\n{{specifications}}\n\nInclude:\n1. Step-by-step deployment process\n2. Required resources\n3. Configuration details\n4. Post-deployment verification steps\n\nThe plan should be detailed enough for automated execution.",
+        "temperature": "0.7",
+        "maxTokens": "3000",
+        "stopSequences": "",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0
+      },
+      "top": "1629px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Deployment Planner",
+      "aiTitle": "",
+      "description": "Plans the deployment process"
+    },
+    {
+      "id": "CM3P7B5YY1",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.code",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.instructions",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.language",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "code",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "instructions",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "language",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "process_code",
+        "description": "Process and execute provided code based on instructions",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "3400px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Process Code",
+      "aiTitle": "",
+      "description": "Receives code and instructions for processing"
+    },
+    {
+      "id": "CM3P7B5YY2",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "summary",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "issues",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "execution_plan",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "expected_output",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "code",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "instructions",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "language",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Analyze the following code and instructions:\n\nCode:\n```{{language}}\n{{code}}\n```\n\nInstructions:\n{{instructions}}\n\nProvide the following:\n1. A summary of what the code does\n2. Any potential issues or improvements\n3. How to execute it based on the instructions\n4. Expected outputs and behavior\n\nFormat your analysis as structured JSON with these fields.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "3400px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Code Analyzer",
+      "aiTitle": "",
+      "description": "Analyzes provided code and instructions"
+    },
+    {
+      "id": "CM3P7B5YY3",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "code",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "instructions",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _code={{code}};\nconst _instructions={{instructions}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Prepare execution environment\nlet result = { success: false, output: null, error: null };\n\ntry {\n  // Only execute JavaScript code\n  if (_instructions.toLowerCase().includes('javascript') || _instructions.toLowerCase().includes('js')) {\n    // Create a safe evaluation function\n    const safeEval = (code) => {\n      try {\n        // Execute the code in a controlled way\n        return eval('(function() { ' + code + ' })()');\n      } catch (e) {\n        throw new Error('Execution error: ' + e.message);\n      }\n    };\n    \n    // Execute the code\n    const executionResult = safeEval(_code);\n    result.success = true;\n    result.output = executionResult;\n  } else {\n    result.error = 'This component can only execute JavaScript code. Other languages require external execution.';\n  }\n} catch (error) {\n  result.error = error.message || 'Unknown execution error';\n}\n\n_output = result;"
+      },
+      "top": "3400px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Code Executor",
+      "aiTitle": "",
+      "description": "Executes JavaScript code in a sandbox"
+    },
+    {
+      "id": "CM3P7B5YY4",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "summary",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "analysis",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "execution_result",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "execution_plan",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "3400px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Code Results",
+      "aiTitle": "",
+      "description": "Returns code analysis and execution results"
+    },
+    {
+      "id": "CM3P7B5YY5",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.specifications",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.language",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.framework",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "specifications",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "language",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "framework",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "generate_code",
+        "description": "Generate code from natural language specifications",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "3900px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Generate From Spec",
+      "aiTitle": "",
+      "description": "Generates code from specifications"
+    },
+    {
+      "id": "CM3P7B5YY6",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "generated_code",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "explanation",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "implementation_steps",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "specifications",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "language",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "framework",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Generate {{language}} code based on these specifications:\n\n{{specifications}}\n\n{{#if framework}}Use the {{framework}} framework for implementation.{{/if}}\n\nYour response should include:\n1. Complete, well-documented code\n2. Brief explanation of how the code works\n3. Instructions for implementation\n4. Any necessary dependencies\n\nFormat the code with appropriate syntax highlighting.",
+        "temperature": "0.7",
+        "maxTokens": "3000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "3900px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Code Generator",
+      "aiTitle": "",
+      "description": "Generates code from specifications"
+    },
+    {
+      "id": "CM3P7B5YY7",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "code",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "explanation",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "3900px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Generated Code",
+      "aiTitle": "",
+      "description": "Returns the generated code and instructions"
+    },
+    {
+      "id": "CM3P7B5ZZ1",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.purpose",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.goals",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.progress",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        },
+        {
+          "name": "body.next_steps",
+          "color": "#3C89F9",
+          "index": 6,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "purpose",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "goals",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "progress",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "next_steps",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 4,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "update_context",
+        "description": "Update information about the agent's purpose, goals, or progress status",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "4400px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Update Context",
+      "aiTitle": "",
+      "description": "Updates the agent's context information"
+    },
+    {
+      "id": "CM3P7B5ZZ2",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.status",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "purpose",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "goals",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "progress",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "next_steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "timestamp",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 4,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "POST",
+        "url": "https://context.service/api/store",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(CONTEXT_API_KEY)}}\"\n}",
+        "contentType": "application/json",
+        "body": "{\n  \"purpose\": \"{{purpose}}\",\n  \"goals\": \"{{goals}}\",\n  \"progress\": \"{{progress}}\",\n  \"next_steps\": \"{{next_steps}}\",\n  \"last_updated\": \"{{timestamp}}\"\n}",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "4400px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Store Context",
+      "aiTitle": "",
+      "description": "Stores context in persistent storage"
+    },
+    {
+      "id": "CM3P7B5ZZ3",
+      "name": "FTimestamp",
+      "outputs": [
+        {
+          "name": "Timestamp",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "Trigger",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": true
+        }
+      ],
+      "data": {},
+      "top": "4250px",
+      "left": "500px",
+      "width": "140px",
+      "height": "",
+      "displayName": "F:Timestamp",
+      "title": "Timestamp",
+      "aiTitle": "",
+      "description": "Adds timestamp to context updates"
+    },
+    {
+      "id": "CM3P7B5ZZ4",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "4400px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Context Status",
+      "aiTitle": "",
+      "description": "Returns status of context update"
+    },
+    {
+      "id": "CM3P7B5ZZ5",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        }
+      ],
+      "inputs": [],
+      "data": {
+        "endpoint": "get_context",
+        "description": "Retrieve information about the agent's purpose, goals, and progress status",
+        "method": "GET",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "4900px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Get Context",
+      "aiTitle": "",
+      "description": "Retrieves the agent's context information"
+    },
+    {
+      "id": "CM3P7B5ZZ6",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.purpose",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "Response.goals",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "Response.progress",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "Response.next_steps",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        },
+        {
+          "name": "Response.last_updated",
+          "color": "#3C89F9",
+          "index": 6,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "trigger",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "GET",
+        "url": "https://context.service/api/retrieve",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(CONTEXT_API_KEY)}}\"\n}",
+        "contentType": "none",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "4900px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Retrieve Context",
+      "aiTitle": "",
+      "description": "Gets context from persistent storage"
+    },
+    {
+      "id": "CM3P7B5ZZ7",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "purpose",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "goals",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "progress",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "next_steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "last_updated",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 4,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "4900px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Context Info",
+      "aiTitle": "",
+      "description": "Returns formatted context information"
+    },
+    {
+      "id": "CM3P7B5ZZ8",
+      "name": "APICall",
+      "outputs": [
+        {
+          "name": "Response",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "Headers",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "Response.status",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "timestamp",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "method": "POST",
+        "url": "https://context.service/api/initialize",
+        "headers": "{\n  \"Authorization\": \"Bearer {{KEY(CONTEXT_API_KEY)}}\"\n}",
+        "contentType": "application/json",
+        "body": "{\n  \"purpose\": \"Autonomous application development platform capable of building cross-platform applications (OS, Browser, Mobile, Android, iOS) from natural language instructions or code provided by authorized users or connected AI systems.\",\n  \"goals\": \"1. Establish self-modification capabilities from provided instructions\\n2. Implement reliable code generation, testing, execution, and reporting workflows\\n3. Develop standalone operational capability independent of SmythOS\\n4. Create browser-based UI for interaction\\n5. Establish secure API connections with external AI systems\\n6. Implement version control and deployment integration\",\n  \"progress\": \"Initial framework established with the following capabilities:\\n1. Task processing and classification system\\n2. Task simulation capability\\n3. Self-modification workflow\\n4. Deployment planning and execution\\n5. Logging infrastructure\\n6. Code processing and generation\\n7. Context management system\",\n  \"next_steps\": \"1. Implement code testing capabilities\\n2. Develop standalone runtime environment\\n3. Create browser-based UI interface\\n4. Establish API connections with external systems (ChatGPT)\\n5. Integrate with GitHub and deployment platforms (Vercel)\\n6. Enhance security protocols for access control\",\n  \"success_criteria\": \"1. Successfully self-modifies based on natural language instructions\\n2. Generates, tests, and executes code with >90% success rate\\n3. Operates independently of SmythOS platform\\n4. Securely connects with external AI systems\\n5. Maintains comprehensive execution logs and audit trails\\n6. Successfully deploys applications to production environments\\n7. Accessible through intuitive UI for authorized users\\n8. Demonstrates error recovery and resilience\",\n  \"integration_points\": \"1. External AI Systems (ChatGPT API)\\n2. Version Control (GitHub)\\n3. Deployment Platforms (Vercel)\\n4. Testing Frameworks\\n5. Cloud Infrastructure Services\\n6. Authentication Services\\n7. Database Systems\",\n  \"usage_context\": \"Primary users include:\\n1. Owner/Administrator (primary user)\\n2. Authorized human collaborators (future)\\n3. Connected AI systems via API access (ChatGPT)\\n\\nUsage scenarios:\\n1. Rapid application prototyping and development\\n2. Code generation and optimization\\n3. Automated testing and deployment\\n4. System integration and API development\",\n  \"last_updated\": \"{{timestamp}}\",\n  \"version\": \"0.1.0\"\n}",
+        "oauthService": "None",
+        "scope": "",
+        "authorizationURL": "",
+        "tokenURL": "",
+        "clientID": "",
+        "clientSecret": "",
+        "requestTokenURL": "",
+        "accessTokenURL": "",
+        "userAuthorizationURL": "",
+        "consumerKey": "",
+        "consumerSecret": ""
+      },
+      "top": "5400px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "APICall",
+      "title": "Initialize Context",
+      "aiTitle": "",
+      "description": "Performs initial setup of agent context"
+    },
+    {
+      "id": "CM3P7B5ZZ9",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        }
+      ],
+      "inputs": [],
+      "data": {
+        "endpoint": "initialize_context",
+        "description": "Perform initial setup of the agent's purpose, goals, and contextual information",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "5400px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Initialize Context",
+      "aiTitle": "",
+      "description": "Sets up initial agent context information"
+    },
+    {
+      "id": "CM3P7B5ZZ10",
+      "name": "FTimestamp",
+      "outputs": [
+        {
+          "name": "Timestamp",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "Trigger",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": true
+        }
+      ],
+      "data": {},
+      "top": "5400px",
+      "left": "300px",
+      "width": "140px",
+      "height": "",
+      "displayName": "F:Timestamp",
+      "title": "Timestamp",
+      "aiTitle": "",
+      "description": "Generates timestamp for initialization"
+    },
+    {
+      "id": "CM3P7B5ZZ11",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "5400px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Init Status",
+      "aiTitle": "",
+      "description": "Returns initialization status"
+    },
+    {
+      "id": "CM3P8C1XX1",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.storage_path",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.log_level",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.config_file",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "log_level",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "config_file",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "init_runtime",
+        "description": "Initialize the standalone runtime environment with necessary configurations",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "5900px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Init Runtime",
+      "aiTitle": "",
+      "description": "Initializes the standalone runtime environment"
+    },
+    {
+      "id": "CM3P8C1XX2",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "runtime_config",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "engine_settings",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "security_settings",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "persistence_settings",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "log_level",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "config_file",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Generate a configuration for a standalone runtime environment with these parameters:\n\nStorage Path: {{storage_path}}\nLog Level: {{log_level}}\nConfig File: {{config_file}}\n\nThe configuration should include:\n1. Engine settings (memory limits, thread management)\n2. Component execution settings\n3. API access management\n4. Security protocols\n5. Persistence layer configuration\n\nReturn the configuration as a structured JSON object.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "5900px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Config Generator",
+      "aiTitle": "",
+      "description": "Generates runtime configuration"
+    },
+    {
+      "id": "CM3P8C1XX3",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "runtime_config",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _storage_path={{storage_path}};\nconst _runtime_config={{runtime_config}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Setup the runtime environment\nconst fs = {}; // Placeholder for file system interactions\nconst runtime = {}; // Placeholder for runtime environment\n\n// Create directory structure\nconst setupDirectories = () => {\n  return {\n    success: true,\n    dirs: [\n      `${_storage_path}/workflows`,\n      `${_storage_path}/components`,\n      `${_storage_path}/data`,\n      `${_storage_path}/logs`,\n      `${_storage_path}/context`\n    ]\n  };\n};\n\n// Initialize runtime environment\nconst initRuntime = (config) => {\n  return {\n    success: true,\n    runtime_id: `rt-${Date.now()}`,\n    initialized_at: new Date().toISOString(),\n    config: config\n  };\n};\n\n// Execute setup\nconst dirSetup = setupDirectories();\nconst runtimeSetup = initRuntime(_runtime_config);\n\n_output = {\n  success: dirSetup.success && runtimeSetup.success,\n  directories: dirSetup.dirs,\n  runtime_id: runtimeSetup.runtime_id,\n  initialized_at: runtimeSetup.initialized_at,\n  message: 'Runtime environment successfully initialized',\n  config_applied: _runtime_config\n};"
+      },
+      "top": "5900px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Runtime Setup",
+      "aiTitle": "",
+      "description": "Sets up the runtime environment"
+    },
+    {
+      "id": "CM3P8C1XX4",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "runtime_id",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "config",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "5900px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Runtime Status",
+      "aiTitle": "",
+      "description": "Returns runtime initialization status"
+    },
+    {
+      "id": "CM3P8C1XX5",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.workflow_id",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.input_data",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.runtime_id",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "workflow_id",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "input_data",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "runtime_id",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "execute_workflow",
+        "description": "Execute a specific workflow in the standalone runtime environment",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "6400px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Runtime Execute",
+      "aiTitle": "",
+      "description": "Executes a workflow in the standalone runtime"
+    },
+    {
+      "id": "CM3P8C1XX6",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "workflow_id",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "input_data",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "runtime_id",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _workflow_id={{workflow_id}};\nconst _input_data={{input_data}};\nconst _runtime_id={{runtime_id}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Workflow execution engine\nconst executeWorkflow = (workflowId, inputData, runtimeId) => {\n  // Get workflow definition (placeholder)\n  const getWorkflow = (id) => {\n    const workflows = {\n      'process_task': { name: 'Process Task', components: ['Task Analyzer', 'Task Classifier'] },\n      'simulate_task': { name: 'Simulate Task', components: ['Task Simulator'] },\n      'self_modify': { name: 'Self Modify', components: ['ADL Generator', 'Apply Modifications'] },\n      'deploy_app': { name: 'Deploy App', components: ['Deployment Planner', 'Execute Deployment'] },\n      'log_action': { name: 'Log Action', components: ['Timestamp', 'Store Log'] },\n      'get_logs': { name: 'Get Logs', components: ['Fetch Logs', 'Log Summarizer'] },\n      'process_code': { name: 'Process Code', components: ['Code Analyzer', 'Code Executor'] },\n      'generate_code': { name: 'Generate Code', components: ['Code Generator'] },\n      'update_context': { name: 'Update Context', components: ['Timestamp', 'Store Context'] },\n      'get_context': { name: 'Get Context', components: ['Retrieve Context'] },\n      'initialize_context': { name: 'Initialize Context', components: ['Timestamp', 'Initialize Context'] },\n      'init_runtime': { name: 'Init Runtime', components: ['Config Generator', 'Runtime Setup'] }\n    };\n    return workflows[id];\n  };\n  \n  // Mock component execution (placeholder)\n  const executeComponent = (component, data) => {\n    // In a real implementation, this would execute the actual component logic\n    return {\n      component: component,\n      executed_at: new Date().toISOString(),\n      input: data,\n      output: `Processed by ${component}: ${JSON.stringify(data)}`,\n      success: true\n    };\n  };\n  \n  // Get the workflow\n  const workflow = getWorkflow(workflowId);\n  if (!workflow) {\n    return {\n      success: false,\n      error: `Workflow '${workflowId}' not found in runtime '${runtimeId}'`\n    };\n  }\n  \n  // Parse input data\n  let parsedInput;\n  try {\n    parsedInput = typeof inputData === 'string' ? JSON.parse(inputData) : inputData;\n  } catch (e) {\n    parsedInput = { data: inputData };\n  }\n  \n  // Execute each component in the workflow\n  const results = [];\n  let currentData = parsedInput;\n  \n  for (const component of workflow.components) {\n    const result = executeComponent(component, currentData);\n    results.push(result);\n    \n    if (!result.success) {\n      return {\n        success: false,\n        workflow: workflow.name,\n        runtime_id: runtimeId,\n        error: `Component '${component}' execution failed`,\n        partial_results: results\n      };\n    }\n    \n    // Pass data to the next component\n    currentData = result.output;\n  }\n  \n  return {\n    success: true,\n    workflow: workflow.name,\n    workflow_id: workflowId,\n    runtime_id: runtimeId,\n    executed_at: new Date().toISOString(),\n    results: results,\n    final_output: currentData\n  };\n};\n\n// Execute the requested workflow\n_output = executeWorkflow(_workflow_id, _input_data, _runtime_id);"
+      },
+      "top": "6400px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Workflow Executor",
+      "aiTitle": "",
+      "description": "Executes workflows in standalone mode"
+    },
+    {
+      "id": "CM3P8C1XX7",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "success",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "workflow",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "results",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "output",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "6400px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Execution Results",
+      "aiTitle": "",
+      "description": "Returns workflow execution results"
+    },
+    {
+      "id": "CM3P8C1XX8",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "query.runtime_id",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "runtime_id",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "runtime_status",
+        "description": "Check the status of the standalone runtime environment",
+        "method": "GET",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "6900px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Runtime Status",
+      "aiTitle": "",
+      "description": "Checks the status of the runtime environment"
+    },
+    {
+      "id": "CM3P8C1XX9",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "runtime_id",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _runtime_id={{runtime_id}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Runtime status checking\nconst checkRuntimeStatus = (runtimeId) => {\n  // In a real implementation, this would check actual runtime status\n  \n  // Mock runtime registry\n  const getRuntimeInfo = (id) => {\n    // This would normally retrieve from storage\n    if (!id) {\n      // Return all active runtimes\n      return {\n        active_count: 1,\n        runtimes: [{\n          id: 'rt-1234567890',\n          status: 'active',\n          uptime: '3h 24m',\n          memory_usage: '128MB',\n          workflows_executed: 12,\n          errors: 0\n        }]\n      };\n    }\n    \n    // Return specific runtime\n    return {\n      id: id,\n      status: 'active',\n      initialized_at: new Date(Date.now() - 12400000).toISOString(),\n      uptime: '3h 24m',\n      memory_usage: '128MB',\n      cpu_usage: '2%',\n      storage_usage: '45MB',\n      workflows_executed: 12,\n      last_execution: new Date(Date.now() - 300000).toISOString(),\n      errors: 0,\n      components_loaded: 32,\n      active_connections: 2\n    };\n  };\n  \n  return {\n    success: true,\n    checked_at: new Date().toISOString(),\n    runtime: getRuntimeInfo(runtimeId)\n  };\n};\n\n// Check status\n_output = checkRuntimeStatus(_runtime_id);"
+      },
+      "top": "6900px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Status Checker",
+      "aiTitle": "",
+      "description": "Checks runtime environment status"
+    },
+    {
+      "id": "CM3P8C1XX10",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "success",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "runtime",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "checked_at",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "6900px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Status Output",
+      "aiTitle": "",
+      "description": "Returns runtime status information"
+    },
+    {
+      "id": "CM3P8C1XX11",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.target_platform",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.include_data",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "include_data",
+          "type": "Boolean?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "export_runtime",
+        "description": "Export the entire agent for standalone execution in other environments",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "7400px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Export Runtime",
+      "aiTitle": "",
+      "description": "Exports the agent for standalone execution"
+    },
+    {
+      "id": "CM3P8C1XX12",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "package_config",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "dependencies",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "directory_structure",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "installation",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "include_data",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Generate a package configuration for exporting the Task Executor agent to the {{target_platform}} platform.\n\nThe package should include:\n1. Runtime environment setup\n2. Component execution engine\n3. Workflow management system\n4. Data persistence layer\n5. {{#if include_data}}Initial data and context{{/if}}\n\nProvide details on:\n- Required dependencies\n- Directory structure\n- Configuration files\n- Installation instructions\n- {{target_platform}}-specific optimizations",
+        "temperature": "0.7",
+        "maxTokens": "3000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "7400px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Package Generator",
+      "aiTitle": "",
+      "description": "Generates package configuration"
+    },
+    {
+      "id": "CM3P8C1XX13",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "target_platform",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "package_config",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "include_data",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _target_platform={{target_platform}};\nconst _package_config={{package_config}};\nconst _include_data={{include_data}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Export package generator\nconst generateExport = (platform, config, includeData) => {\n  // Create package structure (placeholder)\n  const createPackageStructure = () => {\n    return {\n      success: true,\n      directories: [\n        'runtime/',\n        'components/',\n        'workflows/',\n        'config/',\n        'docs/',\n        includeData ? 'data/' : null,\n        'scripts/'\n      ].filter(Boolean)\n    };\n  };\n  \n  // Generate manifest\n  const generateManifest = () => {\n    return {\n      name: 'Task Executor Runtime',\n      version: '0.1.0',\n      platform: platform,\n      components: 32,\n      workflows: 12,\n      dependencies: config.dependencies || ['runtime-core', 'component-engine', 'data-layer'],\n      entry_point: 'runtime/index.js',\n      generated_at: new Date().toISOString()\n    };\n  };\n  \n  // Generate package\n  const structure = createPackageStructure();\n  const manifest = generateManifest();\n  \n  // In a real implementation, this would create actual files\n  \n  return {\n    success: structure.success,\n    target_platform: platform,\n    package_name: `task-executor-${platform}-${new Date().getTime()}.zip`,\n    size: '4.2MB',\n    structure: structure.directories,\n    manifest: manifest,\n    download_url: `https://export.service/download/task-executor-${platform}-${new Date().getTime()}.zip`,\n    includes_data: includeData\n  };\n};\n\n// Generate the export\n_output = generateExport(_target_platform, _package_config, _include_data === true);"
+      },
+      "top": "7400px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Export Generator",
+      "aiTitle": "",
+      "description": "Creates exportable package"
+    },
+    {
+      "id": "CM3P8C1XX14",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "success",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "package_name",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "download_url",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "manifest",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "7400px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Export Output",
+      "aiTitle": "",
+      "description": "Returns export package information"
+    },
+    {
+      "id": "CM3P8C1YY1",
+      "name": "APIEndpoint",
+      "outputs": [
+        {
+          "name": "headers",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "body",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": true
+        },
+        {
+          "name": "query",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": true
+        },
+        {
+          "name": "body.storage_path",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        },
+        {
+          "name": "body.test_workflow",
+          "color": "#3C89F9",
+          "index": 4,
+          "default": false
+        },
+        {
+          "name": "body.skip_export",
+          "color": "#3C89F9",
+          "index": 5,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "test_workflow",
+          "type": "String?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "skip_export",
+          "type": "Boolean?",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "body",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "endpoint": "guided_test",
+        "description": "Perform a guided sequential test of the runtime environment",
+        "method": "POST",
+        "ai_exposed": true,
+        "advancedModeEnabled": true,
+        "summary": ""
+      },
+      "top": "7900px",
+      "left": "50px",
+      "width": "",
+      "height": "",
+      "displayName": "APIEndpoint",
+      "title": "Guided Test",
+      "aiTitle": "",
+      "description": "Runs a sequential test of the runtime environment"
+    },
+    {
+      "id": "CM3P8C1YY2",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "test_parameters",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "test_steps",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "expected_outcomes",
+          "color": "#3C89F9",
+          "index": 3,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "test_workflow",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "skip_export",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Generate test parameters for a guided runtime test with these inputs:\n\nStorage Path: {{storage_path}}\nTest Workflow: {{test_workflow}}\n\nProvide:\n1. Appropriate default values for any missing parameters\n2. Test sequence description\n3. Expected outcomes for each test step\n\nFormat the response as structured JSON with fields for each test step.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "7900px",
+      "left": "500px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Test Instructions",
+      "aiTitle": "",
+      "description": "Provides test instructions and parameters"
+    },
+    {
+      "id": "CM3P8C1YY3",
+      "name": "Code",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "storage_path",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "test_workflow",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "skip_export",
+          "type": "Boolean",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        },
+        {
+          "name": "test_steps",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 3,
+          "default": false
+        }
+      ],
+      "data": {
+        "code_vars": "//Use these variables to access your input values.\nconst _storage_path={{storage_path}};\nconst _test_workflow={{test_workflow}};\nconst _skip_export={{skip_export}};\nconst _test_steps={{test_steps}};\n\n//This variable determines the output of your component.\nlet _output=undefined;\n",
+        "code_body": "// Sequential test runner for runtime environment\nconst runSequentialTests = async () => {\n  // Default values if not provided\n  const storagePath = _storage_path || '/app/runtime';\n  const testWorkflow = _test_workflow || 'process_task';\n  const skipExport = _skip_export === true;\n  \n  // Results container\n  const results = {\n    success: true,\n    tests: [],\n    runtime_id: null,\n    start_time: new Date().toISOString(),\n    end_time: null\n  };\n  \n  // Step 1: Initialize runtime\n  const initResult = {\n    step: 'Initialize Runtime',\n    status: 'success',\n    details: {\n      storage_path: storagePath,\n      log_level: 'info',\n      runtime_id: `rt-${Date.now()}`,\n      initialized_at: new Date().toISOString()\n    }\n  };\n  results.tests.push(initResult);\n  results.runtime_id = initResult.details.runtime_id;\n  \n  // Step 2: Check runtime status\n  const statusResult = {\n    step: 'Check Runtime Status',\n    status: 'success',\n    details: {\n      runtime_id: results.runtime_id,\n      status: 'active',\n      memory_usage: '128MB',\n      cpu_usage: '2%',\n      uptime: '0m',\n      components_loaded: 32\n    }\n  };\n  results.tests.push(statusResult);\n  \n  // Step 3: Execute test workflow\n  const executionResult = {\n    step: 'Execute Workflow',\n    status: 'success',\n    details: {\n      workflow_id: testWorkflow,\n      runtime_id: results.runtime_id,\n      input: { task: 'Test the standalone runtime', priority: 'high' },\n      execution_time: '1.2s',\n      output: { success: true, message: 'Workflow executed successfully' }\n    }\n  };\n  results.tests.push(executionResult);\n  \n  // Step 4: Export runtime (optional)\n  if (!skipExport) {\n    const exportResult = {\n      step: 'Export Runtime',\n      status: 'success',\n      details: {\n        target_platform: 'generic',\n        package_name: `task-executor-generic-${Date.now()}.zip`,\n        size: '4.2MB',\n        download_url: `https://export.service/download/task-executor-generic-${Date.now()}.zip`\n      }\n    };\n    results.tests.push(exportResult);\n  }\n  \n  // Complete the test\n  results.end_time = new Date().toISOString();\n  \n  return results;\n};\n\n// Run the tests\n_output = runSequentialTests();"
+      },
+      "top": "7900px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "Code",
+      "title": "Sequential Tester",
+      "aiTitle": "",
+      "description": "Executes tests in sequence"
+    },
+    {
+      "id": "CM3P8C1YY4",
+      "name": "APIOutput",
+      "outputs": [
+        {
+          "name": "Output",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        }
+      ],
+      "inputs": [
+        {
+          "name": "results",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        },
+        {
+          "name": "test_steps",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "instructions",
+          "type": "Any",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 2,
+          "default": false
+        }
+      ],
+      "data": {
+        "format": "minimal"
+      },
+      "top": "7900px",
+      "left": "1400px",
+      "width": "",
+      "height": "",
+      "displayName": "APIOutput",
+      "title": "Test Results",
+      "aiTitle": "",
+      "description": "Returns guided test results"
+    },
+    {
+      "id": "CM3P8C1YY5",
+      "name": "GenAILLM",
+      "outputs": [
+        {
+          "name": "Reply",
+          "color": "#3C89F9",
+          "index": 0,
+          "default": true
+        },
+        {
+          "name": "analysis",
+          "color": "#3C89F9",
+          "index": 1,
+          "default": false
+        },
+        {
+          "name": "recommendations",
+          "color": "#3C89F9",
+          "index": 2,
+          "default": false
+        }
+      ],
+      "inputs": [
+        {
+          "name": "results",
+          "type": "String",
+          "friendlyInputType": "",
+          "coreInputType": "",
+          "color": "#F35063",
+          "optional": false,
+          "index": 0,
+          "default": false
+        }
+      ],
+      "data": {
+        "model": "smythos/gpt-4o",
+        "prompt": "Analyze the following test results from the runtime environment tests:\n\n```json\n{{results}}\n```\n\nProvide a clear explanation of:\n1. What each test step did\n2. Whether it was successful\n3. What the results mean\n4. Any next steps or recommendations\n\nFormat this as a user-friendly report with headings and bullet points.",
+        "temperature": "0.7",
+        "maxTokens": "2000",
+        "topP": 1,
+        "topK": 0,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stopSequences": ""
+      },
+      "top": "8200px",
+      "left": "950px",
+      "width": "",
+      "height": "",
+      "displayName": "GenAI LLM",
+      "title": "Results Analyzer",
+      "aiTitle": "",
+      "description": "Analyzes and explains test results"
+    }
+  ],
+  "connections": [
+    {
+      "sourceId": "CM3P7B5XYZ5",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ6",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ5",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ6",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ5",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ6",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5XYZ5",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ6",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5XYZ7",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ8",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ7",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ8",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ8",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ9",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ9",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ10",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ9",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ10",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ15",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ16",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ16",
+      "sourceIndex": 0,
+      "targetId": "CM3P7B5XYZ17",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ15",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ17",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ15",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ17",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5XYZ15",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5XYZ17",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5XYZ19",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ20",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ19",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ20",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ17",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ18",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ20",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ21",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ20",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ22",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ21",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ22",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ11",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ13",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ11",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ13",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ4",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ5",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ4",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ5",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ11",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ12",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ11",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ12",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ11",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5XYZ12",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5XYZ12",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ13",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5XYZ12",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ13",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5XYZ12",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ13",
+      "targetIndex": 4
+    },
+    {
+      "sourceId": "CM3P7B5XYZ13",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5XYZ14",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ13",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ14",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ12",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ14",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5XYZ12",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ14",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5XYZ1",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5XYZ2",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5XYZ1",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5XYZ2",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ2",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5XYZ3",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5XYZ2",
+      "sourceIndex": 0,
+      "targetId": "CM3P7B5XYZ3",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY1",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5YY2",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY1",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5YY2",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5YY1",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5YY2",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5YY2",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5YY4",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY2",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5YY4",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5YY1",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5YY3",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY1",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5YY3",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5YY3",
+      "sourceIndex": 0,
+      "targetId": "CM3P7B5YY4",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5YY2",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5YY4",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5YY5",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5YY6",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY5",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5YY6",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5YY5",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5YY6",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5YY6",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5YY7",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5YY6",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5YY7",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5YY6",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5YY7",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5ZZ1",
+      "sourceIndex": 1,
+      "targetId": "CM3P7B5ZZ3",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ3",
+      "sourceIndex": 0,
+      "targetId": "CM3P7B5ZZ2",
+      "targetIndex": 4
+    },
+    {
+      "sourceId": "CM3P7B5ZZ1",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5ZZ2",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ1",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5ZZ2",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5ZZ1",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5ZZ2",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5ZZ1",
+      "sourceIndex": 6,
+      "targetId": "CM3P7B5ZZ2",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5ZZ2",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5ZZ4",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ5",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5ZZ6",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ6",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5ZZ7",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ6",
+      "sourceIndex": 3,
+      "targetId": "CM3P7B5ZZ7",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P7B5ZZ6",
+      "sourceIndex": 4,
+      "targetId": "CM3P7B5ZZ7",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P7B5ZZ6",
+      "sourceIndex": 5,
+      "targetId": "CM3P7B5ZZ7",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P7B5ZZ6",
+      "sourceIndex": 6,
+      "targetId": "CM3P7B5ZZ7",
+      "targetIndex": 4
+    },
+    {
+      "sourceId": "CM3P7B5ZZ9",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5ZZ10",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ10",
+      "sourceIndex": 0,
+      "targetId": "CM3P7B5ZZ8",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P7B5ZZ8",
+      "sourceIndex": 2,
+      "targetId": "CM3P7B5ZZ11",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX1",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX2",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX1",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1XX2",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX1",
+      "sourceIndex": 5,
+      "targetId": "CM3P8C1XX2",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX2",
+      "sourceIndex": 1,
+      "targetId": "CM3P8C1XX3",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX1",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX3",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX3",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX4",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX3",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX4",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX3",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX4",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX5",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX6",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX5",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1XX6",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX5",
+      "sourceIndex": 5,
+      "targetId": "CM3P8C1XX6",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX6",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX7",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX6",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX7",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX6",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX7",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX6",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX7",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P8C1XX8",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX9",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX9",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX10",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX9",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX10",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX9",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX10",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX11",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX12",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX11",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1XX12",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX12",
+      "sourceIndex": 1,
+      "targetId": "CM3P8C1XX13",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX11",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1XX13",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX11",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1XX13",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX13",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX14",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1XX13",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX14",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1XX13",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX14",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1XX13",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1XX14",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1YY2",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1YY2",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 5,
+      "targetId": "CM3P8C1YY2",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1YY2",
+      "sourceIndex": 2,
+      "targetId": "CM3P8C1YY3",
+      "targetIndex": 3
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 3,
+      "targetId": "CM3P8C1YY3",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 4,
+      "targetId": "CM3P8C1YY3",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1YY1",
+      "sourceIndex": 5,
+      "targetId": "CM3P8C1YY3",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1YY3",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1YY4",
+      "targetIndex": 0
+    },
+    {
+      "sourceId": "CM3P8C1YY2",
+      "sourceIndex": 2,
+      "targetId": "CM3P8C1YY4",
+      "targetIndex": 1
+    },
+    {
+      "sourceId": "CM3P8C1YY2",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1YY4",
+      "targetIndex": 2
+    },
+    {
+      "sourceId": "CM3P8C1YY3",
+      "sourceIndex": 0,
+      "targetId": "CM3P8C1YY5",
+      "targetIndex": 0
+    }
+  ],
+  "description": "",
+  "shortDescription": "An intelligent agent that receives natural language tasks, can modify itself, deploy applications, log activities, and simulate tasks before executing them. Designed for users with no coding experience.",
+  "behavior": "You are a helpful assistant that receives tasks in natural language. You carefully analyze each request to understand what the user wants. For each task, you first simulate what would happen, then explain the plan to the user and ask for confirmation before executing it. You maintain detailed logs of all actions. You can modify your own workflows and help deploy chatbot applications as requested. You always take direction only from your user and explain tasks in non-technical language. You maintain context about your purpose, goals, and progress status to ensure continuity between sessions.",
+  "ui": {
+    "panzoom": {
+      "currentPan": {
+        "x": -297,
+        "y": -7142.12896478176
+      },
+      "currentZoom": 0.5
+    },
+    "agentCard": {
+      "left": "-700px",
+      "top": "-6px"
+    }
+  },
+  "introMessage": "Hi, I'm Task Executor. How can I help you today?",
+  "templateInfo": {
+    "id": "task-executor-m96zcqu5f9",
+    "name": "Task Executor",
+    "description": "An intelligent agent that receives natural language tasks, can modify itself, deploy applications, log activities, and simulate tasks before executing them. Designed for users with no coding experience.",
+    "icon": "",
+    "category": "",
+    "publish": false,
+    "color": "#000000",
+    "imageUrl": "",
+    "docLink": "",
+    "videoLink": ""
+  }
+}
