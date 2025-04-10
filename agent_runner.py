@@ -1,3 +1,5 @@
+# agent_runner.py
+
 import os
 import re
 import json
@@ -13,7 +15,9 @@ from context_manager import (
     append_self_note,
     increment_confirmed,
     increment_rejected,
-    track_failure_pattern
+    track_failure_pattern,
+    add_next_step,
+    clear_next_steps
 )
 
 AGENT_CORE_FILES = {"agent_runner.py", "app.py", "context_manager.py", "task_executor.py"}
@@ -40,12 +44,12 @@ def run_agent(input_data):
         "timestamp": timestamp,
         "taskReceived": task,
         "codeBlock": bool(code),
-        "phase": "Phase 4.5 – Git-Based Self Updates",
+        "phase": "Phase 4.6 – Self Awareness and Parallelism",
         "overallGoal": "Create a real-world agent that builds itself via GPT+user instructions.",
         "roadmap": {
-            "currentPhase": "Phase 4.5",
-            "nextPhase": "Phase 4.6 – Self Awareness and Parallelism",
-            "subgoal": "Let agent commit and push self-edits safely to GitHub."
+            "currentPhase": "Phase 4.6",
+            "nextPhase": "Phase 4.7 – External Tools + Test Suites",
+            "subgoal": "Enable self-awareness and task parallelism tracking."
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
@@ -140,6 +144,11 @@ def finalize_task_execution(log_data):
         elif intent == "push_changes":
             push_result = self_push_changes()
             append_self_note(memory, f"🚀 Git push result: {push_result}")
+
+        # Phase 4.6 addition: queue next step
+        if planned.get("next"):
+            add_next_step(memory, planned["next"])
+
     else:
         track_failure_pattern(memory, task, str(result))
         append_self_note(memory, f"❌ Task failed: {task}")
@@ -198,18 +207,11 @@ def dispatch_intent(intent, task, data):
                     "instructions": data.get("instructions", ""),
                     "notes": "Edit the file using natural language instructions."
                 }, fallback_used
-            case "self_edit_file":
-                return {
-                    "action": "edit_file",
-                    "filename": data.get("filename"),
-                    "instructions": data.get("instructions", ""),
-                    "notes": "Self-edit initiated on agent file."
-                }, fallback_used
             case "delete_file":
                 return {
                     "action": "delete_file",
                     "filename": data.get("filename"),
-                    "notes": "Smartly inferred: delete_file"
+                    "notes": "Delete file"
                 }, fallback_used
             case "rename_file":
                 return {
