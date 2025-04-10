@@ -1,4 +1,4 @@
-# agent_runner.py
+# agent_runner.py (Full – with Git Push + Self-Edit Logic)
 
 import os
 import re
@@ -47,7 +47,7 @@ def run_agent(input_data):
         "roadmap": {
             "currentPhase": "Phase 4.5",
             "nextPhase": "Phase 4.6 – Self Awareness and Parallelism",
-            "subgoal": "Let agent commit successful self-edits automatically to Git."
+            "subgoal": "Let agent commit and push self-edits safely to GitHub."
         },
         "confirmationNeeded": True,
         "executionPlanned": None,
@@ -115,7 +115,6 @@ def finalize_task_execution(log_data):
     filename = planned.get("filename")
     instructions = result.get("instructions") or planned.get("instructions") or planned.get("notes", "")
 
-    # If task is missing or default, construct a smart label
     if not task or task == "No task provided":
         summary = f"[{intent}] {filename or 'unknown'} – {instructions[:80]}"
         task = summary.strip()
@@ -140,6 +139,9 @@ def finalize_task_execution(log_data):
         if intent == "edit_file" and filename in AGENT_CORE_FILES:
             commit_result = self_commit_changes(filename, result)
             append_self_note(memory, f"📌 Self-edit committed for `{filename}`: {commit_result}")
+        elif intent == "push_changes":
+            push_result = self_push_changes()
+            append_self_note(memory, f"🚀 Git push result: {push_result}")
     else:
         track_failure_pattern(memory, task, str(result))
         append_self_note(memory, f"❌ Task failed: {task}")
@@ -150,13 +152,22 @@ def self_commit_changes(filename, result):
     instructions = result.get("instructions", "updated code")
     timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M")
     commit_msg = f"feat(agent): self-edit '{filename}' – {instructions}"
-
     try:
         subprocess.run(["git", "add", filename], check=True)
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         return f"Committed '{filename}' at {timestamp}."
     except subprocess.CalledProcessError as e:
         return f"❌ Git commit failed: {str(e)}"
+
+def self_push_changes():
+    try:
+        status = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+        if not status.stdout.strip():
+            return "⚠️ No new changes to push."
+        subprocess.run(["git", "push"], check=True)
+        return "✅ Changes pushed to remote."
+    except subprocess.CalledProcessError as e:
+        return f"❌ Push failed: {str(e)}"
 
 def extract_keyword(task):
     if "about" in task.lower():
@@ -213,6 +224,11 @@ def dispatch_intent(intent, task, data):
                 return {
                     "action": "deploy",
                     "notes": "Deploy via Git and Render."
+                }, fallback_used
+            case "push_changes":
+                return {
+                    "action": "push_changes",
+                    "notes": "Push committed changes to GitHub."
                 }, fallback_used
 
     fallback_used = True
