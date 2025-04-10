@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from agent_runner import run_agent, finalize_task_execution
-from context_manager import load_memory
+from context_manager import load_memory, summarize_memory
 from task_executor import execute_task
 
 app = Flask(__name__)
@@ -90,7 +90,6 @@ def confirm():
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        # ✅ Updated to pass the full log object, not individual params
         finalize_task_execution(log_data)
 
         return jsonify({
@@ -107,6 +106,15 @@ def memory():
     try:
         memory = load_memory()
         return jsonify(memory)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/memory/summary", methods=["GET"])
+def memory_summary():
+    try:
+        memory = load_memory()
+        summary = summarize_memory(memory)
+        return jsonify(summary)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -12,7 +12,10 @@ from context_manager import (
     save_memory_context,
     record_intent_stats,
     append_self_note,
-    update_memory_context
+    update_memory_context,
+    increment_confirmed,
+    increment_rejected,
+    track_failure_pattern
 )
 
 def run_agent(input_data):
@@ -102,17 +105,27 @@ def run_agent(input_data):
 def finalize_task_execution(log_data):
     if not log_data:
         return
-    memory = load_memory_context()
-    updated = update_memory_context(
-        memory,
-        task=log_data.get("taskReceived"),
-        intent=(log_data.get("executionPlanned") or {}).get("action", "unknown"),
-        success=(log_data.get("executionResult") or {}).get("success", False)
-    )
-    save_memory_context(updated)
 
-    if not (log_data.get("executionResult") or {}).get("success", False):
-        append_self_note(memory, f"❌ Task failed: {log_data.get('taskReceived')}")
+    memory = load_memory_context()
+    task = log_data.get("taskReceived")
+    result = log_data.get("executionResult") or {}
+    success = result.get("success", False)
+    intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
+
+    update_memory_context(
+        task=task,
+        intent=intent,
+        success=success,
+        result=result
+    )
+
+    if success:
+        increment_confirmed(memory)
+    else:
+        track_failure_pattern(memory, task, str(result))
+        append_self_note(memory, f"❌ Task failed: {task}")
+
+    save_memory_context(memory)
 
 def extract_keyword(task):
     if "about" in task.lower():

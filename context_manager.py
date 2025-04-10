@@ -1,3 +1,4 @@
+# context_manager.py
 import json
 import os
 from datetime import datetime
@@ -19,7 +20,8 @@ def load_memory():
             "task_links": [],
             "self_edits": [],
             "project_name": "Task Agent",
-            "purpose": "Build and manage projects via user or ChatGPT instructions."
+            "purpose": "Build and manage projects via user or ChatGPT instructions.",
+            "next_steps": []
         }
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
@@ -33,6 +35,12 @@ def load_memory_context():
 
 def save_memory_context(context):
     return save_memory(context)
+
+def increment_confirmed(context):
+    context["confirmed_count"] += 1
+
+def increment_rejected(context):
+    context["rejected_count"] += 1
 
 def record_intent_stats(context, intent, success):
     if intent not in context["intent_stats"]:
@@ -48,25 +56,15 @@ def append_self_note(context, note):
         "timestamp": datetime.utcnow().isoformat()
     })
 
-def update_memory(context, log_data):
-    intent = (log_data.get("executionPlanned") or {}).get("action", "unknown")
-    success = (log_data.get("executionResult") or {}).get("success", False)
-    task = log_data.get("taskReceived", "")
-
-    context["last_updated"] = datetime.utcnow().isoformat()
-    context["last_result"] = {
+def track_failure_pattern(context, task, reason):
+    context["failure_patterns"].append({
         "task": task,
-        "intent": intent,
-        "status": "success" if success else "fail",
-        "timestamp": context["last_updated"]
-    }
-    context["recent_tasks"].append(context["last_result"])
-    if len(context["recent_tasks"]) > 10:
-        context["recent_tasks"] = context["recent_tasks"][-10:]
-    record_intent_stats(context, intent, success)
-    return context
+        "reason": reason,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    if len(context["failure_patterns"]) > 10:
+        context["failure_patterns"] = context["failure_patterns"][-10:]
 
-# ✅ RE-ADDED FOR agent_runner compatibility
 def update_memory_context(task, intent, success, result=None):
     context = load_memory()
     context["last_updated"] = datetime.utcnow().isoformat()
