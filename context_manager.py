@@ -1,4 +1,3 @@
-# context_manager.py
 import json
 import os
 from datetime import datetime
@@ -19,6 +18,7 @@ def load_memory():
             "self_notes": [],
             "task_links": [],
             "self_edits": [],
+            "deployment_events": [],
             "project_name": "Task Agent",
             "purpose": "Build and manage projects via user or ChatGPT instructions.",
             "next_steps": []
@@ -79,6 +79,19 @@ def update_memory_context(task, intent, success, result=None):
     if len(context["recent_tasks"]) > 10:
         context["recent_tasks"] = context["recent_tasks"][-10:]
     record_intent_stats(context, intent, success)
+    save_memory(context)
+
+def log_deployment_event(success, source, note=""):
+    context = load_memory()
+    context.setdefault("deployment_events", [])
+    context["deployment_events"].append({
+        "success": success,
+        "source": source,
+        "note": note,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    if len(context["deployment_events"]) > 20:
+        context["deployment_events"] = context["deployment_events"][-20:]
     save_memory(context)
 
 def summarize_memory(context):
