@@ -1,3 +1,5 @@
+# context_manager.py
+
 import json
 import os
 from datetime import datetime
@@ -81,6 +83,18 @@ def update_memory_context(task, intent, success, result=None):
     record_intent_stats(context, intent, success)
     save_memory(context)
 
+def add_next_step(context, step):
+    context.setdefault("next_steps", [])
+    context["next_steps"].append({
+        "step": step,
+        "timestamp": datetime.utcnow().isoformat()
+    })
+    save_memory(context)
+
+def clear_next_steps(context):
+    context["next_steps"] = []
+    save_memory(context)
+
 def log_deployment_event(success, source, note=""):
     context = load_memory()
     context.setdefault("deployment_events", [])
@@ -100,6 +114,7 @@ def summarize_memory(context):
             "total_confirmed": context["confirmed_count"],
             "total_rejected": context["rejected_count"],
             "intents": context["intent_stats"],
-            "last_task": context["last_result"]
+            "last_task": context["last_result"],
+            "queued": context.get("next_steps", []),
         }
     }
