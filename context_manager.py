@@ -66,6 +66,23 @@ def update_memory(context, log_data):
     record_intent_stats(context, intent, success)
     return context
 
+# ✅ RE-ADDED FOR agent_runner compatibility
+def update_memory_context(task, intent, success, result=None):
+    context = load_memory()
+    context["last_updated"] = datetime.utcnow().isoformat()
+    context["last_result"] = {
+        "task": task,
+        "intent": intent,
+        "status": "success" if success else "fail",
+        "timestamp": context["last_updated"],
+        "result": result or {}
+    }
+    context["recent_tasks"].append(context["last_result"])
+    if len(context["recent_tasks"]) > 10:
+        context["recent_tasks"] = context["recent_tasks"][-10:]
+    record_intent_stats(context, intent, success)
+    save_memory(context)
+
 def summarize_memory(context):
     return {
         "summary": {
