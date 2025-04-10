@@ -1,5 +1,3 @@
-# task_executor.py (Simulated Git push version)
-
 import os
 import re
 import subprocess
@@ -58,7 +56,7 @@ def append_to_file(plan):
         return {"success": False, "error": f"File '{full_path}' does not exist. Cannot append."}
     try:
         with open(full_path, "a") as f:
-            f.write(content)
+            f.write("\n" + content)
         return {"success": True, "message": f"✅ Appended to file: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
