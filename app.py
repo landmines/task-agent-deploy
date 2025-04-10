@@ -1,5 +1,3 @@
-# app.py
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -7,7 +5,7 @@ import json
 from pathlib import Path
 
 from agent_runner import run_agent, finalize_task_execution
-from context_manager import load_memory, summarize_memory
+from context_manager import load_memory, summarize_memory, save_memory
 from task_executor import execute_task
 
 app = Flask(__name__)
@@ -25,6 +23,26 @@ def run():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/run_next", methods=["POST"])
+def run_next():
+    try:
+        memory = load_memory()
+        queue = memory.get("next_steps", [])
+        if not queue:
+            return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
+
+        next_task = queue.pop(0)
+        save_memory(memory)
+
+        result = run_agent(next_task)
+        return jsonify({
+            "message": "✅ Ran next task from memory queue.",
+            "task": next_task,
+            "result": result
+        })
+    except Exception as e:
+        return jsonify({"error": f"run_next failed: {e}"}), 500
 
 @app.route("/latest", methods=["GET"])
 def latest():
