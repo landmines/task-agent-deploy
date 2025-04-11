@@ -7,6 +7,7 @@ from pathlib import Path
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory
 from task_executor import execute_task
+from drive_uploader import list_recent_drive_logs, download_drive_log_file
 
 app = Flask(__name__)
 CORS(app)
@@ -19,18 +20,16 @@ def index():
 def run():
     try:
         data = request.get_json()
-        print("🟢 /run received:", data)  # Log incoming data
+        print("🟢 /run received:", data)
         result = run_agent(data)
-        print("✅ run_agent result:", result)  # Log result for debug
+        print("✅ run_agent result:", result)
 
-        # 🟢 PATCH: Extract taskId from the resulting timestamp for confirmations
         task_id = result.get("timestamp", "").replace(":", "_").replace(".", "_")
         result["taskId"] = task_id
-
         return jsonify(result)
     except Exception as e:
         import traceback
-        print("❌ /run error:", traceback.format_exc())  # Full traceback
+        print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 @app.route("/run_next", methods=["POST"])
@@ -62,7 +61,7 @@ def get_latest_result():
         return jsonify({"message": "No latest result available."}), 200
 
     task = last.get("task", {})
-    task_id = last.get("timestamp", "").replace(":", "_").replace(".", "_")  # 🌟 PATCH: Provide task ID for confirmation
+    task_id = last.get("timestamp", "").replace(":", "_").replace(".", "_")
     return jsonify({
         "content": {
             "confirmationNeeded": task.get("confirmationNeeded", False),
@@ -76,17 +75,15 @@ def get_latest_result():
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
-    from drive_uploader import list_recent_logs
     try:
-        logs = list_recent_logs(limit=5)
-        return jsonify(logs)
+        log_ids = list_recent_drive_logs(limit=5)
+        return jsonify(log_ids)
     except Exception as e:
         return jsonify({"error": f"Drive fetch failed: {e}"}), 500
 
 @app.route("/confirm", methods=["POST"])
 def confirm():
     try:
-        from drive_uploader import download_log_by_task_id  # ✅ NEW: import fallback
         data = request.get_json()
         task_id = data.get("taskId")
         approve = data.get("confirm")
@@ -96,7 +93,7 @@ def confirm():
 
         logs_dir = os.path.join(os.getcwd(), "logs")
 
-        # 🔍 PATCH: Match task ID with full flexibility across all known formats
+        # Search for matching log in local logs
         matching_files = [
             f for f in Path(logs_dir).glob("log*.json")
             if task_id in f.name
@@ -108,20 +105,27 @@ def confirm():
             with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
         else:
-            # ✅ Fallback: Try to get the log from Google Drive
-            log_data = download_log_by_task_id(task_id)
-            if not log_data:
-                return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
+            # Fallback to Drive
+            log_ids = list_recent_drive_logs(limit=15)
+            for file_id in log_ids:
+                candidate = download_drive_log_file(file_id)
+                ts = candidate.get("timestamp", "")
+                candidate_id = ts.replace(":", "_").replace(".", "_")
+                if task_id == candidate_id:
+                    log_data = candidate
+                    break
+
+        if not log_data:
+            return jsonify({"error": f"No matching log found for ID: {task_id}"}), 404
 
         if not approve:
             log_data["rejected"] = True
-            finalize_task_execution("rejected", log_data)  # ✅ FIX: Pass task info if rejected
+            finalize_task_execution("rejected", log_data)
             return jsonify({"message": "❌ Task rejected and logged."})
 
         log_data["confirmationNeeded"] = False
-
         try:
-            result = execute_task(log_data.get("executionPlanned"))
+            result = execute_task(log_data.get("execution"))
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"execution": result})
         except Exception as e:
@@ -130,14 +134,15 @@ def confirm():
             log_data.setdefault("logs", []).append({"executionError": result})
 
         finalize_task_execution("confirmed")
-
         return jsonify({
-            "message": "✅ Task confirmed and executed.",
+            "message": f"✅ Task confirmed and executed.",
             "result": result,
             "success": True
         })
 
     except Exception as e:
+        import traceback
+        print("❌ /confirm error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
 @app.route("/memory", methods=["GET"])
