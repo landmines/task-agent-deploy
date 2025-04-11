@@ -64,12 +64,12 @@ def append_self_note(context, note):
         "timestamp": datetime.utcnow().isoformat()
     })
 
-def add_failure_pattern(context, task, reason):
+def add_failure_pattern(context, pattern):
     context["failure_patterns"].append({
-        "task": task,
-        "reason": reason,
+        **pattern,
         "timestamp": datetime.utcnow().isoformat()
     })
+
     if len(context["failure_patterns"]) > 10:
         context["failure_patterns"] = context["failure_patterns"][-10:]
 
