@@ -116,6 +116,7 @@ def run_and_log_task(memory, task):
             "timestamp": timestamp,
             "taskId": task_id,
             "log_filename": log_filename,
+            "input": task,  # ✅ for consistency with run_agent()
             "execution": task,
             "result": result,
             "memory": memory
