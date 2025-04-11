@@ -38,6 +38,7 @@ def save_memory_context(context):
 
 def record_last_result(context, task, result, fallback=False):
     update_memory_context(
+        context=context,
         task=task,
         intent=task.get("intent") or task.get("action"),
         success=result.get("success", False),
@@ -73,8 +74,7 @@ def add_failure_pattern(context, pattern):
     if len(context["failure_patterns"]) > 10:
         context["failure_patterns"] = context["failure_patterns"][-10:]
 
-def update_memory_context(task, intent, success, result=None):
-    context = load_memory()
+def update_memory_context(context, task, intent, success, result=None):
     context["last_updated"] = datetime.utcnow().isoformat()
     context["last_result"] = {
         "task": task,
