@@ -64,7 +64,7 @@ def append_self_note(context, note):
         "timestamp": datetime.utcnow().isoformat()
     })
 
-def track_failure_pattern(context, task, reason):
+def add_failure_pattern(context, task, reason):
     context["failure_patterns"].append({
         "task": task,
         "reason": reason,
