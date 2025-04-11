@@ -22,12 +22,16 @@ def run():
         print("🟢 /run received:", data)  # Log incoming data
         result = run_agent(data)
         print("✅ run_agent result:", result)  # Log result for debug
+
+        # 🟢 PATCH: Extract taskId from the resulting timestamp for confirmations
+        task_id = result.get("timestamp", "").replace(":", "_")
+        result["taskId"] = task_id
+
         return jsonify(result)
     except Exception as e:
         import traceback
         print("❌ /run error:", traceback.format_exc())  # Full traceback
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/run_next", methods=["POST"])
 def run_next():
@@ -58,13 +62,15 @@ def get_latest_result():
         return jsonify({"message": "No latest result available."}), 200
 
     task = last.get("task", {})
+    task_id = last.get("timestamp", "").replace(":", "_")  # 🌟 PATCH: Provide task ID for confirmation
     return jsonify({
         "content": {
             "confirmationNeeded": task.get("confirmationNeeded", False),
             "timestamp": last.get("timestamp"),
             "result": last.get("result"),
             "task": task,
-            "intent": last.get("intent")
+            "intent": last.get("intent"),
+            "taskId": task_id
         }
     }), 200
 
@@ -88,7 +94,11 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         logs_dir = os.path.join(os.getcwd(), "logs")
-        matching_files = [f for f in Path(logs_dir).glob("log-*.json") if task_id in f.name]
+        # 🔧 PATCH: Match logs with embedded task ID (timestamp)
+        matching_files = [
+            f for f in Path(logs_dir).glob("log-*.json")
+            if task_id in f.name.replace(":", "_")
+        ]
         if not matching_files:
             return jsonify({"error": f"No matching log file found for ID: {task_id}"}), 404
 
@@ -101,7 +111,7 @@ def confirm():
             log_data["rejected"] = True
             with open(log_file, "w") as f:
                 json.dump(log_data, f, indent=2)
-            finalize_task_execution("rejected", log_data)  # FIX: pass rejection status
+            finalize_task_execution("rejected", log_data)  # ✅ FIX: Pass task info if rejected
             return jsonify({"message": "❌ Task rejected and logged."})
 
         log_data["confirmationNeeded"] = False
@@ -118,7 +128,7 @@ def confirm():
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        finalize_task_execution("confirmed")  # FIX: pass confirmation status
+        finalize_task_execution("confirmed")
 
         return jsonify({
             "message": f"✅ Task confirmed and executed from: {log_file.name}",
