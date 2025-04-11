@@ -86,6 +86,7 @@ def logs_from_drive():
 def confirm():
     try:
         data = request.get_json()
+        print("🔍 Received confirm POST:", data)
         task_id = data.get("taskId")
         approve = data.get("confirm")  # True for confirm, False for reject
 
@@ -106,6 +107,8 @@ def confirm():
             if not log_data:
                 return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
 
+        print("📄 Loaded log data:", log_data)
+
         # 2. Handle rejection
         if not approve:
             log_data["rejected"] = True
@@ -115,12 +118,14 @@ def confirm():
         # 3. Handle confirmation
         log_data["confirmationNeeded"] = False
         plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+        print("🧠 Plan to execute:", plan_to_execute)
 
         # Remove confirmation flag to allow execution
         if plan_to_execute.get("confirmationNeeded"):
             plan_to_execute.pop("confirmationNeeded", None)
 
         try:
+            print("⚙ Running execute_task...")
             result = execute_task(plan_to_execute)
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"execution": result})
