@@ -23,7 +23,6 @@ AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py",
 
 os.makedirs(LOG_DIR, exist_ok=True)
 
-
 def run_agent(input_data):
     memory = load_memory()
 
@@ -58,15 +57,21 @@ def run_agent(input_data):
 
     save_memory_context(memory)
 
-    log_path = os.path.join(LOG_DIR, f"log-no-{datetime.utcnow().isoformat().replace(':', '_')}.json")
+    # PATCH: log filename includes timestamp formatted for later confirmation
+    timestamp = datetime.utcnow().isoformat()
+    task_id = timestamp.replace(":", "_").replace(".", "_")
+    log_filename = f"log-{task_id}.json"
+    log_path = os.path.join(LOG_DIR, log_filename)
+
     with open(log_path, "w") as f:
         json.dump({
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": timestamp,
             "input": input_data,
             "execution": plan,
             "result": result,
             "memory": memory
         }, f, indent=2)
+
     subfolder = datetime.utcnow().strftime("%Y-%m-%d")
     upload_log_to_drive(log_path, subfolder)
 
@@ -82,9 +87,8 @@ def run_agent(input_data):
         },
         "overallGoal": get_current_goal(memory),
         "phase": "Phase 4.6 – Self Awareness and Parallelism",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": timestamp
     }
-
 
 def run_and_log_task(memory, task):
     result = execute_task(task)
@@ -96,19 +100,24 @@ def run_and_log_task(memory, task):
 
     save_memory_context(memory)
 
-    log_path = os.path.join(LOG_DIR, f"log-no-{datetime.utcnow().isoformat().replace(':', '_')}.json")
+    # PATCH: log filename includes timestamp formatted for later confirmation
+    timestamp = datetime.utcnow().isoformat()
+    task_id = timestamp.replace(":", "_").replace(".", "_")
+    log_filename = f"log-{task_id}.json"
+    log_path = os.path.join(LOG_DIR, log_filename)
+
     with open(log_path, "w") as f:
         json.dump({
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": timestamp,
             "execution": task,
             "result": result,
             "memory": memory
         }, f, indent=2)
+
     subfolder = datetime.utcnow().strftime("%Y-%m-%d")
     upload_log_to_drive(log_path, subfolder)
 
     return result
-
 
 def run_next():
     memory = load_memory()
@@ -123,7 +132,6 @@ def run_next():
         "task": task,
         "result": result
     }
-
 
 def run_tests_from_file():
     memory = load_memory()
@@ -161,7 +169,6 @@ def run_tests_from_file():
         "results": test_results
     }
 
-
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     if status == "confirmed":
@@ -171,7 +178,6 @@ def finalize_task_execution(status, task_info=None):
         if task_info:
             add_failure_pattern(memory, {"task": task_info})
     save_memory_context(memory)
-
 
 def modify_self(filename, updated_code):
     backup_name = f"{filename}.bak.{datetime.utcnow().isoformat().replace(':', '_')}"
