@@ -19,10 +19,15 @@ def index():
 def run():
     try:
         data = request.get_json()
+        print("🟢 /run received:", data)  # Log incoming data
         result = run_agent(data)
+        print("✅ run_agent result:", result)  # Log result for debug
         return jsonify(result)
     except Exception as e:
+        import traceback
+        print("❌ /run error:", traceback.format_exc())  # Full traceback
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/run_next", methods=["POST"])
 def run_next():
