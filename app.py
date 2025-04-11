@@ -57,12 +57,13 @@ def get_latest_result():
     if not last:
         return jsonify({"message": "No latest result available."}), 200
 
+    task = last.get("task", {})
     return jsonify({
         "content": {
-            "confirmationNeeded": False,
+            "confirmationNeeded": task.get("confirmationNeeded", False),
             "timestamp": last.get("timestamp"),
             "result": last.get("result"),
-            "task": last.get("task"),
+            "task": task,
             "intent": last.get("intent")
         }
     }), 200
