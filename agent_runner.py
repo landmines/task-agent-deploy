@@ -41,6 +41,13 @@ def run_agent(input_data):
             "memory_snapshot": memory.get("next_steps", [])
         }
 
+    # === Step 1: Unified task ID and log timestamp ===
+    timestamp = datetime.utcnow().isoformat()
+    task_id = timestamp.replace(":", "_").replace(".", "_")
+    log_filename = f"log-{task_id}.json"
+    log_path = os.path.join(LOG_DIR, log_filename)
+    subfolder = timestamp[:10]  # "YYYY-MM-DD"
+
     # === Phase 4.6: Execution + fallback planning ===
     plan = input_data.get("executionPlanned") or input_data.get("plan") or input_data.get("task") or input_data
 
@@ -58,12 +65,7 @@ def run_agent(input_data):
 
     save_memory_context(memory)
 
-    # PATCH: log filename includes timestamp formatted for later confirmation
-    timestamp = datetime.utcnow().isoformat()
-    task_id = timestamp.replace(":", "_").replace(".", "_")
-    log_filename = f"log-{task_id}.json"
-    log_path = os.path.join(LOG_DIR, log_filename)
-
+    # === Save to log ===
     with open(log_path, "w") as f:
         json.dump({
             "timestamp": timestamp,
@@ -75,7 +77,6 @@ def run_agent(input_data):
             "memory": memory
         }, f, indent=2)
 
-    subfolder = datetime.utcnow().strftime("%Y-%m-%d")
     upload_log_to_drive(log_path, subfolder)
 
     return {
@@ -120,7 +121,7 @@ def run_and_log_task(memory, task):
             "memory": memory
         }, f, indent=2)
 
-    subfolder = datetime.utcnow().strftime("%Y-%m-%d")
+    subfolder = timestamp[:10]
     upload_log_to_drive(log_path, subfolder)
 
     return result
