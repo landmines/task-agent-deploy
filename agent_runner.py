@@ -56,6 +56,45 @@ def run_agent(input_data):
         plan["action"] = input_data["intent"]
         fallback_used = True
 
+    # ✅ Handle confirmable tasks
+    if plan.get("confirmationNeeded"):
+        result = {
+            "success": True,
+            "message": "⏸️ Task logged but awaiting user confirmation.",
+            "pending": True,
+            "confirmationNeeded": True
+        }
+
+        with open(log_path, "w") as f:
+            json.dump({
+                "timestamp": timestamp,
+                "taskId": task_id,
+                "log_filename": log_filename,
+                "input": input_data,
+                "execution": plan,
+                "result": result,
+                "memory": memory
+            }, f, indent=2)
+
+        upload_log_to_drive(log_path, subfolder)
+
+        return {
+            "result": result,
+            "executionPlanned": plan,
+            "fallbackUsed": fallback_used,
+            "memory": memory,
+            "roadmap": {
+                "currentPhase": "Phase 4.6",
+                "nextPhase": "Phase 4.7 – External Tools + Test Suites",
+                "subgoal": "Enable self-awareness and task parallelism tracking."
+            },
+            "overallGoal": get_current_goal(memory),
+            "phase": "Phase 4.6 – Self Awareness and Parallelism",
+            "timestamp": timestamp,
+            "taskId": task_id,
+            "log_filename": log_filename
+        }
+
     result = execute_task(plan)
     record_last_result(memory, plan, result, fallback_used)
 
