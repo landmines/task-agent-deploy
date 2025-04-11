@@ -18,7 +18,7 @@ from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
 
 MEMORY_PATH = "context.json"
-LOG_DIR = "logs"
+LOG_DIR = os.path.abspath("logs")
 TEST_SUITE_FILE = "test_suite.json"
 AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
 
@@ -27,7 +27,6 @@ os.makedirs(LOG_DIR, exist_ok=True)
 def run_agent(input_data):
     memory = load_memory()
 
-    # === NEW INTENT HANDLER: queue_task ===
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if not task:
@@ -41,16 +40,13 @@ def run_agent(input_data):
             "memory_snapshot": memory.get("next_steps", [])
         }
 
-    # === Step 1: Unified task ID and log timestamp ===
     timestamp = datetime.utcnow().isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
     log_filename = f"log-{task_id}.json"
     log_path = os.path.join(LOG_DIR, log_filename)
-    subfolder = timestamp[:10]  # "YYYY-MM-DD"
+    subfolder = timestamp[:10]
 
-    # === Phase 4.6: Execution + fallback planning ===
     plan = input_data.get("executionPlanned") or input_data.get("plan") or input_data.get("task") or input_data
-
     fallback_used = False
     if "action" not in plan and "intent" in input_data:
         plan["action"] = input_data["intent"]
@@ -65,20 +61,22 @@ def run_agent(input_data):
             "confirmationNeeded": True
         }
 
-        with open(log_path, "w") as f:
-            json.dump({
-                "timestamp": timestamp,
-                "taskId": task_id,
-                "log_filename": log_filename,
-                "input": input_data,
-                "execution": plan,
-                "result": result,
-                "memory": memory
-            }, f, indent=2)
+        try:
+            with open(log_path, "w") as f:
+                json.dump({
+                    "timestamp": timestamp,
+                    "taskId": task_id,
+                    "log_filename": log_filename,
+                    "input": input_data,
+                    "execution": plan,
+                    "result": result,
+                    "memory": memory
+                }, f, indent=2)
+            print(f"✅ Confirmable task log written locally: {log_filename}")
+        except Exception as e:
+            print(f"❌ Failed to write confirmable task log: {e}")
 
         upload_log_to_drive(log_path, subfolder)
-        
-        # ✅ Missing memory update
         record_last_result(memory, plan, result)
         save_memory_context(memory)
 
@@ -108,17 +106,20 @@ def run_agent(input_data):
 
     save_memory_context(memory)
 
-    # === Save to log ===
-    with open(log_path, "w") as f:
-        json.dump({
-            "timestamp": timestamp,
-            "taskId": task_id,
-            "log_filename": log_filename,
-            "input": input_data,
-            "execution": plan,
-            "result": result,
-            "memory": memory
-        }, f, indent=2)
+    try:
+        with open(log_path, "w") as f:
+            json.dump({
+                "timestamp": timestamp,
+                "taskId": task_id,
+                "log_filename": log_filename,
+                "input": input_data,
+                "execution": plan,
+                "result": result,
+                "memory": memory
+            }, f, indent=2)
+        print(f"✅ Log file written: {log_filename}")
+    except Exception as e:
+        print(f"❌ Failed to write log file: {e}")
 
     upload_log_to_drive(log_path, subfolder)
 
@@ -154,16 +155,20 @@ def run_and_log_task(memory, task):
     log_filename = f"log-{task_id}.json"
     log_path = os.path.join(LOG_DIR, log_filename)
 
-    with open(log_path, "w") as f:
-        json.dump({
-            "timestamp": timestamp,
-            "taskId": task_id,
-            "log_filename": log_filename,
-            "input": task,  # ✅ for consistency with run_agent()
-            "execution": task,
-            "result": result,
-            "memory": memory
-        }, f, indent=2)
+    try:
+        with open(log_path, "w") as f:
+            json.dump({
+                "timestamp": timestamp,
+                "taskId": task_id,
+                "log_filename": log_filename,
+                "input": task,
+                "execution": task,
+                "result": result,
+                "memory": memory
+            }, f, indent=2)
+        print(f"✅ Task log saved: {log_filename}")
+    except Exception as e:
+        print(f"❌ Error saving task log: {e}")
 
     subfolder = timestamp[:10]
     upload_log_to_drive(log_path, subfolder)
@@ -223,13 +228,10 @@ def run_tests_from_file():
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     if status == "confirmed":
-        # Increment confirmed count
         track_confirmed(memory)
     elif status == "rejected":
-        # Increment rejected count
         track_rejected(memory)
         if task_info:
-            # Record a brief pattern of the rejection (instead of full log)
             action = task_info.get("execution", {}).get("action") \
                      or task_info.get("execution", {}).get("intent") \
                      or task_info.get("input", {}).get("intent") \
