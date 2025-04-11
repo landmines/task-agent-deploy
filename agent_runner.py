@@ -77,6 +77,10 @@ def run_agent(input_data):
             }, f, indent=2)
 
         upload_log_to_drive(log_path, subfolder)
+        
+        # ✅ Missing memory update
+        record_last_result(memory, plan, result)
+        save_memory_context(memory)
 
         return {
             "result": result,
