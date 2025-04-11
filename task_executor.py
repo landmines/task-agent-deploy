@@ -1,3 +1,4 @@
+# task_executor.py
 import os
 import re
 import subprocess
@@ -27,6 +28,15 @@ def unsupported_action(action):
     }
 
 def execute_task(plan):
+    # ✅ Step 5: No-op execution for confirmable tasks
+    if plan.get("confirmationNeeded") is True:
+        return {
+            "success": True,
+            "message": "⏸️ Task logged but awaiting user confirmation.",
+            "pending": True,
+            "confirmationNeeded": True
+        }
+
     action = plan.get("action") or plan.get("intent")
     if action == "create_file":
         return create_file(plan)
