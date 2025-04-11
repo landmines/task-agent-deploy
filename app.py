@@ -86,6 +86,7 @@ def logs_from_drive():
 @app.route("/confirm", methods=["POST"])
 def confirm():
     try:
+        from drive_uploader import download_log_by_task_id  # ✅ NEW: import fallback
         data = request.get_json()
         task_id = data.get("taskId")
         approve = data.get("confirm")
@@ -101,18 +102,19 @@ def confirm():
             if task_id in f.name
         ]
 
-        if not matching_files:
-            return jsonify({"error": f"No matching log file found for ID: {task_id}"}), 404
+        log_data = None
 
-        log_file = matching_files[0]
-
-        with open(log_file, "r") as f:
-            log_data = json.load(f)
+        if matching_files:
+            with open(matching_files[0], "r") as f:
+                log_data = json.load(f)
+        else:
+            # ✅ Fallback: Try to get the log from Google Drive
+            log_data = download_log_by_task_id(task_id)
+            if not log_data:
+                return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
 
         if not approve:
             log_data["rejected"] = True
-            with open(log_file, "w") as f:
-                json.dump(log_data, f, indent=2)
             finalize_task_execution("rejected", log_data)  # ✅ FIX: Pass task info if rejected
             return jsonify({"message": "❌ Task rejected and logged."})
 
@@ -127,13 +129,10 @@ def confirm():
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"executionError": result})
 
-        with open(log_file, "w") as f:
-            json.dump(log_data, f, indent=2)
-
         finalize_task_execution("confirmed")
 
         return jsonify({
-            "message": f"✅ Task confirmed and executed from: {log_file.name}",
+            "message": "✅ Task confirmed and executed.",
             "result": result,
             "success": True
         })

@@ -105,3 +105,39 @@ def download_drive_log_file(file_id):
 
 # ✅ Step 3 Fix: Alias for compatibility with /logs_from_drive
 list_recent_logs = list_recent_drive_logs
+
+# ✅ NEW FUNCTION: Search all drive logs for one matching the task ID
+def download_log_by_task_id(task_id):
+    """
+    Searches all available Drive logs (by file name and content) for a matching taskId.
+    Returns the parsed JSON log if found, or None.
+    """
+    service = get_drive_service()
+
+    # 1. Gather all folders under ROOT
+    folder_query = (
+        f"'{ROOT_FOLDER_ID}' in parents and "
+        f"mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+    )
+    folders = service.files().list(q=folder_query, fields="files(id, name)").execute().get("files", [])
+
+    # 2. Search all logs within all folders
+    for folder in folders:
+        log_query = (
+            f"'{folder['id']}' in parents and "
+            f"mimeType = 'application/json' and trashed = false"
+        )
+        logs = service.files().list(q=log_query, fields="files(id, name)").execute().get("files", [])
+
+        for log_file in logs:
+            if task_id in log_file['name']:
+                return download_drive_log_file(log_file['id'])
+
+            try:
+                content = download_drive_log_file(log_file['id'])
+                if task_id in json.dumps(content):
+                    return content
+            except Exception:
+                continue
+
+    return None
