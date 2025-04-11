@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from agent_runner import run_agent, finalize_task_execution
-from context_manager import load_memory, summarize_memory, save_memory
+from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task
 from drive_uploader import download_log_by_task_id  # ✅ ADDED
 
@@ -87,38 +87,41 @@ def confirm():
     try:
         data = request.get_json()
         task_id = data.get("taskId")
-        approve = data.get("confirm")
+        approve = data.get("confirm")  # True for confirm, False for reject
 
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
+        # 1. Find the corresponding log (local or Drive)
         logs_dir = os.path.join(os.getcwd(), "logs")
-        matching_files = [
-            f for f in Path(logs_dir).glob("log*.json")
-            if task_id in f.name
-        ]
+        matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
 
         log_data = None
-
         if matching_files:
             with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
         else:
-            print(f"ℹ️ No local match for {task_id}, searching Drive...")
+            print(f"ℹ No local log found for {task_id}, searching on Drive...")
             log_data = download_log_by_task_id(task_id)
             if not log_data:
                 return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
 
+        # 2. Handle rejection
         if not approve:
             log_data["rejected"] = True
             finalize_task_execution("rejected", log_data)
             return jsonify({"message": "❌ Task rejected and logged."})
 
+        # 3. Handle confirmation
         log_data["confirmationNeeded"] = False
-        plan = log_data.get("executionPlanned") or log_data.get("execution")
+        plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+
+        # Remove confirmation flag to allow execution
+        if plan_to_execute.get("confirmationNeeded"):
+            plan_to_execute.pop("confirmationNeeded", None)
 
         try:
-            result = execute_task(plan)
+            result = execute_task(plan_to_execute)
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"execution": result})
         except Exception as e:
@@ -128,6 +131,18 @@ def confirm():
 
         finalize_task_execution("confirmed")
 
+        # 4. Save updated log locally
+        updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
+        try:
+            with open(updated_path, "w") as f:
+                json.dump(log_data, f, indent=2)
+        except Exception as e:
+            print(f"⚠ Could not update local log file: {e}")
+
+        # 5. Update memory context with the execution result
+        memory = load_memory()
+        record_last_result(memory, plan_to_execute, result)
+
         return jsonify({
             "message": "✅ Task confirmed and executed.",
             "result": result,
@@ -135,6 +150,8 @@ def confirm():
         })
 
     except Exception as e:
+        import traceback
+        print("❌ /confirm handler error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
 @app.route("/memory", methods=["GET"])

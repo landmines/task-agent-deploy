@@ -179,11 +179,18 @@ def run_tests_from_file():
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     if status == "confirmed":
+        # Increment confirmed count
         track_confirmed(memory)
     elif status == "rejected":
+        # Increment rejected count
         track_rejected(memory)
         if task_info:
-            add_failure_pattern(memory, {"task": task_info})
+            # Record a brief pattern of the rejection (instead of full log)
+            action = task_info.get("execution", {}).get("action") \
+                     or task_info.get("execution", {}).get("intent") \
+                     or task_info.get("input", {}).get("intent") \
+                     or "unknown task"
+            add_failure_pattern(memory, {"task": f"{action} – Rejected by user"})
     save_memory_context(memory)
 
 def modify_self(filename, updated_code):
