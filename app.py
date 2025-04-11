@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -8,6 +7,7 @@ from pathlib import Path
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory
 from task_executor import execute_task
+from drive_uploader import list_recent_logs, download_drive_log_file
 
 app = Flask(__name__)
 CORS(app)
@@ -76,7 +76,6 @@ def get_latest_result():
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
-    from drive_uploader import list_recent_logs
     try:
         logs = list_recent_logs(limit=5)
         return jsonify(logs)
@@ -86,8 +85,6 @@ def logs_from_drive():
 @app.route("/confirm", methods=["POST"])
 def confirm():
     try:
-        from drive_uploader import list_recent_logs, download_drive_log_file
-
         data = request.get_json()
         task_id = data.get("taskId")
         approve = data.get("confirm")
@@ -96,52 +93,46 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         logs_dir = os.path.join(os.getcwd(), "logs")
-        local_logs = list(Path(logs_dir).glob("log*.json"))
-
-        # STEP 1A – Search local logs
-        matching_files = [f for f in local_logs if task_id in f.name]
+        matching_files = [
+            f for f in Path(logs_dir).glob("log*.json")
+            if task_id in f.name
+        ]
 
         log_data = None
-        log_source = "local"
-        log_path = None
 
+        # Try local match first
         if matching_files:
-            log_path = matching_files[0]
-            with open(log_path, "r") as f:
+            with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
         else:
-            # STEP 1B – Fallback: Search Drive
-            recent_ids = list_recent_logs(limit=10)
-            for file_id in recent_ids:
-                drive_data = download_drive_log_file(file_id)
-                embedded_id = drive_data.get("timestamp", "").replace(":", "_").replace(".", "_")
-                if task_id == embedded_id:
-                    log_data = drive_data
-                    log_source = "drive"
-                    log_path = os.path.join(logs_dir, f"log-{task_id}.json")
-                    break
+            # Fallback to Drive
+            print(f"ℹ️ No local match for {task_id}, searching Drive...")
+            for file_id in list_recent_logs(limit=25):
+                try:
+                    candidate = download_drive_log_file(file_id)
+                    candidate_id = candidate.get("timestamp", "").replace(":", "_").replace(".", "_")
+                    if candidate_id == task_id:
+                        log_data = candidate
+                        break
+                except Exception as e:
+                    print(f"⚠️ Error downloading file {file_id}: {e}")
+                    continue
 
         if not log_data:
             return jsonify({"error": f"No matching log found for ID: {task_id}"}), 404
 
-        # Handle rejection first
         if not approve:
             log_data["rejected"] = True
-            if log_source == "drive":
-                os.makedirs(logs_dir, exist_ok=True)
-                with open(log_path, "w") as f:
-                    json.dump(log_data, f, indent=2)
-            else:
-                with open(log_path, "w") as f:
-                    json.dump(log_data, f, indent=2)
-
             finalize_task_execution("rejected", log_data)
             return jsonify({"message": "❌ Task rejected and logged."})
 
-        # Proceed with confirmation execution
-        log_data["confirmationNeeded"] = False
+        # Step 3 fix: executionPlanned fallback
+        plan = log_data.get("executionPlanned") or log_data.get("execution")
+        if not plan:
+            return jsonify({"error": "No executable plan found in log."}), 500
+
         try:
-            result = execute_task(log_data.get("execution"))
+            result = execute_task(plan)
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"execution": result})
         except Exception as e:
@@ -149,22 +140,16 @@ def confirm():
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"executionError": result})
 
-        # Save updated log locally regardless of source
-        os.makedirs(logs_dir, exist_ok=True)
-        with open(log_path, "w") as f:
-            json.dump(log_data, f, indent=2)
-
+        log_data["confirmationNeeded"] = False
         finalize_task_execution("confirmed")
 
         return jsonify({
-            "message": f"✅ Task confirmed and executed from: {log_source} log.",
+            "message": f"✅ Task confirmed and executed.",
             "result": result,
             "success": True
         })
 
     except Exception as e:
-        import traceback
-        print("❌ /confirm error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
 @app.route("/memory", methods=["GET"])
