@@ -8,8 +8,6 @@ from context_manager import (
     get_current_goal,
     record_last_result,
     add_failure_pattern,
-    add_recent_task,
-    add_self_note,
     get_next_step,
     add_next_step,
     track_confirmed,
