@@ -24,7 +24,7 @@ def run():
         print("✅ run_agent result:", result)  # Log result for debug
 
         # 🟢 PATCH: Extract taskId from the resulting timestamp for confirmations
-        task_id = result.get("timestamp", "").replace(":", "_")
+        task_id = result.get("timestamp", "").replace(":", "_").replace(".", "_")
         result["taskId"] = task_id
 
         return jsonify(result)
@@ -62,7 +62,7 @@ def get_latest_result():
         return jsonify({"message": "No latest result available."}), 200
 
     task = last.get("task", {})
-    task_id = last.get("timestamp", "").replace(":", "_")  # 🌟 PATCH: Provide task ID for confirmation
+    task_id = last.get("timestamp", "").replace(":", "_").replace(".", "_")  # 🌟 PATCH: Provide task ID for confirmation
     return jsonify({
         "content": {
             "confirmationNeeded": task.get("confirmationNeeded", False),
@@ -94,11 +94,13 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         logs_dir = os.path.join(os.getcwd(), "logs")
-        # 🔧 PATCH: Match logs with embedded task ID (timestamp)
+
+        # 🔍 PATCH: Match task ID with full flexibility across all known formats
         matching_files = [
-            f for f in Path(logs_dir).glob("log-*.json")
-            if task_id in f.name.replace(":", "_")
+            f for f in Path(logs_dir).glob("log*.json")
+            if task_id in f.name
         ]
+
         if not matching_files:
             return jsonify({"error": f"No matching log file found for ID: {task_id}"}), 404
 
