@@ -51,19 +51,21 @@ def run_next():
         return jsonify({"error": f"run_next failed: {e}"}), 500
 
 @app.route("/latest", methods=["GET"])
-def latest():
-    logs_dir = os.path.join(os.getcwd(), "logs")
-    files = sorted(Path(logs_dir).glob("*.json"), reverse=True)
+def get_latest_result():
+    memory = load_memory()
+    last = memory.get("last_result")
+    if not last:
+        return jsonify({"message": "No latest result available."}), 200
 
-    for file in files:
-        try:
-            with open(file, "r") as f:
-                content = json.load(f)
-            if isinstance(content, dict) and "executionPlanned" in content:
-                return jsonify({"file": file.name, "content": content})
-        except Exception as e:
-            print(f"❌ Error reading {file.name}: {e}")
-    return jsonify({"error": "❌ No valid logs found in /latest"})
+    return jsonify({
+        "content": {
+            "confirmationNeeded": False,
+            "timestamp": last.get("timestamp"),
+            "result": last.get("result"),
+            "task": last.get("task"),
+            "intent": last.get("intent")
+        }
+    }), 200
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
