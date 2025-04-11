@@ -103,3 +103,6 @@ def download_drive_log_file(file_id):
 
     fh.seek(0)
     return json.load(fh)
+
+# ✅ Step 3 Fix: Alias for app.py compatibility
+list_recent_logs = list_recent_drive_logs

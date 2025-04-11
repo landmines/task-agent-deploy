@@ -37,14 +37,12 @@ def save_memory_context(context):
     return save_memory(context)
 
 def record_last_result(context, task, result, fallback=False):
-    context["last_result"] = {
-        "task": f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip(),
-        "intent": task.get("intent") or task.get("action"),
-        "result": result,
-        "status": "success" if result.get("success") else "fail",
-        "fallbackUsed": fallback,
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    update_memory_context(
+        task=task,
+        intent=task.get("intent") or task.get("action"),
+        success=result.get("success", False),
+        result=result
+    )
 
 def increment_confirmed(context):
     context["confirmed_count"] += 1
@@ -101,6 +99,22 @@ def add_next_step(context, step):
 
 def clear_next_steps(context):
     context["next_steps"] = []
+    save_memory(context)
+
+def get_next_step(context):
+    if not context.get("next_steps"):
+        return None
+    next_item = context["next_steps"].pop(0)
+    context["last_updated"] = datetime.utcnow().isoformat()
+    save_memory(context)
+    return next_item.get("step", next_item)
+
+def track_confirmed(context):
+    increment_confirmed(context)
+    save_memory(context)
+
+def track_rejected(context):
+    increment_rejected(context)
     save_memory(context)
 
 def log_deployment_event(success, source, note=""):

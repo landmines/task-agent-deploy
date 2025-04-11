@@ -54,17 +54,8 @@ def run_agent(input_data):
     result = execute_task(plan)
     record_last_result(memory, plan, result, fallback_used)
 
-    task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} – {plan.get('notes', '')}".strip()
-    status = "success" if result.get("success") else "fail"
-    memory["recent_tasks"].append({
-        "task": task_summary,
-        "intent": plan.get("intent") or plan.get("action"),
-        "result": result,
-        "timestamp": datetime.utcnow().isoformat(),
-        "status": status
-    })
-
     if not result.get("success"):
+        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} – {plan.get('notes', '')}".strip()
         add_failure_pattern(memory, {"task": task_summary, "result": result})
 
     save_memory_context(memory)
@@ -96,25 +87,12 @@ def run_agent(input_data):
     }
 
 
-def run_next():
-    memory = load_memory()
-    task = get_next_step(memory)
-    if not task:
-        return {"error": "⚠️ No queued tasks in memory."}
-
+def run_and_log_task(memory, task):
     result = execute_task(task)
     record_last_result(memory, task, result)
 
-    summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip()
-    memory["recent_tasks"].append({
-        "task": summary,
-        "intent": task.get("intent") or task.get("action"),
-        "result": result,
-        "timestamp": datetime.utcnow().isoformat(),
-        "status": "success" if result.get("success") else "fail"
-    })
-
     if not result.get("success"):
+        summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip()
         add_failure_pattern(memory, {"task": summary, "result": result})
 
     save_memory_context(memory)
@@ -128,6 +106,17 @@ def run_next():
             "memory": memory
         }, f, indent=2)
     upload_log_to_drive(log_path)
+
+    return result
+
+
+def run_next():
+    memory = load_memory()
+    task = get_next_step(memory)
+    if not task:
+        return {"error": "⚠️ No queued tasks in memory."}
+
+    result = run_and_log_task(memory, task)
 
     return {
         "message": "✅ Ran next task from memory queue.",
@@ -156,13 +145,7 @@ def run_tests_from_file():
             "result": result
         })
 
-        memory["recent_tasks"].append({
-            "task": f"[test_{i}] {test.get('filename', '')}",
-            "intent": test.get("intent") or test.get("action"),
-            "result": result,
-            "timestamp": datetime.utcnow().isoformat(),
-            "status": "success" if passed else "fail"
-        })
+        record_last_result(memory, test, result)
 
         if not passed:
             add_failure_pattern(memory, {

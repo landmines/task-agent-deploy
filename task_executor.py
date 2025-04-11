@@ -30,6 +30,12 @@ def execute_task(plan):
         return delete_file(plan)
     elif action == "push_changes":
         return simulate_push()
+    elif action == "modify_file":
+        return {"success": False, "message": "modify_file not implemented yet."}
+    elif action == "create_app":
+        return {"success": False, "message": "create_app not implemented yet."}
+    elif action == "generate_code":
+        return {"success": False, "message": "generate_code not implemented yet."}
     else:
         return {"success": False, "error": f"Unsupported action: {action}"}
 

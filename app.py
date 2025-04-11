@@ -32,13 +32,14 @@ def run_next():
         if not queue:
             return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
 
-        next_task = queue.pop(0)
+        next_item = queue.pop(0)
+        task = next_item.get("step", next_item)
         save_memory(memory)
 
-        result = run_agent(next_task)
+        result = run_agent(task)
         return jsonify({
             "message": "✅ Ran next task from memory queue.",
-            "task": next_task,
+            "task": task,
             "result": result
         })
     except Exception as e:
@@ -92,6 +93,7 @@ def confirm():
             log_data["rejected"] = True
             with open(log_file, "w") as f:
                 json.dump(log_data, f, indent=2)
+            finalize_task_execution("rejected", log_data)  # FIX: pass rejection status
             return jsonify({"message": "❌ Task rejected and logged."})
 
         log_data["confirmationNeeded"] = False
@@ -99,16 +101,16 @@ def confirm():
         try:
             result = execute_task(log_data.get("executionPlanned"))
             log_data["executionResult"] = result
-            log_data["logs"].append({"execution": result})
+            log_data.setdefault("logs", []).append({"execution": result})
         except Exception as e:
             result = {"success": False, "error": f"Execution failed: {str(e)}"}
             log_data["executionResult"] = result
-            log_data["logs"].append({"executionError": result})
+            log_data.setdefault("logs", []).append({"executionError": result})
 
         with open(log_file, "w") as f:
             json.dump(log_data, f, indent=2)
 
-        finalize_task_execution(log_data)
+        finalize_task_execution("confirmed")  # FIX: pass confirmation status
 
         return jsonify({
             "message": f"✅ Task confirmed and executed from: {log_file.name}",
