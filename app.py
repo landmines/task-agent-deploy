@@ -101,7 +101,8 @@ def confirm():
         if matching_files:
             with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
-                else:
+                
+        else:
                 print(f"⚠ No local log found for {task_id}. Skipping Drive download for now.")
                 return jsonify({"error": f"No matching log found locally for ID: {task_id}"}), 404
 
