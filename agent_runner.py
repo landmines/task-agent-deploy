@@ -67,7 +67,8 @@ def run_agent(input_data):
             "result": result,
             "memory": memory
         }, f, indent=2)
-    upload_log_to_drive(log_path)
+    subfolder = datetime.utcnow().strftime("%Y-%m-%d")
+    upload_log_to_drive(log_path, subfolder)
 
     return {
         "result": result,
@@ -103,7 +104,8 @@ def run_and_log_task(memory, task):
             "result": result,
             "memory": memory
         }, f, indent=2)
-    upload_log_to_drive(log_path)
+    subfolder = datetime.utcnow().strftime("%Y-%m-%d")
+    upload_log_to_drive(log_path, subfolder)
 
     return result
 
