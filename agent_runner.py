@@ -1,3 +1,4 @@
+# agent_runner.py
 import os
 import json
 import shutil
@@ -66,6 +67,8 @@ def run_agent(input_data):
     with open(log_path, "w") as f:
         json.dump({
             "timestamp": timestamp,
+            "taskId": task_id,
+            "log_filename": log_filename,
             "input": input_data,
             "execution": plan,
             "result": result,
@@ -87,7 +90,9 @@ def run_agent(input_data):
         },
         "overallGoal": get_current_goal(memory),
         "phase": "Phase 4.6 – Self Awareness and Parallelism",
-        "timestamp": timestamp
+        "timestamp": timestamp,
+        "taskId": task_id,
+        "log_filename": log_filename
     }
 
 def run_and_log_task(memory, task):
@@ -100,7 +105,6 @@ def run_and_log_task(memory, task):
 
     save_memory_context(memory)
 
-    # PATCH: log filename includes timestamp formatted for later confirmation
     timestamp = datetime.utcnow().isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
     log_filename = f"log-{task_id}.json"
@@ -109,6 +113,8 @@ def run_and_log_task(memory, task):
     with open(log_path, "w") as f:
         json.dump({
             "timestamp": timestamp,
+            "taskId": task_id,
+            "log_filename": log_filename,
             "execution": task,
             "result": result,
             "memory": memory
