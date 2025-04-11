@@ -20,10 +20,10 @@ def get_drive_service():
 def upload_log_to_drive(log_file_path, subfolder_name):
     service = get_drive_service()
 
-    # Find or create subfolder (e.g., "2025-04-08")
+    # Step 1: Ensure subfolder exists
     folder_id = find_or_create_subfolder(service, subfolder_name)
 
-    # Prepare metadata and upload
+    # Step 2: Upload the log file
     file_metadata = {
         'name': os.path.basename(log_file_path),
         'mimeType': 'application/json',
@@ -62,7 +62,7 @@ def find_or_create_subfolder(service, subfolder_name):
 def list_recent_drive_logs(limit=5):
     service = get_drive_service()
 
-    # Step 1: Get all subfolders inside ROOT_FOLDER_ID
+    # Step 1: Gather subfolders in ROOT_FOLDER_ID
     folder_query = (
         f"'{ROOT_FOLDER_ID}' in parents and "
         f"mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -72,7 +72,7 @@ def list_recent_drive_logs(limit=5):
 
     all_logs = []
 
-    # Step 2: Look inside each subfolder for JSON logs
+    # Step 2: Collect JSON logs from each subfolder
     for folder in folders:
         folder_id = folder['id']
         log_query = (
@@ -84,12 +84,11 @@ def list_recent_drive_logs(limit=5):
             orderBy='modifiedTime desc',
             fields="files(id, name, modifiedTime)"
         ).execute()
-
         all_logs.extend(log_results.get('files', []))
 
-    # Step 3: Sort and limit to most recent logs
-    all_logs_sorted = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
-    return [file['id'] for file in all_logs_sorted[:limit]]
+    # Step 3: Sort and limit results
+    sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
+    return [file['id'] for file in sorted_logs[:limit]]
 
 def download_drive_log_file(file_id):
     service = get_drive_service()
@@ -104,5 +103,5 @@ def download_drive_log_file(file_id):
     fh.seek(0)
     return json.load(fh)
 
-# ✅ Step 3 Fix: Alias for app.py compatibility
+# ✅ Step 3 Fix: Alias for compatibility with /logs_from_drive
 list_recent_logs = list_recent_drive_logs

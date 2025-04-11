@@ -18,6 +18,14 @@ def backup_file(filepath):
         f_out.write(f_in.read())
     return backup_path
 
+# ✅ PATCH: consistent and extensible error handling for unknown actions
+def unsupported_action(action):
+    return {
+        "success": False,
+        "error": f"Unsupported or unimplemented action: {action}.",
+        "hint": "Check your task type or add implementation for this action."
+    }
+
 def execute_task(plan):
     action = plan.get("action") or plan.get("intent")
     if action == "create_file":
@@ -31,13 +39,13 @@ def execute_task(plan):
     elif action == "push_changes":
         return simulate_push()
     elif action == "modify_file":
-        return {"success": False, "message": "modify_file not implemented yet."}
+        return unsupported_action(action)
     elif action == "create_app":
-        return {"success": False, "message": "create_app not implemented yet."}
+        return unsupported_action(action)
     elif action == "generate_code":
-        return {"success": False, "message": "generate_code not implemented yet."}
+        return unsupported_action(action)
     else:
-        return {"success": False, "error": f"Unsupported action: {action}"}
+        return unsupported_action(action)
 
 def create_file(plan):
     filename = plan.get("filename")
