@@ -19,10 +19,12 @@ from drive_uploader import upload_log_to_drive
 
 MEMORY_PATH = "context.json"
 LOG_DIR = os.path.abspath("logs")
+RENDER_LOG_FILE = "render.log"
 TEST_SUITE_FILE = "test_suite.json"
 AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
 
 os.makedirs(LOG_DIR, exist_ok=True)
+
 
 def run_agent(input_data):
     memory = load_memory()
@@ -142,6 +144,7 @@ def run_agent(input_data):
         "log_filename": log_filename
     }
 
+
 def run_and_log_task(memory, task):
     result = execute_task(task)
     record_last_result(memory, task, result)
@@ -177,6 +180,7 @@ def run_and_log_task(memory, task):
 
     return result
 
+
 def run_next():
     memory = load_memory()
     task = get_next_step(memory)
@@ -190,6 +194,7 @@ def run_next():
         "task": task,
         "result": result
     }
+
 
 def run_tests_from_file():
     memory = load_memory()
@@ -227,6 +232,7 @@ def run_tests_from_file():
         "results": test_results
     }
 
+
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     if status == "confirmed":
@@ -240,6 +246,7 @@ def finalize_task_execution(status, task_info=None):
                      or "unknown task"
             add_failure_pattern(memory, {"task": f"{action} – Rejected by user"})
     save_memory_context(memory)
+
 
 def modify_self(filename, updated_code):
     backup_name = f"{filename}.bak.{datetime.utcnow().isoformat().replace(':', '_')}"

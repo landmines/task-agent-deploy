@@ -105,7 +105,6 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
-        # 1. Find the corresponding log (local or Drive)
         logs_dir = os.path.join(os.getcwd(), "logs")
         matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
 
@@ -119,18 +118,15 @@ def confirm():
 
         print("📄 Loaded log data:", log_data)
 
-        # 2. Handle rejection
         if not approve:
             log_data["rejected"] = True
             finalize_task_execution("rejected", log_data)
             return jsonify({"message": "❌ Task rejected and logged."})
 
-        # 3. Handle confirmation
         log_data["confirmationNeeded"] = False
         plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
         print("🧠 Plan to execute:", plan_to_execute)
 
-        # Remove confirmation flag to allow execution
         if plan_to_execute.get("confirmationNeeded"):
             plan_to_execute.pop("confirmationNeeded", None)
 
@@ -146,7 +142,6 @@ def confirm():
 
         finalize_task_execution("confirmed")
 
-        # 4. Save updated log locally
         updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
         try:
             with open(updated_path, "w") as f:
@@ -154,7 +149,6 @@ def confirm():
         except Exception as e:
             print(f"⚠ Could not update local log file: {e}")
 
-        # 5. Update memory context with the execution result
         memory = load_memory()
         record_last_result(memory, plan_to_execute, result)
 

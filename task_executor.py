@@ -2,10 +2,12 @@
 import os
 import re
 import subprocess
+import json
 from datetime import datetime
 
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
+DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
 def backup_file(filepath):
     if not os.path.exists(filepath):
@@ -19,7 +21,6 @@ def backup_file(filepath):
         f_out.write(f_in.read())
     return backup_path
 
-# ✅ PATCH: consistent and extensible error handling for unknown actions
 def unsupported_action(action):
     return {
         "success": False,
@@ -48,6 +49,8 @@ def execute_task(plan):
         return delete_file(plan)
     elif action == "push_changes":
         return simulate_push()
+    elif action == "write_diagnostic_log":
+        return write_diagnostic(plan)
     elif action == "modify_file":
         return unsupported_action(action)
     elif action == "create_app":
@@ -182,3 +185,15 @@ def simulate_push():
         "message": "🧪 Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git credentials."
     }
+
+def write_diagnostic(plan):
+    log_id = plan.get("filename") or f"log_{datetime.utcnow().isoformat()}"
+    content = plan.get("content") or {}
+    os.makedirs(DIAGNOSTICS_DIR, exist_ok=True)
+    filepath = os.path.join(DIAGNOSTICS_DIR, f"{log_id}.json")
+    try:
+        with open(filepath, "w") as f:
+            json.dump(content, f, indent=2)
+        return {"success": True, "message": f"🩺 Diagnostic log saved to {filepath}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
