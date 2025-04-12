@@ -101,9 +101,7 @@ def download_drive_log_file(file_id, timeout=5):
     try:
         done = False
         while not done:
-        status, done = downloader.next_chunk()
-
-    status, done = downloader.next_chunk()
+            status, done = downloader.next_chunk()
     except Exception as e:
         print(f"⚠️ Drive download failed: {str(e)}")
         return None
