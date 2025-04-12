@@ -25,7 +25,17 @@ def run():
         result = run_agent(data)
         print("✅ run_agent result:", result)
         task_id = result.get("taskId")
-        result["taskId"] = task_id
+
+        # 🛠 Fallback fix for confirmable tasks
+        if not task_id:
+            try:
+                last_result = result.get("memory", {}).get("last_result", {})
+                task_id = last_result.get("timestamp", "").replace(":", "_").replace(".", "_")
+                result["taskId"] = task_id
+            except Exception as e:
+                print("⚠️ Could not extract fallback task_id:", e)
+                result["taskId"] = None
+
         return jsonify(result)
     except Exception as e:
         print("❌ /run error:", traceback.format_exc())
