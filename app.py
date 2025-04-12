@@ -1,13 +1,14 @@
-# app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 import json
 from pathlib import Path
+import traceback
 
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task
+from drive_uploader import download_log_by_task_id  # ✅ Required for Drive fallback
 
 app = Flask(__name__)
 CORS(app)
@@ -27,7 +28,6 @@ def run():
         result["taskId"] = task_id
         return jsonify(result)
     except Exception as e:
-        import traceback
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
@@ -101,38 +101,36 @@ def confirm():
         data = request.get_json()
         print("🔍 Received confirm POST:", data)
         task_id = data.get("taskId")
-        approve = data.get("confirm")  # True for confirm, False for reject
+        approve = data.get("confirm")
 
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         logs_dir = os.path.join(os.getcwd(), "logs")
         matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
-
         log_data = None
+
         if matching_files:
             with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
         else:
-            print(f"⚠ No local log found for {task_id}. Skipping Drive download for now.")
-            return jsonify({"error": f"No matching log found locally for ID: {task_id}"}), 404
+            print(f"ℹ️ No local log found for {task_id}, searching on Drive...")
+            log_data = download_log_by_task_id(task_id)
+            if not log_data:
+                return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
 
-        print("📄 Loaded log data:", log_data)
-
-        if not approve:
+        if approve is False:
             log_data["rejected"] = True
             finalize_task_execution("rejected", log_data)
             return jsonify({"message": "❌ Task rejected and logged."})
 
         log_data["confirmationNeeded"] = False
         plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
-        print("🧠 Plan to execute:", plan_to_execute)
 
         if plan_to_execute.get("confirmationNeeded"):
             plan_to_execute.pop("confirmationNeeded", None)
 
         try:
-            print("⚙ Running execute_task...")
             result = execute_task(plan_to_execute)
             log_data["executionResult"] = result
             log_data.setdefault("logs", []).append({"execution": result})
@@ -148,7 +146,7 @@ def confirm():
             with open(updated_path, "w") as f:
                 json.dump(log_data, f, indent=2)
         except Exception as e:
-            print(f"⚠ Could not update local log file: {e}")
+            print(f"⚠️ Could not update local log file: {e}")
 
         memory = load_memory()
         record_last_result(memory, plan_to_execute, result)
@@ -160,7 +158,6 @@ def confirm():
         })
 
     except Exception as e:
-        import traceback
         print("❌ /confirm handler error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
