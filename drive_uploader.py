@@ -110,7 +110,12 @@ def download_log_by_task_id(task_id):
     """
     Searches all available Drive logs (by file name and content) for a matching taskId.
     Returns the parsed JSON log if found, or None.
+    
+    Args:
+        task_id: Can be either a full timestamp or a processed ID
     """
+    # Normalize the task_id for consistent matching
+    clean_id = task_id.replace(":", "_").replace(".", "_")
     service = get_drive_service()
 
     # 1. Gather all folders under ROOT

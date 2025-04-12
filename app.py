@@ -117,17 +117,30 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         logs_dir = os.path.join(os.getcwd(), "logs")
-        matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
-        log_data = None
-
-        if matching_files:
-            with open(matching_files[0], "r") as f:
-                log_data = json.load(f)
-        else:
-            print(f"ℹ️ No local log found for {task_id}, searching on Drive...")
-            log_data = download_log_by_task_id(task_id)
+        try:
+            # First try exact match
+            matching_files = [f for f in Path(logs_dir).glob(f"log-{task_id}.json")]
+            if not matching_files:
+                # Try flexible match
+                matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
+            
+            log_data = None
+            if matching_files:
+                print(f"📝 Found local log file: {matching_files[0]}")
+                with open(matching_files[0], "r") as f:
+                    log_data = json.load(f)
+            else:
+                print(f"🔍 No local log found for {task_id}, searching on Drive...")
+                try:
+                    log_data = download_log_by_task_id(task_id)
+                except Exception as e:
+                    print(f"⚠️ Drive search failed: {e}")
+                    
             if not log_data:
-                return jsonify({"error": f"No matching log found locally or in Drive for ID: {task_id}"}), 404
+                return jsonify({
+                    "error": f"No matching log found for ID: {task_id}",
+                    "details": "Checked both local storage and Drive"
+                }), 404
 
         if approve is False:
             log_data["rejected"] = True
