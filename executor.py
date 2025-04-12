@@ -1,13 +1,13 @@
 # executor.py
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 
 def execute_action(action_plan):
     result = {
         "action": action_plan.get("action"),
         "status": "not_executed",
         "message": "",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     }
 
     try:

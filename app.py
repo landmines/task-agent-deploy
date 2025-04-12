@@ -23,7 +23,7 @@ def run():
         print("🟢 /run received:", data)
         result = run_agent(data)
         print("✅ run_agent result:", result)
-        task_id = result.get("timestamp", "").replace(":", "_").replace(".", "_")
+        task_id = result.get("taskId")
         result["taskId"] = task_id
         return jsonify(result)
     except Exception as e:
@@ -60,7 +60,8 @@ def get_latest_result():
         return jsonify({"message": "No latest result available."}), 200
 
     task = last.get("task", {})
-    task_id = last.get("timestamp", "").replace(":", "_").replace(".", "_")
+    task_id = last.get("taskId")
+
     return jsonify({
         "content": {
             "confirmationNeeded": task.get("confirmationNeeded", False),

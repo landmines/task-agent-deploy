@@ -3,7 +3,7 @@ import os
 import re
 import subprocess
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
@@ -14,7 +14,7 @@ def backup_file(filepath):
         return None
     os.makedirs(BACKUP_DIR, exist_ok=True)
     filename = os.path.basename(filepath)
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%d_%H-%M-%S")
     backup_name = f"{filename}_BACKUP_{timestamp}"
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     with open(filepath, "r") as f_in, open(backup_path, "w") as f_out:
@@ -160,7 +160,7 @@ def edit_file(plan):
             "backup": backup_path,
             "original_file": filename,
             "instructions": instructions,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(UTC).isoformat()
         }
 
     except Exception as e:
@@ -187,7 +187,7 @@ def simulate_push():
     }
 
 def write_diagnostic(plan):
-    log_id = plan.get("filename") or f"log_{datetime.utcnow().isoformat()}"
+    log_id = plan.get("filename") or f"log_{datetime.now(UTC).isoformat()}"
     content = plan.get("content") or {}
     os.makedirs(DIAGNOSTICS_DIR, exist_ok=True)
     filepath = os.path.join(DIAGNOSTICS_DIR, f"{log_id}.json")

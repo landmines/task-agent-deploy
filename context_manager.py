@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 
 MEMORY_FILE = "context.json"
 
@@ -9,7 +9,7 @@ def load_memory():
         return {
             "confirmed_count": 0,
             "rejected_count": 0,
-            "created": datetime.utcnow().isoformat(),
+            "created": datetime.now(UTC).isoformat(),
             "last_updated": None,
             "last_result": None,
             "recent_tasks": [],
@@ -62,20 +62,20 @@ def record_intent_stats(context, intent, success):
 def append_self_note(context, note):
     context["self_notes"].append({
         "note": note,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     })
 
 def add_failure_pattern(context, pattern):
     context["failure_patterns"].append({
         **pattern,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     })
 
     if len(context["failure_patterns"]) > 10:
         context["failure_patterns"] = context["failure_patterns"][-10:]
 
 def update_memory_context(context, task, intent, success, result=None):
-    context["last_updated"] = datetime.utcnow().isoformat()
+    context["last_updated"] = datetime.now(UTC).isoformat()
     context["last_result"] = {
         "task": task,
         "intent": intent,
@@ -93,7 +93,7 @@ def add_next_step(context, step):
     context.setdefault("next_steps", [])
     context["next_steps"].append({
         "step": step,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     })
     save_memory(context)
 
@@ -105,7 +105,7 @@ def get_next_step(context):
     if not context.get("next_steps"):
         return None
     next_item = context["next_steps"].pop(0)
-    context["last_updated"] = datetime.utcnow().isoformat()
+    context["last_updated"] = datetime.now(UTC).isoformat()
     save_memory(context)
     return next_item.get("step", next_item)
 
@@ -124,7 +124,7 @@ def log_deployment_event(success, source, note=""):
         "success": success,
         "source": source,
         "note": note,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     })
     if len(context["deployment_events"]) > 20:
         context["deployment_events"] = context["deployment_events"][-20:]

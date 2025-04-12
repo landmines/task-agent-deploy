@@ -1,7 +1,7 @@
 import os
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, UTC
 from context_manager import (
     load_memory,
     save_memory_context,
@@ -42,7 +42,7 @@ def run_agent(input_data):
         }
 
     # ✅ Unified timestamp for taskId and log
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
     log_filename = f"log-{task_id}.json"
     log_path = os.path.join(LOG_DIR, log_filename)
@@ -147,7 +147,7 @@ def run_agent(input_data):
 
 def run_and_log_task(memory, task):
     # ✅ Unified timestamp for taskId and log
-    timestamp = datetime.utcnow().isoformat()
+    timestamp = datetime.now(UTC).isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
     log_filename = f"log-{task_id}.json"
     log_path = os.path.join(LOG_DIR, log_filename)
@@ -250,7 +250,7 @@ def finalize_task_execution(status, task_info=None):
 
 
 def modify_self(filename, updated_code):
-    backup_name = f"{filename}.bak.{datetime.utcnow().isoformat().replace(':', '_')}"
+    backup_name = f"{filename}.bak.{datetime.now(UTC).isoformat().replace(':', '_')}"
     shutil.copy(filename, backup_name)
     with open(filename, "w") as f:
         f.write(updated_code)
@@ -259,7 +259,7 @@ def modify_self(filename, updated_code):
     memory["self_edits"].append({
         "filename": filename,
         "backup": backup_name,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(UTC).isoformat()
     })
     save_memory_context(memory)
 

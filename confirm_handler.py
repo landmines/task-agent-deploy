@@ -2,7 +2,7 @@
 import os
 import json
 import glob
-from datetime import datetime
+from datetime import datetime, UTC
 from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
 
@@ -49,7 +49,7 @@ def confirm_task(task_id):
 
     # Optional: Upload to Drive
     try:
-        today_str = datetime.utcnow().isoformat().split("T")[0]
+        today_str = datetime.now(UTC).isoformat().split("T")[0]
         file_id, file_link = upload_log_to_drive(log_path, today_str)
         log_data["driveFileLink"] = file_link
         log_data["driveFileId"] = file_id
