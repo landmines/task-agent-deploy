@@ -123,7 +123,7 @@ def confirm():
             if not matching_files:
                 # Try flexible match
                 matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
-            
+
             log_data = None
             if matching_files:
                 print(f"📝 Found local log file: {matching_files[0]}")
@@ -135,12 +135,14 @@ def confirm():
                     log_data = download_log_by_task_id(task_id)
                 except Exception as e:
                     print(f"⚠️ Drive search failed: {e}")
-                    
+
             if not log_data:
                 return jsonify({
                     "error": f"No matching log found for ID: {task_id}",
                     "details": "Checked both local storage and Drive"
                 }), 404
+        except Exception as e:
+            return jsonify({"error": f"Error accessing logs: {str(e)}"}), 500
 
         if approve is False:
             log_data["rejected"] = True
