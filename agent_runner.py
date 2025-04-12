@@ -62,6 +62,7 @@ def run_agent(input_data):
         }
 
         try:
+            print(f"🧪 Writing confirmable log to path: {log_path}")
             with open(log_path, "w") as f:
                 json.dump({
                     "timestamp": timestamp,
@@ -80,6 +81,7 @@ def run_agent(input_data):
         record_last_result(memory, plan, result)
         save_memory_context(memory)
 
+        print("🧪 Finished returning confirmable response")
         return {
             "result": result,
             "executionPlanned": plan,
