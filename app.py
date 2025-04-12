@@ -128,18 +128,27 @@ def confirm():
                 f"log-{task_id.split('.')[0]}.json"
             ]
             
-            matching_files = []
-            for pattern in timestamp_formats:
-                matches = list(Path(logs_dir).glob(pattern))
-                if matches:
-                    matching_files.extend(matches)
-                    break
-                    
-            if not matching_files:
-                # Fallback to flexible match
-                matching_files = [f for f in Path(logs_dir).glob("log*.json") 
-                                if any(part in f.name for part in [task_id, task_id.replace('+00:00', '')])]
-
+            # Direct path attempt first
+            log_file = os.path.join(logs_dir, f"log-{task_id}.json")
+            if os.path.exists(log_file):
+                matching_files = [Path(log_file)]
+            else:
+                matching_files = []
+                for pattern in timestamp_formats:
+                    matches = list(Path(logs_dir).glob(pattern))
+                    if matches:
+                        matching_files.extend(matches)
+                        break
+                
+                if not matching_files:
+                    # Flexible match as last resort
+                    matching_files = [f for f in Path(logs_dir).glob("log*.json") 
+                                    if any(part in f.name for part in [
+                                        task_id, 
+                                        task_id.replace('+00:00', ''),
+                                        task_id.replace(':', '_').replace('.', '_')
+                                    ])]
+            
             log_data = None
             if matching_files:
                 print(f"📝 Found local log file: {matching_files[0]}")

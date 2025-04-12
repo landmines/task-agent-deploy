@@ -89,7 +89,7 @@ def list_recent_drive_logs(limit=5):
     sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
     return [file['id'] for file in sorted_logs[:limit]]
 
-def download_drive_log_file(file_id, timeout=10):
+def download_drive_log_file(file_id, timeout=5):
     service = get_drive_service()
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
@@ -98,12 +98,22 @@ def download_drive_log_file(file_id, timeout=10):
     import socket
     socket.setdefaulttimeout(timeout)
 
-    done = False
-    while not done:
+    try:
+        done = False
+        while not done:
         status, done = downloader.next_chunk()
 
+    status, done = downloader.next_chunk()
+    except Exception as e:
+        print(f"⚠️ Drive download failed: {str(e)}")
+        return None
+
     fh.seek(0)
-    return json.load(fh)
+    try:
+        return json.load(fh)
+    except Exception as e:
+        print(f"⚠️ Failed to parse Drive log: {str(e)}")
+        return None
 
 # ✅ Step 3 Fix: Alias for compatibility with /logs_from_drive
 list_recent_logs = list_recent_drive_logs
