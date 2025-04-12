@@ -1,4 +1,3 @@
-
 # app.py
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -9,7 +8,6 @@ from pathlib import Path
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task
-from drive_uploader import download_log_by_task_id  # ✅ ADDED
 
 app = Flask(__name__)
 CORS(app)
