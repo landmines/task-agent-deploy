@@ -1,4 +1,3 @@
-# agent_runner.py
 import os
 import json
 import shutil
@@ -42,6 +41,7 @@ def run_agent(input_data):
             "memory_snapshot": memory.get("next_steps", [])
         }
 
+    # ✅ Unified timestamp for taskId and log
     timestamp = datetime.utcnow().isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
     log_filename = f"log-{task_id}.json"
@@ -146,6 +146,13 @@ def run_agent(input_data):
 
 
 def run_and_log_task(memory, task):
+    # ✅ Unified timestamp for taskId and log
+    timestamp = datetime.utcnow().isoformat()
+    task_id = timestamp.replace(":", "_").replace(".", "_")
+    log_filename = f"log-{task_id}.json"
+    log_path = os.path.join(LOG_DIR, log_filename)
+    subfolder = timestamp[:10]
+
     result = execute_task(task)
     record_last_result(memory, task, result)
 
@@ -154,11 +161,6 @@ def run_and_log_task(memory, task):
         add_failure_pattern(memory, {"task": summary, "result": result})
 
     save_memory_context(memory)
-
-    timestamp = datetime.utcnow().isoformat()
-    task_id = timestamp.replace(":", "_").replace(".", "_")
-    log_filename = f"log-{task_id}.json"
-    log_path = os.path.join(LOG_DIR, log_filename)
 
     try:
         with open(log_path, "w") as f:
@@ -175,7 +177,6 @@ def run_and_log_task(memory, task):
     except Exception as e:
         print(f"❌ Error saving task log: {e}")
 
-    subfolder = timestamp[:10]
     upload_log_to_drive(log_path, subfolder)
 
     return result
