@@ -124,6 +124,9 @@ def run_agent(input_data):
         print(f"✅ Log file written: {log_filename}")
     except Exception as e:
         print(f"❌ Failed to write log file: {e}")
+        print("📁 Verifying file presence at:", log_path)
+        print("📂 Logs directory contains:", os.listdir(LOG_DIR))
+
 
     upload_log_to_drive(log_path, subfolder)
 
