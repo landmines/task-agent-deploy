@@ -118,11 +118,25 @@ def confirm():
 
         logs_dir = os.path.join(os.getcwd(), "logs")
         try:
-            # First try exact match
-            matching_files = [f for f in Path(logs_dir).glob(f"log-{task_id}.json")]
+            # Try multiple timestamp formats for local files
+            timestamp_formats = [
+                f"log-{task_id}.json",
+                f"log-{task_id.replace('+00:00', '')}.json",
+                f"log-{task_id.replace('+00_00', '')}.json",
+                f"log-{task_id.split('.')[0]}.json"
+            ]
+            
+            matching_files = []
+            for pattern in timestamp_formats:
+                matches = list(Path(logs_dir).glob(pattern))
+                if matches:
+                    matching_files.extend(matches)
+                    break
+                    
             if not matching_files:
-                # Try flexible match
-                matching_files = [f for f in Path(logs_dir).glob("log*.json") if task_id in f.name]
+                # Fallback to flexible match
+                matching_files = [f for f in Path(logs_dir).glob("log*.json") 
+                                if any(part in f.name for part in [task_id, task_id.replace('+00:00', '')])]
 
             log_data = None
             if matching_files:
@@ -135,6 +149,7 @@ def confirm():
                     log_data = download_log_by_task_id(task_id)
                 except Exception as e:
                     print(f"⚠️ Drive search failed: {e}")
+                    return jsonify({"error": "Log retrieval failed - timeout or connection error"}), 500
 
             if not log_data:
                 return jsonify({
