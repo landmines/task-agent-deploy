@@ -13,7 +13,12 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
             {
                 "intent": "create_app",
                 "template_type": "web",
-                "project_name": "web-app"
+                "project_name": "web-app",
+                "provider": "replit"
+            },
+            {
+                "intent": "run_tests",
+                "scope": "new_app"
             },
             {
                 "intent": "deploy",
@@ -30,6 +35,26 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
             {
                 "intent": "run_tests",
                 "scope": "modified_files"
+            }
+        ],
+        "deploy_updates": [
+            {
+                "intent": "run_tests",
+                "scope": "all"
+            },
+            {
+                "intent": "deploy",
+                "provider": "replit"
+            }
+        ],
+        "modify_code": [
+            {
+                "intent": "modify_file",
+                "requires_confirmation": True
+            },
+            {
+                "intent": "run_tests",
+                "scope": "modified"
             }
         ]
     }
@@ -49,5 +74,38 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
 
 def validate_plan(steps: List[Dict[str, Any]]) -> bool:
     """Validate that a plan's steps are properly structured"""
+    if not steps:
+        return False
+        
     required_fields = ["intent"]
-    return all(all(field in step for field in required_fields) for step in steps)
+    valid_intents = {"create_app", "deploy", "modify_file", "run_tests", "create_file", "append_to_file", "delete_file"}
+    
+    for step in steps:
+        # Check required fields
+        if not all(field in step for field in required_fields):
+            return False
+            
+        # Validate intent
+        if step["intent"] not in valid_intents:
+            return False
+            
+        # Validate provider if deployment
+        if step["intent"] == "deploy" and step.get("provider") != "replit":
+            return False
+            
+    return True
+
+def estimate_risk(step: Dict[str, Any]) -> int:
+    """
+    Estimate risk level of a task step
+    Returns: 0 (safe) to 3 (high risk)
+    """
+    risk_levels = {
+        "create_file": 1,
+        "append_to_file": 1,
+        "modify_file": 2,
+        "delete_file": 3,
+        "deploy": 2,
+        "run_tests": 1
+    }
+    return risk_levels.get(step["intent"], 2)
