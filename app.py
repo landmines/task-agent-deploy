@@ -101,27 +101,32 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         from werkzeug.serving import WSGIRequestHandler
-        WSGIRequestHandler.timeout = 30
+        WSGIRequestHandler.timeout = 120  # Increased timeout
 
         # Normalize taskId format comprehensively
         task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_").replace("T", "_")
         task_id = task_id.split(".")[0]  # Remove microseconds if present
         task_id = task_id.split("+")[0]  # Remove timezone if present
 
+        # Try variations of the task ID for more flexible matching
+        task_id_variations = [
+            task_id,
+            task_id.replace('T', '_'),
+            task_id.replace('+00:00', ''),
+            task_id.replace('+00_00', '')
+        ]
+
         logs_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(logs_dir, exist_ok=True)
 
         try:
             # Try multiple timestamp formats for local files
-            # Remove any accidental double "log-" prefixes
             clean_id = task_id.replace('log-', '')
-            timestamp_formats = [
-                f"log-{clean_id}.json",
-                f"log-{clean_id.replace('+00:00', '')}.json",
-                f"log-{clean_id.replace('+00_00', '')}.json",
-                f"log-{clean_id.split('.')[0]}.json",
-                f"log-{clean_id.split('T')[0]}*.json"
-            ]
+            timestamp_formats = [f"log-{v}.json" for v in task_id_variations]
+            timestamp_formats.extend([
+                f"log-*{clean_id}*.json",
+                f"log-*{clean_id.split('T')[0]}*.json"
+            ])
             print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
 
             # Direct path attempt first
