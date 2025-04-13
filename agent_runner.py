@@ -49,6 +49,25 @@ def run_agent(input_data):
     execution_id = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     memory["current_execution"] = execution_id
     
+    # Handle planning requests
+    if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
+        from planner import plan_tasks, validate_plan
+        goal = input_data.get("goal") or input_data.get("task")
+        plan = plan_tasks(goal)
+        
+        if not validate_plan(plan):
+            return {"success": False, "error": "Invalid plan structure"}
+            
+        memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
+        save_memory_context(memory)
+        
+        return {
+            "success": True,
+            "message": f"✅ Created plan with {len(plan)} steps",
+            "plan": plan,
+            "next_steps": memory["next_steps"]
+        }
+    
     # Check if confirmation needed based on trust
     intent = input_data.get("intent")
     if intent and requires_confirmation(intent, memory):
