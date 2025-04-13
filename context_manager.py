@@ -34,7 +34,8 @@ def load_memory_context():
     return load_memory()
 
 def save_memory_context(context):
-    return save_memory(context)
+    context["last_updated"] = datetime.now(UTC).isoformat()
+    save_memory(context)
 
 def record_last_result(context, task, result, fallback=False):
     update_memory_context(
@@ -115,12 +116,28 @@ def get_next_step(context):
         return None
 
 def track_confirmed(context):
-    increment_confirmed(context)
-    save_memory(context)
+    """Track a confirmed task execution"""
+    context["confirmed_count"] = context.get("confirmed_count", 0) + 1
+    save_memory_context(context)
 
 def track_rejected(context):
-    increment_rejected(context)
-    save_memory(context)
+    """Track a rejected task execution"""
+    context["rejected_count"] = context.get("rejected_count", 0) + 1
+    save_memory_context(context)
+
+def get_trust_score(context, intent=None):
+    """Calculate trust score for an intent or overall"""
+    stats = context.get("intent_stats", {})
+    if intent:
+        intent_data = stats.get(intent, {})
+        success = intent_data.get("success", 0)
+        total = success + intent_data.get("fail", 0)
+        return success / total if total > 0 else 0
+
+    total_confirmed = context.get("confirmed_count", 0)
+    total_rejected = context.get("rejected_count", 0)
+    total = total_confirmed + total_rejected
+    return total_confirmed / total if total > 0 else 0
 
 def log_deployment_event(success, source, note=""):
     context = load_memory()

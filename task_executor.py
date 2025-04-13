@@ -82,8 +82,12 @@ def modify_file(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     
-    # ✅ Step 5: No-op execution for confirmable tasks
-    if plan.get("confirmationNeeded") is True:
+    # Get action type and check risk level
+    action = plan.get("action") or plan.get("intent")
+    risk_level = estimate_risk(plan)
+    
+    # Always require confirmation for high-risk actions
+    if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
             "success": True,
             "message": "⏸️ Task logged but awaiting user confirmation.",
