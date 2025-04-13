@@ -12,6 +12,7 @@ from context_manager import (
     add_next_step,
     track_confirmed,
     track_rejected,
+    get_trust_score,
 )
 from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
