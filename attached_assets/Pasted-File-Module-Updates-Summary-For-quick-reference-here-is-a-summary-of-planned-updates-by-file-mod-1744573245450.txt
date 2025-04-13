@@ -1,0 +1,136 @@
+File & Module Updates Summary
+
+For quick reference, here is a summary of planned updates by file/module, consolidating the steps above:
+
+app.py (Flask App):
+
+Fix the /run_next route to properly retrieve and execute queued tasks (extract the step and use run_agent on it).
+
+Fix the /confirm route to call finalize_task_execution with correct parameters and handle rejection vs confirmation updates.
+
+Correct the log listing route to use the proper list_recent_drive_logs function.
+
+(If needed) Add new routes like /run_all or /cancel_plan to support executing plans and canceling, for convenience.
+
+Ensure CORS and endpoint definitions allow the front-end to use new functionalities (no major changes, just confirming it).
+
+
+context_manager.py:
+
+Add get_next_step(context) to pop the next task from next_steps safely (and save the memory afterward). Also possibly add a requires_confirmation(intent, context) helper to determine if a given intent needs user approval based on trust.
+
+Implement track_confirmed(context) and track_rejected(context) to increment counts and save to context. These will be used when tasks are confirmed or rejected.
+
+Possibly implement a simple trust calculation function (or at least store enough info like success rates per intent in intent_stats which is already there). May add a field for overall trust or autonomy level if desired.
+
+The rest of context structure remains, but we’ll ensure last_updated is set whenever memory changes (maybe in save_memory) and that recent_tasks and failure_patterns are pruned properly (already partially handled).
+
+
+agent_runner.py:
+
+run_agent: Main logic gets several enhancements:
+
+Handle queue_task intent (already present) – no major change needed there aside from ensuring it uses context_manager functions properly.
+
+Add handling for create_app intent: call code generator, loop file creation, call deploy, etc.
+
+Integrate trust check before executing plans: decide to auto-execute or require confirm. If confirm needed, perhaps log the plan and return without running.
+
+If a plan (list of tasks) is provided (e.g. from the planner or memory), handle executing multiple steps sequentially (maybe via an execute_plan helper or a loop here).
+
+After task execution, if auto-confirmed, treat it as confirmed for logging (increment confirmed_count internally).
+
+After each task or plan, consider calling git_manager.commit_changes to commit if there were file modifications.
+
+
+run_next (if kept here): possibly remove or delegate to context_manager.get_next_step + run_agent. Since we fixed it in app.py, we may not need a separate function here.
+
+finalize_task_execution: update to accept a status and optional task info, and call track_confirmed/track_rejected accordingly. Ensure it saves context so the counts persist.
+
+modify_self: verify it’s working as intended (it backs up and writes the file). Might integrate a call to git_manager.commit_changes after modify_self to automatically version-control the self-edit (with an appropriate message).
+
+Add a function execute_plan(plan_list) or integrate plan execution in run_agent as described, to loop through steps and handle success/failure.
+
+Add rollback_last_self_edit function to restore from backup if needed.
+
+Possibly define requires_confirmation(intent, memory) here if not in context_manager.
+
+Ensure AGENT_CORE_FILES or similar lists are up to date if needed (for commit ignore or other uses).
+
+
+task_executor.py (executor.py):
+
+Expand the execute_action match-case to include new intents:
+
+create_directory (if used) to create folders.
+
+modify_file or a general write_file vs append_file if needed.
+
+execute_code to run a code string in sandbox (this might call out to a sandbox function).
+
+In each case, implement necessary safety checks (e.g., for file paths, ensure no traversal outside allowed directory).
+
+Return a dict with "success": True/False and a helpful message for each action.
+
+
+Possibly rename or ensure consistency between execute_task and execute_action if both exist. (Our code references execute_task being imported; maybe unify on one name).
+
+This module might call into others like sandbox or code generator as needed (or those can be done in agent_runner directly; we decide where the logic lives: straightforward way is to keep task_executor limited to simple filesystem operations and do complex logic in agent_runner).
+
+confirm_handler.py:
+
+This standalone module might be redundant with the logic in app.py now. We can either update it similarly (read log, execute planned, etc.) or remove it if we fully handle confirmation in the main app. It was a utility to confirm via reading logs; since we integrated confirm directly in the endpoint, we may not need a separate function. If we keep it, ensure it calls the updated execute_task and updates memory accordingly (similar fixes as in app.py’s confirm route).
+
+To avoid confusion, possibly deprecate confirm_handler and use the /confirm endpoint as the single source of truth for confirming tasks.
+
+
+drive_uploader.py:
+
+Minor change: ensure the listing function name and usage match (list_recent_logs). We might add a small helper list_recent_logs = list_recent_drive_logs for convenience.
+
+Otherwise, Google Drive integration stays as is (we assume service account JSON is configured). Maybe add error handling for when Drive creds are missing (so the agent doesn’t crash if it can’t upload – just log an error).
+
+
+deployment_manager.py:
+
+Enhance deploy_to_vercel to accept a target directory path. The zip_directory function can be modified to take source_dir as a parameter (it already does) and we’ll call it with either “.” or a subfolder. We’ll also double-check that it excludes the agent’s own files if deploying an app subdir (the exclusion filters cover .git, logs, etc., which is good).
+
+Implement a placeholder deploy_to_render function. This could, for now, return a not-implemented message or simulate success if we can’t fully integrate Render’s API. We document that Render support is planned and default remains Vercel.
+
+Possibly add a generic deploy_app(provider, ... ) that chooses between vercel/render as discussed.
+
+Ensure any deployment errors are propagated up so the agent can handle them (currently it returns a dict with error text, which we will use to alert the user).
+
+
+code_generator.py (new):
+
+Implement generate_app_code(spec) as described. Initially, maybe use a simple template for Flask apps. If possible, integrate an OpenAI API call here to make it truly based on spec. We should also include a function for front-end code generation if Phase 3 tasks come soon (like generate_frontend_code(spec) stubbed out).
+
+Make sure to handle cases where the LLM generation fails or returns something unusable – add retries or default templates as fallback.
+
+Also, consider security of generated code: for example, if an LLM suggests installing some unknown library, maybe we restrict to known safe libraries in Phase 2 (Flask, etc.). This ties in with sandboxing and user trust: initially keep the scope narrow.
+
+
+planner.py (new):
+
+Implement plan_tasks(goal) using GPT-4. It should return a list of task dicts. We will have to prompt it carefully (provide context about what intents are available). This might require a prompt template (which we can hardcode) explaining the agent’s capabilities.
+
+Also implement a simpler fallback: if no LLM available or it fails, maybe parse the goal for keywords. (E.g., if “deploy” in text, add a deploy step, if “frontend” in text, add create_ui step, etc. – a very naive approach just so the agent does something).
+
+This module will be critical for letting the agent handle arbitrary requests, so test it with a few scenarios to refine prompts.
+
+
+git_manager.py (new):
+
+Add commit_changes(message) function to perform Git commit & push. Also possibly a revert_last_commit() if we want to allow rollback via Git.
+
+Use subprocess calls to Git. Ensure to handle cases where git is not initialized or remote not set (in our environment, the project likely is a git repo since GitHub integration is mentioned).
+
+We might want to exclude certain files from commit: for example, we don’t need to commit logs or the context.json to GitHub. If a .gitignore is in place, it will handle that. If not, consider adding one via the agent if needed.
+
+After each successful commit, log it in memory (maybe add to self_notes or a new commit_history in context). But since commits are in the Git log, it's less crucial to duplicate in memory; a simple confirmation message in output is fine.
+
+
+tests (if any):
+
+Update or create a basic test_suite.json for critical functions if possible. We saw reference to running tests; we can include tests for new features (like ensure queue works, ensure plan outputs expected steps for a given input, etc.). This will allow quick regression testing by calling /run_tests. This is optional but good to have as the project grows.
