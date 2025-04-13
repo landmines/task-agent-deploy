@@ -256,5 +256,34 @@ def memory_summary():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/rollback/<task_id>", methods=["POST"])
+def rollback_task(task_id):
+    try:
+        logs_dir = os.path.join(os.getcwd(), "logs")
+        log_file = os.path.join(logs_dir, f"log-{task_id}.json")
+        
+        if not os.path.exists(log_file):
+            return jsonify({"error": "Task log not found"}), 404
+            
+        with open(log_file, "r") as f:
+            log_data = json.load(f)
+            
+        if "backup" not in log_data.get("result", {}):
+            return jsonify({"error": "No backup available for rollback"}), 400
+            
+        from task_executor import restore_from_backup
+        result = restore_from_backup(log_data["result"]["backup"])
+        
+        if result["success"]:
+            log_data["rolled_back"] = True
+            log_data["rollback_result"] = result
+            with open(log_file, "w") as f:
+                json.dump(log_data, f, indent=2)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)

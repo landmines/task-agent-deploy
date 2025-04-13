@@ -241,11 +241,25 @@ def track_rejected(memory):
 
 def get_trust_score(memory, intent=None):
     """Calculate trust score for an intent or overall"""
+    # Check for trust override settings
+    if memory.get("trust_settings", {}).get("force_trust"):
+        return 1.0
+    if memory.get("trust_settings", {}).get("always_confirm"):
+        return 0.0
+        
     if intent:
         stats = memory.get("intent_stats", {}).get(intent, {})
         success = stats.get("success", 0)
         total = success + stats.get("failure", 0)
         return (success / total) if total > 5 else 0.0
+
+def update_trust_settings(memory, settings):
+    """Update trust and confirmation settings"""
+    memory.setdefault("trust_settings", {})
+    memory["trust_settings"].update(settings)
+    memory["trust_settings"]["last_updated"] = datetime.now(UTC).isoformat()
+    save_memory_context(memory)
+    return memory["trust_settings"]
 
     confirmed = memory.get("confirmed_count", 0)
     rejected = memory.get("rejected_count", 0)

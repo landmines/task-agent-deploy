@@ -192,7 +192,8 @@ def validate_execution_plan(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
-    
+    task_id = plan.get("task_id") # Added to access task_id
+
     # Cost estimation for various operations
     estimated_cost = 0.0
     if plan.get("uses_gpt"):
@@ -201,7 +202,7 @@ def execute_task(plan):
         output_tokens = len(str(plan.get("response", ""))) / 4
         gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006)  # Current GPT-4 pricing
         estimated_cost += gpt_cost
-        
+
         # Log GPT usage costs
         memory["cost_tracking"]["api_usage_costs"].append({
             "type": "gpt",
@@ -219,16 +220,16 @@ def execute_task(plan):
             "bandwidth_mb": plan.get("bandwidth_mb", 1000)
         })
         estimated_cost += deployment_costs.get("total_cost", 0.0)
-    
+
     # Update cost tracking in memory
     memory = load_memory()
     memory["cost_tracking"]["total_estimated"] += estimated_cost
     memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
-    
+
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
         print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
-        
+
         # Hard threshold - block actions over $10
         if estimated_cost > 10.0:
             return {
@@ -238,7 +239,7 @@ def execute_task(plan):
                 "requires_confirmation": False,
                 "blocked": True
             }
-            
+
         # Require confirmation for any paid actions
         if not plan.get("cost_confirmed"):
             return {
@@ -313,71 +314,33 @@ def execute_task(plan):
         }
 
     action = plan.get("action") or plan.get("intent")
-    if action == "create_file":
-        return create_file(plan)
-    elif action == "append_to_file":
-        return append_to_file(plan)
-    elif action == "edit_file":
-        return edit_file(plan)
-    elif action == "delete_file":
-        return delete_file(plan)
-    elif action == "push_changes":
-        return simulate_push()
-    elif action == "write_diagnostic_log":
-        return write_diagnostic(plan)
-    elif action == "modify_file":
-        return unsupported_action(action)
-    elif action == "create_app":
-        try:
-            template = generate_app_template(plan.get("template_type", "web"))
-            deployment_result = deploy_to_replit(plan.get("project_name", "my-app"))
-            return {
-                "success": True,
-                "message": "✅ App template generated and deployment configured",
-                "template": template,
-                "deployment": deployment_result
+    result = execute_action(plan)
+    task_summary = f"{action} - {plan.get('filename', 'N/A')}"
+    if not result["success"]:
+        # Auto-generate follow-up task with validation
+        follow_up_task = {
+            "intent": "fix_failure",
+            "original_task": task_summary,
+            "error": result.get("error", "Unknown error"),
+            "requires_confirmation": True,
+            "notes": f"Auto-generated fix attempt for failed task: {task_summary}",
+            "validation": {
+                "original_task_id": task_id,
+                "retry_count": 0,
+                "max_retries": 3,
+                "success_criteria": result.get("success_criteria", ["task_completes"])
             }
-        except Exception as e:
-            return {"success": False, "error": f"App generation failed: {str(e)}"}
-    elif action == "generate_code":
-        return unsupported_action(action)
-    elif action == "deploy":
-        try:
-            from deployment_manager import DeploymentManager
-            dm = DeploymentManager()
+        }
+        add_next_step(memory, follow_up_task)
 
-            # Estimate costs
-            resources = {
-                "compute_hours": 24,  # Initial day estimate
-                "storage_mb": plan.get("storage_mb", 100),
-                "bandwidth_mb": plan.get("bandwidth_mb", 1000)
-            }
-
-            cost_estimate = dm.estimate_deployment_cost(resources)
-
-            if not cost_estimate["within_free_tier"]:
-                return {
-                    "success": False,
-                    "error": "Deployment may exceed free tier limits",
-                    "cost_estimate": cost_estimate,
-                    "requires_confirmation": True,
-                    "message": "Please confirm deployment cost implications"
-                }
-
-            template = generate_app_template(plan.get("template_type", "web"))
-            deployment_result = deploy_to_replit(plan.get("project_name", "my-app"))
-
-            return {
-                "success": True,
-                "message": "✅ App template generated and deployment configured (using free tier)",
-                "template": template,
-                "deployment": deployment_result,
-                "cost_estimate": cost_estimate
-            }
-        except Exception as e:
-            return {"success": False, "error": f"Deployment failed: {str(e)}"}
-    else:
-        return unsupported_action(action)
+        # Record retry attempt in memory
+        memory.setdefault("retry_tracking", {})
+        memory["retry_tracking"][task_id] = {
+            "original_error": result.get("error"),
+            "retry_task": follow_up_task,
+            "timestamp": datetime.now(UTC).isoformat()
+        }
+    return result
 
 def create_file(plan):
     filename = plan.get("filename")
