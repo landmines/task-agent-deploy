@@ -423,25 +423,41 @@ def delete_file(plan):
         return {"success": False, "error": str(e)}
 
 def execute_code(plan):
-    """Execute code in sandbox environment"""
+    """Execute code in sandbox environment with resource monitoring"""
     code = plan.get("code")
+    inputs = plan.get("inputs", {})
+
     if not code:
         return {"success": False, "error": "No code provided"}
 
-    from sandbox_runner import run_code
-    result = run_code(code)
+    try:
+        from sandbox_runner import run_code_in_sandbox, ResourceLimitExceeded
+        from datetime import datetime, timezone
 
-    if result["success"]:
+        result = run_code_in_sandbox(code, inputs)
+        
+        if not result["success"]:
+            # Track failure patterns for learning
+            failure = {
+                "type": "code_execution",
+                "error": result["error"],
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            }
+            from context_manager import add_failure_pattern
+            add_failure_pattern(failure)
+            
+        return result
+
+    except ResourceLimitExceeded as e:
         return {
-            "success": True,
-            "message": "✅ Code executed successfully",
-            "output": result["output"]
+            "success": False, 
+            "error": f"Resource limit exceeded: {str(e)}",
+            "resourceError": True
         }
-    else:
+    except Exception as e:
         return {
             "success": False,
-            "error": result["error"],
-            "output": result.get("output")
+            "error": f"Code execution failed: {str(e)}"
         }
 
 def simulate_push():
