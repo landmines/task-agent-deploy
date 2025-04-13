@@ -136,12 +136,14 @@ def confirm():
 
         try:
             # Try multiple timestamp formats for local files
+            # Remove any accidental double "log-" prefixes
+            clean_id = task_id.replace('log-', '')
             timestamp_formats = [
-                f"log-{task_id}.json",
-                f"log-{task_id.replace('+00:00', '')}.json",
-                f"log-{task_id.replace('+00_00', '')}.json",
-                f"log-{task_id.split('.')[0]}.json",
-                f"log-{task_id.split('T')[0]}*.json"  # Flexible date-based match
+                f"log-{clean_id}.json",
+                f"log-{clean_id.replace('+00:00', '')}.json",
+                f"log-{clean_id.replace('+00_00', '')}.json",
+                f"log-{clean_id.split('.')[0]}.json",
+                f"log-{clean_id.split('T')[0]}*.json"  # Flexible date-based match
             ]
             print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
 
