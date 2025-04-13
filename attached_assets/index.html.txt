@@ -1,0 +1,352 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Agent Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      background: #f0f4f8;
+      color: #333;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+    button, select {
+      margin-top: 0.5rem;
+      padding: 0.4rem 1rem;
+      border: none;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+    button:hover:enabled, select:hover {
+      background-color: #2980b9;
+    }
+    pre, textarea {
+      background: #ecf0f1;
+      padding: 1rem;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-x: auto;
+      font-size: 0.9rem;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      max-height: 300px;
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    .confirm-buttons {
+      margin-top: 1rem;
+    }
+    .drive-log {
+      margin-top: 1rem;
+      background-color: #fff;
+      border-left: 4px solid #3498db;
+      padding: 0.5rem;
+    }
+    .log-header {
+      font-weight: bold;
+      cursor: pointer;
+      margin: 0.25rem 0;
+    }
+    .log-content {
+      display: none;
+      margin-top: 0.5rem;
+    }
+    #confirmResult {
+      background: #dff0d8;
+      border-left: 4px solid #3c763d;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Agent Panel</h1>
+
+  <!-- Run New Task -->
+  <section>
+    <div id="taskForm">
+      <label for="preset">Select Task Type:</label>
+      <select id="preset" onchange="loadTemplate()">
+        <option value="">-- Choose a preset --</option>
+        <option value="create_file">Create File</option>
+        <option value="append_to_file">Append to File</option>
+        <option value="edit_file">Edit File</option>
+        <option value="general_task">General Task</option>
+        <option value="confirmable_file">Confirmable Test File</option>
+      </select>
+      <br/><small>🪄 Choose a preset to auto-fill the JSON</small>
+      <textarea id="jsonInput" placeholder='Paste or edit task JSON here'></textarea>
+      <button onclick="submitTask()">▶️ Run New Task</button>
+      <button onclick="runNextTask()">⏭️ Run Next Task</button>
+      <button onclick="copyReport()">📋 Copy Report Summary</button>
+      <button onclick="resetTaskForm()">🔄 Reset</button>
+    </div>
+  </section>
+
+  <!-- Live Response -->
+  <section>
+    <h2>📱 Live Response</h2>
+    <button onclick="loadLatest()">Fetch Latest Response</button>
+    <pre id="latestResponse">No recent response yet.</pre>
+    <div class="confirm-buttons">
+      <button id="confirmBtn" onclick="sendConfirmation(true)" disabled>✅ Confirm</button>
+      <button id="rejectBtn" onclick="sendConfirmation(false)" disabled>❌ Reject</button>
+    </div>
+    <pre id="confirmResult" style="display:none;"></pre>
+  </section>
+
+  <!-- Cloud Logs -->
+  <section>
+    <h2>🔗 Cloud Logs (Google Drive)</h2>
+    <button onclick="loadDriveLogs()">Refresh Drive Logs</button>
+    <div id="driveLogs">No logs loaded yet.</div>
+  </section>
+
+  <!-- Memory Viewer -->
+  <section>
+    <h2>🧠 Agent Memory</h2>
+    <button onclick="loadMemory()">Load Memory</button>
+    <pre id="memoryBox">No memory loaded yet.</pre>
+  </section>
+
+  <!-- Render Logs -->
+  <section>
+    <h2>📝 Render Logs Snapshot</h2>
+    <button onclick="loadRenderLogs()">Refresh Render Logs</button>
+    <pre id="renderLogsBox">No render logs loaded yet.</pre>
+  </section>
+
+  <script>
+    const API_ROOT = "https://task-agent-deploy.onrender.com";
+    let latestTaskId = null;
+
+    const templates = {
+      "create_file": {
+        intent: "create_file",
+        filename: "example.txt",
+        content: "This is a new file."
+      },
+      "append_to_file": {
+        intent: "append_to_file",
+        filename: "example.txt",
+        content: "Appended content here."
+      },
+      "edit_file": {
+        intent: "edit_file",
+        filename: "example.txt",
+        instructions: "Replace 'old' with 'new'."
+      },
+      "general_task": {
+        task: "Please summarize this paragraph..."
+      },
+      "confirmable_file": {
+        intent: "create_file",
+        filename: "step6_confirm_test.txt",
+        content: "Step 6 test file content",
+        confirmationNeeded: true
+      }
+    };
+
+    function resetTaskForm() {
+      document.getElementById("preset").selectedIndex = 0;
+      document.getElementById("jsonInput").value = "";
+      document.getElementById("latestResponse").innerText = "No recent response yet.";
+      document.getElementById("confirmResult").style.display = "none";
+      document.getElementById("confirmResult").innerText = "";
+      document.getElementById("confirmBtn").disabled = true;
+      document.getElementById("rejectBtn").disabled = true;
+      latestTaskId = null;
+    }
+
+    function loadTemplate() {
+      const val = document.getElementById("preset").value;
+      const box = document.getElementById("jsonInput");
+      if (val && templates[val]) {
+        box.value = JSON.stringify(templates[val], null, 2);
+      }
+    }
+
+    async function submitTask() {
+      try {
+        const jsonBox = document.getElementById("jsonInput");
+        const rawText = jsonBox.value;
+        const json = JSON.parse(rawText);
+
+        document.getElementById("latestResponse").innerText = "Submitting... please wait...";
+
+        const res = await fetch(`${API_ROOT}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(json)
+        });
+
+        const result = await res.json();
+        document.getElementById("latestResponse").innerText = "✅ Task submitted. Waiting for result...";
+
+        setTimeout(() => {
+          loadLatest(5);
+          console.log("🕒 Delay passed, fetching latest task for confirmation.");
+        }, 3000);
+
+        resetTaskForm();
+      } catch (err) {
+        alert("❌ Invalid JSON or request error:\n" + err.message);
+      }
+    }
+
+    async function runNextTask() {
+      try {
+        const res = await fetch(`${API_ROOT}/run_next`, { method: "POST" });
+        const data = await res.json();
+        document.getElementById("latestResponse").innerText = JSON.stringify(data, null, 2);
+        loadMemory();
+      } catch (err) {
+        alert("❌ Failed to run next task:\n" + err.message);
+      }
+    }
+
+    async function loadLatest(retryCount = 3) {
+      const panel = document.getElementById("latestResponse");
+      const confirmBtn = document.getElementById("confirmBtn");
+      const rejectBtn = document.getElementById("rejectBtn");
+
+      for (let i = 0; i < retryCount; i++) {
+        try {
+          const res = await fetch(`${API_ROOT}/latest`);
+          const data = await res.json();
+
+          if (data && data.content && typeof data.content === "object") {
+            panel.innerText = JSON.stringify(data.content, null, 2);
+
+            const needsConfirm = data.content.confirmationNeeded || false;
+            const timestampRaw = data.content.timestamp || Date.now().toString();
+            const taskId = timestampRaw.replace(/[:/.\s+]/g, "_").replace(/__/g, "_");
+
+            if (needsConfirm && taskId) {
+              latestTaskId = taskId;
+              confirmBtn.disabled = false;
+              rejectBtn.disabled = false;
+            } else {
+              latestTaskId = null;
+              confirmBtn.disabled = true;
+              rejectBtn.disabled = true;
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn("Retrying fetch /latest...", err);
+        }
+        await new Promise(res => setTimeout(res, 1000));
+      }
+
+      panel.innerText = "❌ Could not load response after retries.";
+      confirmBtn.disabled = true;
+      rejectBtn.disabled = true;
+    }
+
+    async function sendConfirmation(confirm) {
+      if (!latestTaskId) return alert("❌ No task to confirm.");
+      const res = await fetch(`${API_ROOT}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: latestTaskId, confirm })
+      });
+      const result = await res.json();
+      const resultBox = document.getElementById("confirmResult");
+      resultBox.style.display = "block";
+      resultBox.textContent = JSON.stringify(result, null, 2);
+      document.getElementById("confirmBtn").disabled = true;
+      document.getElementById("rejectBtn").disabled = true;
+      latestTaskId = null;
+      loadMemory();
+    }
+
+    async function loadDriveLogs() {
+      const res = await fetch(`${API_ROOT}/logs_from_drive`);
+      const logs = await res.json();
+      const container = document.getElementById("driveLogs");
+      container.innerHTML = "";
+
+      if (!Array.isArray(logs) || logs.length === 0) {
+        container.innerText = "No logs found in Drive.";
+        return;
+      }
+
+      logs.slice(0, 5).forEach(log => {
+        const div = document.createElement("div");
+        div.className = "drive-log";
+        const header = document.createElement("div");
+        header.className = "log-header";
+        header.textContent = `📄 ${log.filename || log.fileId}`;
+        const content = document.createElement("pre");
+        content.className = "log-content";
+        content.textContent = JSON.stringify(log.content, null, 2);
+
+        header.onclick = () => {
+          content.style.display = content.style.display === "block" ? "none" : "block";
+        };
+
+        div.appendChild(header);
+        div.appendChild(content);
+        container.appendChild(div);
+      });
+    }
+
+    async function loadMemory() {
+      const box = document.getElementById("memoryBox");
+      try {
+        const res = await fetch(`${API_ROOT}/memory`);
+        const data = await res.json();
+        box.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        box.textContent = "❌ Failed to load memory:\n" + err.message;
+      }
+    }
+
+    async function loadRenderLogs() {
+      const box = document.getElementById("renderLogsBox");
+      try {
+        const res = await fetch(`${API_ROOT}/logs_snapshot`);
+        const data = await res.json();
+        if (data.success) {
+          box.textContent = data.logs.join("\n");
+        } else {
+          box.textContent = "❌ Failed to load render logs:\n" + (data.error || "unknown error");
+        }
+      } catch (err) {
+        box.textContent = "❌ Error while loading render logs:\n" + err.message;
+      }
+    }
+
+    function copyReport() {
+      const fetchText = document.getElementById("latestResponse").textContent;
+      const confirmText = document.getElementById("confirmResult").textContent;
+      const memoryText = document.getElementById("memoryBox").textContent;
+      const renderText = document.getElementById("renderLogsBox").textContent;
+      const summary = `---\nFetch Response:\n${fetchText}\n\n---\nConfirm Result:\n${confirmText}\n\n---\nMemory:\n${memoryText}\n\n---\nRender Logs:\n${renderText}`;
+      navigator.clipboard.writeText(summary).then(() => {
+        alert("📋 Report copied to clipboard.");
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,51 +1,50 @@
+
 {
-  "testSuiteName": "Phase 3.2 - Task Planning Core Logic",
-  "created": "2025-04-09",
+  "testSuiteName": "Task Agent Core Functionality",
+  "created": "2025-04-13",
   "tests": [
     {
-      "task": "Please create a file named phase-3-2-create.txt with the content: 'Create test confirmed.'",
-      "intent": "",
+      "task": "Create a test file",
+      "intent": "create_file",
       "expected": {
-        "action": "create_file",
-        "filename": "phase-3-2-create.txt"
+        "success": true,
+        "filename": "test_output.txt",
+        "content": "Test content"
       }
     },
     {
-      "task": "Append this line to phase-3-2-create.txt: 'Appended via smart planning.'",
-      "intent": "",
+      "task": "Modify existing file",
+      "intent": "modify_file", 
       "expected": {
-        "action": "append_to_file",
-        "filename": "phase-3-2-create.txt"
+        "success": true,
+        "filename": "test_output.txt",
+        "backup_created": true
       }
     },
     {
-      "task": "Replace 'test' with 'suite' in phase-3-2-create.txt",
-      "intent": "",
+      "task": "Execute sandboxed code",
+      "intent": "execute_code",
+      "code": "x = 1 + 1; result = x",
       "expected": {
-        "action": "edit_file",
-        "filename": "phase-3-2-create.txt"
+        "success": true,
+        "return_value": 2
       }
     },
     {
-      "task": "Delete the file phase-3-2-create.txt",
-      "intent": "",
+      "task": "Test resource limits",
+      "intent": "execute_code",
+      "code": "x = ' ' * (1024 * 1024 * 300)",
       "expected": {
-        "action": "delete_file",
-        "filename": "phase-3-2-create.txt"
+        "success": false,
+        "error": "memory limit exceeded"
       }
     },
     {
-      "task": "Awaken the ancient fire serpent",
-      "intent": "",
+      "task": "Test deployment planning",
+      "intent": "deploy",
       "expected": {
-        "action": "review"
-      }
-    },
-    {
-      "task": "Summarize the following notes into a list...",
-      "intent": "",
-      "expected": {
-        "action": "review"
+        "success": true,
+        "requires_confirmation": true
       }
     }
   ]
