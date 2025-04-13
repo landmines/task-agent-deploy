@@ -258,8 +258,29 @@ def update_trust_settings(memory, settings):
     memory.setdefault("trust_settings", {})
     memory["trust_settings"].update(settings)
     memory["trust_settings"]["last_updated"] = datetime.now(UTC).isoformat()
+    
+    # Track safety preferences
+    memory["trust_settings"].setdefault("safety_preferences", {
+        "always_confirm": False,
+        "force_trust": False,
+        "auto_rollback": True,
+        "failure_threshold": 3
+    })
+    
     save_memory_context(memory)
     return memory["trust_settings"]
+
+def check_failure_patterns(memory, task_result):
+    """Check if task needs automatic rollback"""
+    if not task_result.get("success"):
+        patterns = memory.get("failure_patterns", [])
+        recent_failures = [p for p in patterns 
+                         if p.get("timestamp", "") > 
+                         (datetime.now(UTC) - timedelta(hours=1)).isoformat()]
+        
+        if len(recent_failures) >= memory.get("trust_settings", {}).get("safety_preferences", {}).get("failure_threshold", 3):
+            return True
+    return False
 
     confirmed = memory.get("confirmed_count", 0)
     rejected = memory.get("rejected_count", 0)

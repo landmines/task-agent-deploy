@@ -192,7 +192,22 @@ def validate_execution_plan(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
-    task_id = plan.get("task_id") # Added to access task_id
+    task_id = plan.get("task_id")
+    
+    # Handle retry validation
+    if plan.get("intent") == "fix_failure":
+        validation = plan.get("validation", {})
+        retry_count = validation.get("retry_count", 0)
+        
+        if retry_count >= validation.get("max_retries", 3):
+            return {
+                "success": False,
+                "error": "Maximum retry attempts reached",
+                "requires_manual_intervention": True
+            }
+            
+        # Update retry count
+        plan["validation"]["retry_count"] = retry_count + 1 # Added to access task_id
 
     # Cost estimation for various operations
     estimated_cost = 0.0

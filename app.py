@@ -4,10 +4,13 @@ import os
 import json
 from pathlib import Path
 import traceback
+from datetime import datetime, timezone as tz
+
+UTC = tz.utc
 
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
-from task_executor import execute_task
+from task_executor import execute_task, restore_from_backup
 from drive_uploader import download_log_by_task_id  # ✅ Required for Drive fallback
 
 app = Flask(__name__)
@@ -42,14 +45,14 @@ def run_next():
     try:
         memory = load_memory()
         next_item = memory.get("next_steps", [])
-        
+
         if not next_item:
             return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
-            
+
         task = next_item[0].get("step", next_item[0])
         memory["next_steps"] = next_item[1:]  # Remove executed task
         save_memory(memory)
-        
+
         result = run_agent(task)
         if not result.get("success", False):
             return jsonify({
@@ -261,29 +264,55 @@ def rollback_task(task_id):
     try:
         logs_dir = os.path.join(os.getcwd(), "logs")
         log_file = os.path.join(logs_dir, f"log-{task_id}.json")
-        
+
         if not os.path.exists(log_file):
             return jsonify({"error": "Task log not found"}), 404
-            
+
         with open(log_file, "r") as f:
             log_data = json.load(f)
-            
+
         if "backup" not in log_data.get("result", {}):
             return jsonify({"error": "No backup available for rollback"}), 400
-            
-        from task_executor import restore_from_backup
+
         result = restore_from_backup(log_data["result"]["backup"])
-        
+
         if result["success"]:
             log_data["rolled_back"] = True
             log_data["rollback_result"] = result
             with open(log_file, "w") as f:
                 json.dump(log_data, f, indent=2)
-        
+
         return jsonify(result)
-        
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/rollback_last', methods=["POST"])
+def rollback_last():
+    try:
+        memory = load_memory()
+        last_result = memory.get("last_result", {})
+        if not last_result:
+            return jsonify({"error": "No previous task found"}), 404
+
+        result = last_result.get("result", {})
+        if "backup" not in result:
+            return jsonify({"error": "No backup available for last task"}), 400
+
+        rollback_result = restore_from_backup(result["backup"])
+
+        if rollback_result["success"]:
+            memory["last_rollback"] = {
+                "task": last_result,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "result": rollback_result
+            }
+            save_memory(memory)
+
+        return jsonify(rollback_result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
