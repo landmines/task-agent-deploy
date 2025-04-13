@@ -112,7 +112,7 @@ def logs_snapshot():
 def confirm():
     if request.method == "OPTIONS":
         return "", 200
-        
+
     try:
         data = request.get_json()
         print("🔍 Received confirm POST:", data)
@@ -124,7 +124,7 @@ def confirm():
 
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
-            
+
         # Normalize taskId format
         task_id = task_id.replace(":", "_").replace(".", "_")
         if not task_id.startswith("log-"):
@@ -141,7 +141,7 @@ def confirm():
                 f"log-{task_id.replace('+00_00', '')}.json",
                 f"log-{task_id.split('.')[0]}.json"
             ]
-            
+
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
             if os.path.exists(log_file):
@@ -151,9 +151,14 @@ def confirm():
                 for pattern in timestamp_formats:
                     matches = list(Path(logs_dir).glob(pattern))
                     if matches:
+                        print(f"📁 Found logs matching {pattern}:", [f.name for f in matches])
                         matching_files.extend(matches)
-                        break
-                
+
+                if len(matching_files) > 1:
+                    # Sort by creation time and take most recent
+                    matching_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    print(f"⚠️ Multiple matches found, using most recent: {matching_files[0].name}")
+
                 if not matching_files:
                     # Flexible match as last resort
                     matching_files = [f for f in Path(logs_dir).glob("log*.json") 
@@ -162,7 +167,7 @@ def confirm():
                                         task_id.replace('+00:00', ''),
                                         task_id.replace(':', '_').replace('.', '_')
                                     ])]
-            
+
             log_data = None
             if matching_files:
                 print(f"📝 Found local log file: {matching_files[0]}")
