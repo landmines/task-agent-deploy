@@ -37,25 +37,39 @@ import hashlib
 
 class DeploymentManager:
     def __init__(self):
+        self.free_tier_limits = {
+            "compute_hours": 750,  # Monthly free hours
+            "storage_mb": 500,     # Free storage in MB  
+            "bandwidth_mb": 100000 # Free bandwidth in MB
+        }
         self.cost_metrics = {
-            "compute": 0.000012,  # Per second
-            "storage": 0.000001,  # Per MB per hour
-            "bandwidth": 0.00001  # Per MB
+            "compute": 0.000594,  # Per hour after free tier
+            "storage": 0.000097,  # Per MB per hour after free tier 
+            "bandwidth": 0.000054  # Per MB after free tier
         }
 
-    def estimate_deployment_cost(self, resources: Dict[str, Any]) -> Dict[str, float]:
-        """Estimate deployment costs based on resource usage"""
-        compute_hours = resources.get("compute_hours", 0)
-        storage_mb = resources.get("storage_mb", 0)
-        bandwidth_mb = resources.get("bandwidth_mb", 0)
-
+    def estimate_deployment_cost(self, resources: Dict[str, Any]) -> Dict[str, Any]:
+        """Estimate costs for deployment based on expected resource usage"""
+        compute_cost = max(0, (resources["compute_hours"] - self.free_tier_limits["compute_hours"])) * self.cost_metrics["compute"]
+        storage_cost = max(0, (resources["storage_mb"] - self.free_tier_limits["storage_mb"])) * self.cost_metrics["storage"]
+        bandwidth_cost = max(0, (resources["bandwidth_mb"] - self.free_tier_limits["bandwidth_mb"])) * self.cost_metrics["bandwidth"]
+        
+        total_cost = compute_cost + storage_cost + bandwidth_cost
+        
         return {
-            "compute_cost": compute_hours * 3600 * self.cost_metrics["compute"],
-            "storage_cost": storage_mb * self.cost_metrics["storage"] * 24,
-            "bandwidth_cost": bandwidth_mb * self.cost_metrics["bandwidth"],
-            "total_cost": (compute_hours * 3600 * self.cost_metrics["compute"]) + 
-                         (storage_mb * self.cost_metrics["storage"] * 24) + 
-                         (bandwidth_mb * self.cost_metrics["bandwidth"])
+            "total_cost": total_cost,
+            "breakdown": {
+                "compute": compute_cost,
+                "storage": storage_cost,
+                "bandwidth": bandwidth_cost
+            },
+            "within_free_tier": total_cost == 0,
+            "estimated_monthly": total_cost * 30,
+            "free_tier_usage": {
+                "compute_hours": min(100, (resources["compute_hours"] / self.free_tier_limits["compute_hours"]) * 100),
+                "storage": min(100, (resources["storage_mb"] / self.free_tier_limits["storage_mb"]) * 100),
+                "bandwidth": min(100, (resources["bandwidth_mb"] / self.free_tier_limits["bandwidth_mb"]) * 100)
+            }
         }
 
     def optimize_deployment(self, config: Dict[str, Any]) -> Dict[str, Any]:
