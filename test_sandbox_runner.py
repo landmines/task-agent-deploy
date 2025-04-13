@@ -1,36 +1,43 @@
 
 import unittest
-from sandbox_runner import run_code, SandboxViolation
+from sandbox_runner import run_code_in_sandbox, SandboxException
 
 class TestSandboxRunner(unittest.TestCase):
     def test_basic_execution(self):
-        code = "print('hello world')"
-        result = run_code(code)
+        code = "print('hello')"
+        result = run_code_in_sandbox(code)
         self.assertTrue(result["success"])
-        self.assertEqual(result["output"].strip(), "hello world")
-        
-    def test_restricted_import(self):
-        code = "import os\nprint(os.getcwd())"
-        result = run_code(code)
+        self.assertEqual(result["output"].strip(), "hello")
+
+    def test_execution_timeout(self):
+        code = "while True: pass"
+        result = run_code_in_sandbox(code, timeout=1)
         self.assertFalse(result["success"])
-        self.assertIn("Security violation", result["error"])
-        
-    def test_restricted_class(self):
-        code = "class Test: pass"
-        result = run_code(code)
-        self.assertFalse(result["success"])
-        
+        self.assertIn("timeout", result["error"].lower())
+
     def test_syntax_error(self):
-        code = "print('unclosed"
-        result = run_code(code)
+        code = "print('hello'"  # Missing closing parenthesis
+        result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
-        self.assertIn("Syntax error", result["error"])
-        
-    def test_runtime_error(self):
-        code = "1/0"
-        result = run_code(code)
+        self.assertIn("SyntaxError", result["error"])
+
+    def test_restricted_imports(self):
+        code = "import os; os.system('ls')"
+        result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
-        self.assertIn("Runtime error", result["error"])
+        self.assertIn("SecurityError", result["error"])
+
+    def test_memory_limit(self):
+        code = "x = [0] * 1000000000"  # Attempt to allocate large memory
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("MemoryError", result["error"])
+
+    def test_file_access(self):
+        code = "with open('test.txt', 'w') as f: f.write('test')"
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("PermissionError", result["error"])
 
 if __name__ == '__main__':
     unittest.main()

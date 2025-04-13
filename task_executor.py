@@ -97,9 +97,37 @@ def estimate_risk(plan):
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
 
+def validate_execution_plan(plan):
+    """Validate execution plan before running"""
+    required_fields = ["action"] if "action" in plan else ["intent"]
+    if not all(field in plan for field in required_fields):
+        return False, "Missing required fields in plan"
+        
+    valid_actions = {
+        "create_file", "append_to_file", "edit_file", 
+        "delete_file", "execute_code", "push_changes"
+    }
+    action = plan.get("action") or plan.get("intent")
+    if action not in valid_actions:
+        return False, f"Invalid action: {action}"
+    
+    return True, None
+
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
+    
+    # Validate plan before execution
+    is_valid, error = validate_execution_plan(plan)
+    if not is_valid:
+        return {
+            "success": False,
+            "error": error,
+            "execution_metadata": {
+                "start_time": execution_start.isoformat(),
+                "status": "validation_failed"
+            }
+        }
 
     # Handle code execution in sandbox
     if plan.get("action") == "execute_code":

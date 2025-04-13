@@ -2,6 +2,8 @@ import sys
 import os
 import ast
 import builtins
+import subprocess
+import tempfile
 from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
 from typing import Dict, Any, Optional
@@ -25,6 +27,9 @@ RESTRICTED_NODES = {
 class SandboxViolation(Exception):
     pass
 
+class SandboxException(Exception):
+    pass
+
 def validate_ast(node: ast.AST) -> bool:
     """Check if AST contains any restricted operations"""
     for child in ast.walk(node):
@@ -40,46 +45,73 @@ def create_safe_globals() -> Dict[str, Any]:
     }
     return safe_globals
 
-def run_code(code: str, timeout: Optional[int] = 5) -> Dict[str, Any]:
-    """
-    Run code in a restricted environment
-    Returns: Dict with success, output, and error information
-    """
+def run_code_in_sandbox(code, timeout=5):
+    """Execute code in sandbox environment with security restrictions"""
+    restricted_imports = ["os", "subprocess", "sys", "builtins"]
+    restricted_builtins = ["eval", "exec", "__import__"]
+
+    # Check for restricted imports
+    for imp in restricted_imports:
+        if f"import {imp}" in code or f"from {imp}" in code:
+            return {
+                "success": False,
+                "error": "SecurityError: Restricted import attempted",
+                "output": None
+            }
+
+    # Check for restricted builtins
+    for builtin in restricted_builtins:
+        if builtin in code:
+            return {
+                "success": False,
+                "error": "SecurityError: Restricted builtin usage attempted",
+                "output": None
+            }
+
     try:
-        # Parse and validate code
-        tree = ast.parse(code)
-        validate_ast(tree)
+        # Create a secure temporary directory
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Write code to a temporary file
+            code_file = os.path.join(tmpdir, "code.py")
+            with open(code_file, "w") as f:
+                f.write(code)
 
-        # Prepare execution environment
-        stdout = StringIO()
-        stderr = StringIO()
-        safe_globals = create_safe_globals()
+            # Run with resource limits
+            cmd = [
+                "python3", "-c",
+                f"import resource; resource.setrlimit(resource.RLIMIT_AS, (500*1024*1024, -1)); " + 
+                f"exec(open('{code_file}').read())"
+            ]
 
-        # Execute with redirected output
-        with redirect_stdout(stdout), redirect_stderr(stderr):
-            exec(code, safe_globals, {})
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=tmpdir
+            )
 
-        return {
-            "success": True,
-            "output": stdout.getvalue(),
-            "error": stderr.getvalue() or None
-        }
+            return {
+                "success": result.returncode == 0,
+                "output": result.stdout,
+                "error": result.stderr if result.returncode != 0 else None
+            }
 
-    except SandboxViolation as e:
+    except subprocess.TimeoutExpired:
         return {
             "success": False,
-            "error": f"Security violation: {str(e)}",
+            "error": "Execution timed out",
             "output": None
         }
-    except SyntaxError as e:
+    except MemoryError:
         return {
             "success": False,
-            "error": f"Syntax error: {str(e)}",
+            "error": "MemoryError: Exceeded memory limit",
             "output": None
         }
     except Exception as e:
         return {
             "success": False,
-            "error": f"Runtime error: {str(e)}",
+            "error": str(e),
             "output": None
         }
