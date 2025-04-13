@@ -7,6 +7,8 @@ import tempfile
 from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
 from typing import Dict, Any, Optional
+import resource
+from datetime import datetime, timedelta
 
 ALLOWED_BUILTINS = {
     'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytes', 'chr', 'dict', 
@@ -46,75 +48,53 @@ def create_safe_globals() -> Dict[str, Any]:
     return safe_globals
 
 def run_code_in_sandbox(code, timeout=5):
-    """Execute code in sandbox environment with security restrictions"""
-    restricted_imports = ["os", "subprocess", "sys", "builtins"]
-    restricted_builtins = ["eval", "exec", "__import__"]
-
-    # Check for restricted imports
-    for imp in restricted_imports:
-        if f"import {imp}" in code or f"from {imp}" in code:
-            return {
-                "success": False,
-                "error": "SecurityError: Restricted import attempted",
-                "output": None
-            }
-
-    # Check for restricted builtins
-    for builtin in restricted_builtins:
-        if builtin in code:
-            return {
-                "success": False,
-                "error": "SecurityError: Restricted builtin usage attempted",
-                "output": None
-            }
-
+    """
+    Run code in a sandboxed environment with resource limits
+    """
     try:
-        # Create a secure temporary directory
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Write code to a temporary file
-            code_file = os.path.join(tmpdir, "code.py")
-            with open(code_file, "w") as f:
-                f.write(code)
+        # Create temp file for code
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as code_file:
+            code_file.write(code)
+            code_file_path = code_file.name
 
-            # Run with resource limits
-            cmd = [
-                "python3", "-c",
-                f"import resource; " +
-                f"resource.setrlimit(resource.RLIMIT_AS, (500*1024*1024, -1)); " +  # Memory limit: 500MB
-                f"resource.setrlimit(resource.RLIMIT_CPU, (30, -1)); " +  # CPU time limit: 30 seconds
-                f"resource.setrlimit(resource.RLIMIT_NPROC, (50, -1)); " +  # Process limit: 50
-                f"exec(open('{code_file}').read())"
-            ]
+        # Execute in subprocess with resource limits
+        cmd = [
+            "python3", "-c",
+            f"import resource; " +
+            f"resource.setrlimit(resource.RLIMIT_AS, (500*1024*1024, -1)); " +  # Memory: 500MB
+            f"resource.setrlimit(resource.RLIMIT_CPU, (30, -1)); " +  # CPU: 30s
+            f"resource.setrlimit(resource.RLIMIT_NPROC, (10, -1)); " +  # Processes: 10
+            f"exec(open('{code_file_path}').read())"
+        ]
 
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-                cwd=tmpdir
-            )
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
 
-            return {
-                "success": result.returncode == 0,
-                "output": result.stdout,
-                "error": result.stderr if result.returncode != 0 else None
-            }
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout)
+            success = proc.returncode == 0
+            error = stderr if stderr else None
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            stdout, stderr = proc.communicate()
+            success = False
+            error = "Execution timed out"
 
-    except subprocess.TimeoutExpired:
+        os.unlink(code_file_path)
+
         return {
-            "success": False,
-            "error": "Execution timed out",
-            "output": None
+            "success": success,
+            "output": stdout,
+            "error": error
         }
-    except MemoryError:
-        return {
-            "success": False,
-            "error": "MemoryError: Exceeded memory limit",
-            "output": None
-        }
+
     except Exception as e:
         return {
             "success": False,
-            "error": str(e),
-            "output": None
+            "output": "",
+            "error": str(e)
         }

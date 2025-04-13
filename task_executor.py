@@ -30,14 +30,14 @@ def unsupported_action(action):
 def execute_code(plan):
     """Execute code in sandbox environment"""
     from sandbox_runner import run_code_in_sandbox
-    
+
     code = plan.get("code", "")
     if not code:
         return {"success": False, "error": "No code provided"}
 
     timeout = plan.get("timeout", 5)  # Default 5 second timeout
     result = run_code_in_sandbox(code, timeout)
-    
+
     if result["success"]:
         return {
             "success": True,
@@ -105,13 +105,13 @@ def validate_execution_plan(plan):
     required_fields = ["action"] if "action" in plan else ["intent"]
     if not all(field in plan for field in required_fields):
         return False, "Missing required fields in plan"
-        
+
     valid_actions = {
         "create_file", "append_to_file", "edit_file", 
         "delete_file", "execute_code", "push_changes",
         "create_app", "deploy", "modify_self"
     }
-    
+
     action = plan.get("action") or plan.get("intent")
     if action not in valid_actions:
         return False, f"Invalid action: {action}"
@@ -123,23 +123,23 @@ def validate_execution_plan(plan):
             return False, "Missing filename"
         if ".." in filename or filename.startswith("/"):
             return False, "Invalid filename path"
-            
+
     # Validate code execution
     if action == "execute_code":
         if not plan.get("code"):
             return False, "Missing code to execute"
-            
+
     # Validate deployment
     if action == "deploy":
         if not plan.get("project_name"):
             return False, "Missing project name for deployment"
-    
+
     return True, None
 
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
-    
+
     # Validate plan before execution
     is_valid, error = validate_execution_plan(plan)
     if not is_valid:
@@ -333,10 +333,10 @@ def execute_code(plan):
     code = plan.get("code")
     if not code:
         return {"success": False, "error": "No code provided"}
-        
+
     from sandbox_runner import run_code
     result = run_code(code)
-    
+
     if result["success"]:
         return {
             "success": True,
@@ -355,7 +355,6 @@ def simulate_push():
         "success": True,
         "message": "🧪 Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git"
-    }ling Git credentials."
     }
 
 def write_diagnostic(plan):
