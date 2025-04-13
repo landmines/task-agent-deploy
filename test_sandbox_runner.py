@@ -190,5 +190,39 @@ os.system('touch test.txt')
         self.assertTrue(result["success"])
         self.assertEqual(result["return_value"], 90)
 
+    def test_run_code_in_sandbox(self):
+        # Test basic code execution
+        result = run_code_in_sandbox("print('test')")
+        self.assertTrue(result["success"])
+        self.assertIn("test", result["output"])
+
+        # Test memory limit
+        code = """
+x = [1] * (1024 * 1024 * 300)  # Try to allocate ~300MB
+print(len(x))
+"""
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("Memory usage exceeded", result["error"])
+
+        # Test CPU limit
+        code = """
+while True:
+    pass
+"""
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("CPU time exceeded", result["error"])
+
+        # Test restricted modules
+        code = """
+import subprocess
+subprocess.run(['ls'])
+"""
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("Restricted module", result["error"])
+
+
 if __name__ == '__main__':
     unittest.main()

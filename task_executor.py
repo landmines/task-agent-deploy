@@ -93,8 +93,29 @@ def execute_code(plan):
     if not code:
         return {"success": False, "error": "No code provided"}
 
-    from sandbox_runner import run_code_in_sandbox
-    return run_code_in_sandbox(code, inputs)
+    try:
+        from sandbox_runner import run_code_in_sandbox, ResourceLimitExceeded
+        result = run_code_in_sandbox(code, inputs)
+        
+        if not result["success"]:
+            add_failure_pattern({
+                "type": "code_execution",
+                "error": result["error"],
+                "timestamp": datetime.now(UTC).isoformat()
+            })
+            
+        return result
+    except ResourceLimitExceeded as e:
+        return {
+            "success": False,
+            "error": f"Resource limit exceeded: {str(e)}",
+            "resourceError": True
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Code execution failed: {str(e)}"
+        }
 
 def estimate_risk(plan):
     """Estimate risk level of a task"""

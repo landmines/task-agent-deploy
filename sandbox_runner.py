@@ -6,10 +6,39 @@ import time
 from typing import Dict, Any
 from contextlib import contextmanager
 
-RESTRICTED_MODULES = ['os.system', 'subprocess', 'socket', 'requests', 'multiprocessing', 'threading']
-TIMEOUT_SECONDS = 5
-MAX_MEMORY_MB = 512
-MAX_CPU_TIME = 2  # seconds
+RESTRICTED_MODULES = [
+    'os.system', 'subprocess', 'socket', 'requests', 
+    'multiprocessing', 'threading', 'asyncio', 'concurrent',
+    'ctypes', 'importlib', 'pickle', 'marshal'
+]
+TIMEOUT_SECONDS = 10
+MAX_MEMORY_MB = 256
+MAX_CPU_TIME = 3  # seconds
+MAX_DISK_MB = 50
+ALLOWED_MODULES = {
+    'math', 'random', 'time', 'datetime', 'json',
+    'collections', 'itertools', 'functools'
+}
+
+class ResourceMonitor:
+    """Monitor and limit resource usage during code execution"""
+    @staticmethod
+    def check_memory_usage():
+        import psutil
+        process = psutil.Process()
+        memory_mb = process.memory_info().rss / (1024 * 1024)
+        if memory_mb > MAX_MEMORY_MB:
+            raise ResourceLimitExceeded(f"Memory usage exceeded {MAX_MEMORY_MB}MB limit")
+        return memory_mb
+
+    @staticmethod
+    def check_disk_usage(path="."):
+        import psutil
+        disk_usage = psutil.disk_usage(path)
+        used_mb = disk_usage.used / (1024 * 1024)
+        if used_mb > MAX_DISK_MB:
+            raise ResourceLimitExceeded(f"Disk usage exceeded {MAX_DISK_MB}MB limit")
+        return used_mb
 
 class CodeExecutionError(Exception):
     """Exception raised for code execution errors"""
@@ -76,6 +105,24 @@ def run_code_in_sandbox(code: str, inputs: Dict[str, Any] = None) -> Dict[str, A
             "error": f"Code safety check failed: {reason}",
             "output": None
         }
+
+    monitor = ResourceMonitor()
+    start_time = time.time()
+    last_memory_check = start_time
+    
+    def check_resources():
+        nonlocal last_memory_check
+        current_time = time.time()
+        
+        # Check CPU time
+        if current_time - start_time > MAX_CPU_TIME:
+            raise ResourceLimitExceeded(f"CPU time exceeded {MAX_CPU_TIME} seconds")
+            
+        # Check memory periodically (every 0.5 seconds)
+        if current_time - last_memory_check >= 0.5:
+            monitor.check_memory_usage()
+            monitor.check_disk_usage()
+            last_memory_check = current_time
         
     # Check memory limit
     import resource
