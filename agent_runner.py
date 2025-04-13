@@ -89,6 +89,8 @@ def run_agent(input_data):
             "executionPlanned": plan,
             "fallbackUsed": fallback_used,
             "memory": memory,
+            "taskId": task_id,
+            "timestamp": timestamp,
             "roadmap": {
                 "currentPhase": "Phase 4.6",
                 "nextPhase": "Phase 4.7 – External Tools + Test Suites",
