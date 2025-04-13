@@ -41,11 +41,15 @@ def run():
 def run_next():
     try:
         memory = load_memory()
-        task = get_next_step(memory)
+        next_item = memory.get("next_steps", [])
         
-        if not task:
+        if not next_item:
             return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
-
+            
+        task = next_item[0].get("step", next_item[0])
+        memory["next_steps"] = next_item[1:]  # Remove executed task
+        save_memory(memory)
+        
         result = run_agent(task)
         if not result.get("success", False):
             return jsonify({
