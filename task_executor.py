@@ -212,15 +212,28 @@ def execute_task(plan):
     memory["cost_tracking"]["total_estimated"] += estimated_cost
     memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
     
-    # Warn if costs exceed free tier
+    # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
         print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
+        
+        # Hard threshold - block actions over $10
+        if estimated_cost > 10.0:
+            return {
+                "success": False,
+                "error": "Action exceeds maximum cost threshold ($10)",
+                "estimated_cost": estimated_cost,
+                "requires_confirmation": False,
+                "blocked": True
+            }
+            
+        # Require confirmation for any paid actions
         if not plan.get("cost_confirmed"):
             return {
                 "success": False,
                 "error": "Action requires cost confirmation",
                 "estimated_cost": estimated_cost,
-                "requires_confirmation": True
+                "requires_confirmation": True,
+                "warning": f"This action will cost ${estimated_cost:.2f}"
             }
 
     # Add cost estimation for deployments
