@@ -40,35 +40,6 @@ def run():
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
-@app.route("/run_next", methods=["POST"])
-def run_next():
-    try:
-        memory = load_memory()
-        next_item = memory.get("next_steps", [])
-
-        if not next_item:
-            return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
-
-        task = next_item[0].get("step", next_item[0])
-        memory["next_steps"] = next_item[1:]  # Remove executed task
-        save_memory(memory)
-
-        result = run_agent(task)
-        if not result.get("success", False):
-            return jsonify({
-                "error": "Task execution failed",
-                "task": task,
-                "result": result
-            }), 500
-
-        return jsonify({
-            "message": "✅ Ran next task from memory queue.",
-            "task": task,
-            "result": result
-        })
-    except Exception as e:
-        return jsonify({"error": f"run_next failed: {e}"}), 500
-
 @app.route("/latest", methods=["GET"])
 def get_latest_result():
     memory = load_memory()
