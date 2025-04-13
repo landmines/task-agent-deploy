@@ -127,10 +127,9 @@ def confirm():
         WSGIRequestHandler.timeout = 30
 
         # Normalize taskId format comprehensively
-        task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_")
+        task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_").replace("T", "_")
         task_id = task_id.split(".")[0]  # Remove microseconds if present
-        if not task_id.startswith("log-"):
-            task_id = f"log-{task_id}"
+        task_id = task_id.split("+")[0]  # Remove timezone if present
 
         logs_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(logs_dir, exist_ok=True)
