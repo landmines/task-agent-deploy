@@ -28,13 +28,20 @@ def unsupported_action(action):
     }
 
 def execute_task(plan):
+    execution_start = datetime.now(UTC)
+    
     # ✅ Step 5: No-op execution for confirmable tasks
     if plan.get("confirmationNeeded") is True:
         return {
             "success": True,
             "message": "⏸️ Task logged but awaiting user confirmation.",
             "pending": True,
-            "confirmationNeeded": True
+            "confirmationNeeded": True,
+            "execution_metadata": {
+                "start_time": execution_start.isoformat(),
+                "status": "pending_confirmation",
+                "task_type": plan.get("action") or plan.get("intent")
+            }
         }
 
     action = plan.get("action") or plan.get("intent")
@@ -196,8 +203,16 @@ def simulate_push():
     }
 
 def write_diagnostic(plan):
-    log_id = plan.get("filename") or f"log_{datetime.now(UTC).isoformat()}"
-    content = plan.get("content") or {}
+    execution_complete = datetime.now(UTC)
+    log_id = plan.get("filename") or f"log_{execution_complete.isoformat()}"
+    content = {
+        "execution_time": execution_complete.isoformat(),
+        "task_details": plan.get("content") or {},
+        "execution_metadata": {
+            "status": "completed",
+            "task_type": plan.get("action") or plan.get("intent")
+        }
+    }
     os.makedirs(DIAGNOSTICS_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(DIAGNOSTICS_DIR), exist_ok=True)  # Ensure parent logs dir exists
     filepath = os.path.join(DIAGNOSTICS_DIR, f"{log_id}.json")
