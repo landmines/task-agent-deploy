@@ -39,8 +39,6 @@ def run():
     except Exception as e:
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-eback.format_exc())
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/run_next", methods=["POST"])
 def run_next():

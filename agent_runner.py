@@ -12,8 +12,21 @@ from context_manager import (
     add_next_step,
     track_confirmed,
     track_rejected,
-    get_trust_score,
 )
+
+def get_trust_score(memory: dict, intent: str) -> float:
+    """Calculate trust score based on past performance"""
+    if not memory or not intent:
+        return 0.5  # Default moderate trust
+        
+    stats = memory.get("intent_stats", {}).get(intent, {})
+    successes = stats.get("success", 0)
+    failures = stats.get("failure", 0)
+    
+    if successes + failures == 0:
+        return 0.5
+        
+    return successes / (successes + failures)
 from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
 
