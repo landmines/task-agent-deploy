@@ -163,6 +163,8 @@ def confirm():
                 print(f"🔍 No local log found for {task_id}, searching on Drive...")
                 try:
                     log_data = download_log_by_task_id(task_id)
+                    if not log_data:
+                        return jsonify({"error": "Timeout while retrieving log from Drive"}), 408
                 except Exception as e:
                     print(f"⚠️ Drive search failed: {e}")
                     return jsonify({"error": "Log retrieval failed - timeout or connection error"}), 500

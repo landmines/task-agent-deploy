@@ -101,11 +101,11 @@ def download_drive_log_file(file_id, timeout=3, max_retries=2):
     retry_count = 0
     while retry_count < max_retries:
         try:
-
-    done = False
+            done = False
             while not done:
                 status, done = downloader.next_chunk()
-            return json.load(fh.seek(0))
+            fh.seek(0)
+            return json.load(fh)
         except Exception as e:
             print(f"⚠️ Drive download attempt {retry_count + 1} failed: {str(e)}")
             retry_count += 1
