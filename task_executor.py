@@ -192,6 +192,36 @@ def validate_execution_plan(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
+    
+    # Cost estimation for various operations
+    estimated_cost = 0.0
+    if plan.get("uses_gpt"):
+        estimated_cost += 0.02  # Base GPT API cost
+    if plan.get("deployment"):
+        from deployment_manager import DeploymentManager
+        dm = DeploymentManager()
+        deployment_costs = dm.estimate_deployment_cost({
+            "compute_hours": 24,
+            "storage_mb": plan.get("storage_mb", 100),
+            "bandwidth_mb": plan.get("bandwidth_mb", 1000)
+        })
+        estimated_cost += deployment_costs.get("total_cost", 0.0)
+    
+    # Update cost tracking in memory
+    memory = load_memory()
+    memory["cost_tracking"]["total_estimated"] += estimated_cost
+    memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
+    
+    # Warn if costs exceed free tier
+    if estimated_cost > 0:
+        print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
+        if not plan.get("cost_confirmed"):
+            return {
+                "success": False,
+                "error": "Action requires cost confirmation",
+                "estimated_cost": estimated_cost,
+                "requires_confirmation": True
+            }
 
     # Add cost estimation for deployments
     if plan.get("action") == "deploy" or plan.get("intent") == "deploy":

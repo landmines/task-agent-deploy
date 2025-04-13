@@ -9,6 +9,12 @@ def load_memory():
         return {
             "confirmed_count": 0,
             "rejected_count": 0,
+            "cost_tracking": {
+                "total_estimated": 0.0,
+                "deployment_costs": [],
+                "api_usage_costs": [],
+                "last_updated": datetime.now(UTC).isoformat()
+            },
             "created": datetime.now(UTC).isoformat(),
             "last_updated": None,
             "last_result": None,

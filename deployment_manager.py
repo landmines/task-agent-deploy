@@ -23,8 +23,8 @@ class DeploymentManager:
             "bandwidth": 0.000054  # Per MB after free tier
         }
 
-    def estimate_deployment_cost(self, resources: Dict[str, Any]) -> Dict[str, Any]:
-        """Estimate costs for deployment based on expected resource usage"""
+    def estimate_deployment_cost(self, resources: Dict[str, Any], warn_threshold: float = 5.0) -> Dict[str, Any]:
+        """Estimate costs for deployment based on expected resource usage with warnings"""
         compute_cost = max(0, (resources["compute_hours"] - self.free_tier_limits["compute_hours"])) * self.cost_metrics["compute"]
         storage_cost = max(0, (resources["storage_mb"] - self.free_tier_limits["storage_mb"])) * self.cost_metrics["storage"]
         bandwidth_cost = max(0, (resources["bandwidth_mb"] - self.free_tier_limits["bandwidth_mb"])) * self.cost_metrics["bandwidth"]
