@@ -115,6 +115,11 @@ def confirm():
 
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
+            
+        # Normalize taskId format
+        task_id = task_id.replace(":", "_").replace(".", "_")
+        if not task_id.startswith("log-"):
+            task_id = f"log-{task_id}"
 
         logs_dir = os.path.join(os.getcwd(), "logs")
         os.makedirs(logs_dir, exist_ok=True)
