@@ -1,39 +1,14 @@
 import os
 import json
 from datetime import datetime
-from typing import Dict, Any
-
-class DeploymentManager:
-    def __init__(self):
-        self.free_tier_limits = {
-            "compute_hours": 750,  # Monthly free hours
-            "storage_mb": 500,     # Free storage in MB  
-            "bandwidth_mb": 100000 # Free bandwidth in MB
-        }
-        
-    def estimate_deployment_cost(self, resources: Dict[str, Any]) -> Dict[str, Any]:
-        """Estimate costs for deployment based on expected resource usage"""
-        compute_cost = max(0, (resources["compute_hours"] - self.free_tier_limits["compute_hours"])) * 0.000594
-        storage_cost = max(0, (resources["storage_mb"] - self.free_tier_limits["storage_mb"])) * 0.000097
-        bandwidth_cost = max(0, (resources["bandwidth_mb"] - self.free_tier_limits["bandwidth_mb"])) * 0.000054
-        
-        total_cost = compute_cost + storage_cost + bandwidth_cost
-        
-        return {
-            "total_cost": total_cost,
-            "breakdown": {
-                "compute": compute_cost,
-                "storage": storage_cost,
-                "bandwidth": bandwidth_cost
-            },
-            "within_free_tier": total_cost == 0,
-            "estimated_monthly": total_cost * 30
-        }, UTC
 from typing import Dict, Any, List
 import zipfile
 import time
 import requests
 import hashlib
+from zoneinfo import ZoneInfo
+
+UTC = ZoneInfo("UTC")
 
 class DeploymentManager:
     def __init__(self):
@@ -53,9 +28,9 @@ class DeploymentManager:
         compute_cost = max(0, (resources["compute_hours"] - self.free_tier_limits["compute_hours"])) * self.cost_metrics["compute"]
         storage_cost = max(0, (resources["storage_mb"] - self.free_tier_limits["storage_mb"])) * self.cost_metrics["storage"]
         bandwidth_cost = max(0, (resources["bandwidth_mb"] - self.free_tier_limits["bandwidth_mb"])) * self.cost_metrics["bandwidth"]
-        
+
         total_cost = compute_cost + storage_cost + bandwidth_cost
-        
+
         return {
             "total_cost": total_cost,
             "breakdown": {
@@ -69,8 +44,24 @@ class DeploymentManager:
                 "compute_hours": min(100, (resources["compute_hours"] / self.free_tier_limits["compute_hours"]) * 100),
                 "storage": min(100, (resources["storage_mb"] / self.free_tier_limits["storage_mb"]) * 100),
                 "bandwidth": min(100, (resources["bandwidth_mb"] / self.free_tier_limits["bandwidth_mb"]) * 100)
-            }
+            },
+            "recommendations": self._get_optimization_recommendations(resources)
         }
+
+    def _get_optimization_recommendations(self, resources: Dict[str, Any]) -> List[str]:
+        """Generate cost optimization recommendations"""
+        recommendations = []
+
+        if resources["compute_hours"] > self.free_tier_limits["compute_hours"]:
+            recommendations.append("Consider reducing compute hours to stay within free tier")
+
+        if resources["storage_mb"] > self.free_tier_limits["storage_mb"]:
+            recommendations.append("Storage usage exceeds free tier - consider cleanup")
+
+        if resources["bandwidth_mb"] > self.free_tier_limits["bandwidth_mb"]:
+            recommendations.append("High bandwidth usage - consider caching or CDN")
+
+        return recommendations
 
     def optimize_deployment(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Optimize deployment configuration"""

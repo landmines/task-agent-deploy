@@ -89,10 +89,10 @@ def execute_code(plan):
     """Execute code in sandbox environment"""
     code = plan.get("code")
     inputs = plan.get("inputs", {})
-    
+
     if not code:
         return {"success": False, "error": "No code provided"}
-        
+
     from sandbox_runner import run_code_in_sandbox
     return run_code_in_sandbox(code, inputs)
 
@@ -151,24 +151,24 @@ def validate_execution_plan(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
-    
+
     # Add cost estimation for deployments
     if plan.get("action") == "deploy" or plan.get("intent") == "deploy":
         from deployment_manager import DeploymentManager
         dm = DeploymentManager()
-        
+
         # Estimate resource usage based on project size
         project_path = plan.get("project_path", ".")
         storage_mb = sum(os.path.getsize(os.path.join(root, file)) 
                         for root, _, files in os.walk(project_path) 
                         for file in files) / (1024 * 1024)
-        
+
         estimated_costs = dm.estimate_deployment_cost({
             "compute_hours": 24,  # Initial 24-hour estimate
             "storage_mb": max(100, storage_mb * 1.5),  # Add 50% buffer
             "bandwidth_mb": plan.get("bandwidth_mb", 1000)
         })
-        
+
         if not estimated_costs["within_free_tier"]:
             return {
                 "success": False,
@@ -244,6 +244,41 @@ def execute_task(plan):
             return {"success": False, "error": f"App generation failed: {str(e)}"}
     elif action == "generate_code":
         return unsupported_action(action)
+    elif action == "deploy":
+        try:
+            from deployment_manager import DeploymentManager
+            dm = DeploymentManager()
+
+            # Estimate costs
+            resources = {
+                "compute_hours": 24,  # Initial day estimate
+                "storage_mb": plan.get("storage_mb", 100),
+                "bandwidth_mb": plan.get("bandwidth_mb", 1000)
+            }
+
+            cost_estimate = dm.estimate_deployment_cost(resources)
+
+            if not cost_estimate["within_free_tier"]:
+                return {
+                    "success": False,
+                    "error": "Deployment may exceed free tier limits",
+                    "cost_estimate": cost_estimate,
+                    "requires_confirmation": True,
+                    "message": "Please confirm deployment cost implications"
+                }
+
+            template = generate_app_template(plan.get("template_type", "web"))
+            deployment_result = deploy_to_replit(plan.get("project_name", "my-app"))
+
+            return {
+                "success": True,
+                "message": "✅ App template generated and deployment configured (using free tier)",
+                "template": template,
+                "deployment": deployment_result,
+                "cost_estimate": cost_estimate
+            }
+        except Exception as e:
+            return {"success": False, "error": f"Deployment failed: {str(e)}"}
     else:
         return unsupported_action(action)
 

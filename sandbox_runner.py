@@ -76,6 +76,13 @@ def run_code_in_sandbox(code: str, inputs: Dict[str, Any] = None) -> Dict[str, A
             "error": f"Code safety check failed: {reason}",
             "output": None
         }
+        
+    # Check memory limit
+    import resource
+    resource.setrlimit(resource.RLIMIT_AS, (MAX_MEMORY_MB * 1024 * 1024, -1))
+    
+    # Set CPU time limit
+    resource.setrlimit(resource.RLIMIT_CPU, (MAX_CPU_TIME, -1))
 
     # Create restricted globals
     safe_globals = {
