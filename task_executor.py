@@ -55,10 +55,12 @@ def execute_task(plan):
     elif action == "create_app":
         try:
             template = generate_app_template(plan.get("template_type", "web"))
+            deployment_result = deploy_to_replit(plan.get("project_name", "my-app"))
             return {
                 "success": True,
-                "message": "✅ App template generated",
-                "template": template
+                "message": "✅ App template generated and deployment configured",
+                "template": template,
+                "deployment": deployment_result
             }
         except Exception as e:
             return {"success": False, "error": f"App generation failed: {str(e)}"}

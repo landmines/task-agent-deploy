@@ -44,6 +44,20 @@ def generate_app_template(template_type):
     }
     return templates.get(template_type, {})
 
+def deploy_to_replit(project_name, environment="production"):
+    try:
+        # Configure deployment settings
+        deployment_config = {
+            "name": project_name,
+            "language": "python3",
+            "run": "python app.py",
+            "environment": environment,
+            "healthCheck": "/health"
+        }
+        return {"success": True, "message": "✅ Deployment configured for Replit", "config": deployment_config}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 def deploy_to_vercel(api_token, project_name, team_id=None):
     try:
         zip_file_path = zip_directory(".", f"{project_name}-deploy.zip")
