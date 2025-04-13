@@ -78,6 +78,29 @@ with open('test.txt', 'w') as f:
         self.assertGreaterEqual(io_read, 0)
         self.assertGreaterEqual(io_write, 0)
 
+    def test_sandboxed_execution(self):
+        """Test code execution in sandbox"""
+        # Test basic execution
+        code = "result = 2 + 2"
+        result = run_code_in_sandbox(code)
+        self.assertTrue(result["success"])
+        
+        # Test restricted builtins
+        code = "import os; os.system('ls')"
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("ImportError", str(result["error"]))
+
+        # Test resource limits
+        code = "while True: pass"
+        with self.assertRaises(ResourceLimitExceeded):
+            run_code_in_sandbox(code)
+
+        # Test with inputs
+        code = "x = a + b"
+        result = run_code_in_sandbox(code, {"a": 1, "b": 2})
+        self.assertTrue(result["success"])
+
 
     def test_plan_tasks(self):
         """Test that the planner generates valid task sequences"""
