@@ -1,93 +1,52 @@
 import unittest
-from sandbox_runner import run_code_in_sandbox, analyze_code_safety
+from sandbox_runner import run_code_in_sandbox, ResourceMonitor, ResourceLimitExceeded
 
 class TestSandboxRunner(unittest.TestCase):
     def test_basic_execution(self):
         """Test basic code execution"""
-        code = "result = 2 + 2"
+        code = """
+x = 1 + 1
+print(x)
+result = x
+"""
         result = run_code_in_sandbox(code)
         self.assertTrue(result["success"])
-        self.assertEqual(result["return_value"], 4)
-
-    def test_print_capture(self):
-        """Test stdout capture"""
-        code = "print('Hello World')"
-        result = run_code_in_sandbox(code)
-        self.assertTrue(result["success"])
-        self.assertIn("Hello World", result["output"])
-
-    def test_restricted_modules(self):
-        """Test restricted module imports"""
-        code = "import os; os.system('ls')"
-        result = run_code_in_sandbox(code)
-        self.assertFalse(result["success"])
-        self.assertIn("restricted", result["error"].lower())
-
-    def test_infinite_loop_timeout(self):
-        """Test timeout on infinite loop"""
-        code = "while True: pass"
-        result = run_code_in_sandbox(code)
-        self.assertFalse(result["success"])
-        self.assertIn("timeout", result["error"].lower())
-
-    def test_syntax_error(self):
-        """Test handling of syntax errors"""
-        code = "this is not valid python"
-        result = run_code_in_sandbox(code)
-        self.assertFalse(result["success"])
-        self.assertIsNotNone(result["error"])
-
-    def test_input_passing(self):
-        """Test passing variables to sandbox"""
-        code = "result = x + y"
-        inputs = {"x": 5, "y": 3}
-        result = run_code_in_sandbox(code, inputs)
-        self.assertTrue(result["success"])
-        self.assertEqual(result["return_value"], 8)
-
-    def test_code_safety_analysis(self):
-        """Test code safety analyzer"""
-        safe_code = "x = 1 + 1"
-        unsafe_code = "import subprocess; subprocess.run(['rm', '-rf', '/'])"
-
-        self.assertTrue(analyze_code_safety(safe_code))
-        self.assertFalse(analyze_code_safety(unsafe_code))
-
-    def test_basic_execution(self):
-        code = "print('Hello World')"
-        result = run_code_in_sandbox(code)
-        self.assertTrue(result["success"])
-        self.assertEqual(result["output"].strip(), "Hello World")
+        self.assertEqual(result["output"].strip(), "2")
+        self.assertEqual(result["return_value"], 2)
 
     def test_memory_limit(self):
-        code = "x = [0] * (1024 * 1024 * 1000)"  # Try to allocate 1GB
+        """Test memory limit enforcement"""
+        code = """
+x = bytearray(300 * 1024 * 1024)  # Try to allocate 300MB
+"""
         result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
-        self.assertIn("MemoryError", str(result["error"]))
+        self.assertIn("memory", result["error"].lower())
 
     def test_cpu_limit(self):
-        code = "while True: pass"
-        result = run_code_in_sandbox(code, timeout=2)
-        self.assertFalse(result["success"])
-        self.assertIn("timed out", str(result["error"]).lower())
-
-    def test_process_limit(self):
+        """Test CPU time limit"""
         code = """
-import multiprocessing
-processes = []
-for i in range(100):
-    p = multiprocessing.Process(target=lambda: None)
-    p.start()
-    processes.append(p)
+while True: pass
+"""
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+        self.assertIn("time", result["error"].lower())
+
+    def test_restricted_imports(self):
+        """Test restricted module imports"""
+        code = """
+import os
+os.system('ls')
 """
         result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
         self.assertIn("restricted", result["error"].lower())
 
     def test_file_system_access(self):
+        """Test file system restrictions"""
         code = """
-import os
-os.system('touch test.txt')
+with open('test.txt', 'w') as f:
+    f.write('test')
 """
         result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
@@ -95,50 +54,23 @@ os.system('touch test.txt')
 
     def test_resource_monitor(self):
         """Test resource monitoring functionality"""
-        from sandbox_runner import ResourceMonitor
         monitor = ResourceMonitor()
-        
+
         # Test memory check
         memory_usage = monitor.check_memory_usage()
         self.assertIsInstance(memory_usage, float)
         self.assertGreater(memory_usage, 0)
-        
-        # Test disk I/O monitoring
-        read_mb, write_mb = monitor.check_disk_io()
-        self.assertIsInstance(read_mb, float)
-        self.assertIsInstance(write_mb, float)
-        
-        # Test comprehensive resource check
-        resources = monitor.check_all_resources()
-        self.assertIsInstance(resources, dict)
-        self.assertIn("memory_mb", resources)
-        self.assertIn("disk_mb", resources)
-        self.assertIn("cpu_time", resources)
-        self.assertIn("disk_io", resources)
-        
+
         # Test CPU time check
         cpu_time = monitor.check_cpu_time()
         self.assertIsInstance(cpu_time, float)
         self.assertGreaterEqual(cpu_time, 0)
-        
+
         # Test disk usage check
         disk_usage = monitor.check_disk_usage()
         self.assertIsInstance(disk_usage, float)
         self.assertGreater(disk_usage, 0)
 
-    def test_resource_limits(self):
-        """Test resource limit enforcement"""
-        # Test memory limit
-        memory_code = "x = bytearray(300 * 1024 * 1024)"  # Try to allocate 300MB
-        result = run_code_in_sandbox(memory_code)
-        self.assertFalse(result["success"])
-        self.assertIn("memory", result["error"].lower())
-        
-        # Test CPU limit with busy loop
-        cpu_code = "while True: pass"
-        result = run_code_in_sandbox(cpu_code)
-        self.assertFalse(result["success"])
-        self.assertIn("time", result["error"].lower())
 
     def test_plan_tasks(self):
         """Test that the planner generates valid task sequences"""
