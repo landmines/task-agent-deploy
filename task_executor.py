@@ -27,6 +27,58 @@ def unsupported_action(action):
         "hint": "Check your task type or add implementation for this action."
     }
 
+def execute_code(plan):
+    """Execute code in a restricted environment"""
+    code = plan.get("code", "")
+    if not code:
+        return {"success": False, "error": "No code provided"}
+    
+    try:
+        # Execute in restricted context
+        restricted_globals = {"__builtins__": {}}
+        allowed_builtins = ["print", "len", "str", "int", "float", "list", "dict", "set"]
+        for func in allowed_builtins:
+            restricted_globals["__builtins__"][func] = __builtins__[func]
+        
+        exec(code, restricted_globals, {})
+        return {"success": True, "message": "Code executed successfully"}
+    except Exception as e:
+        return {"success": False, "error": f"Code execution failed: {str(e)}"}
+
+def modify_file(plan):
+    """Modify existing file content"""
+    filename = plan.get("filename")
+    old_content = plan.get("old_content")
+    new_content = plan.get("new_content")
+    
+    if not all([filename, old_content, new_content]):
+        return {"success": False, "error": "Missing required fields"}
+        
+    full_path = os.path.join(PROJECT_ROOT, filename)
+    if not os.path.exists(full_path):
+        return {"success": False, "error": f"File {filename} not found"}
+        
+    try:
+        with open(full_path, "r") as f:
+            content = f.read()
+        
+        if old_content not in content:
+            return {"success": False, "error": "Old content not found in file"}
+            
+        new_content = content.replace(old_content, new_content)
+        backup_path = backup_file(full_path)
+        
+        with open(full_path, "w") as f:
+            f.write(new_content)
+            
+        return {
+            "success": True, 
+            "message": f"File modified: {filename}",
+            "backup": backup_path
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     

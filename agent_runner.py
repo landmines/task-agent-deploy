@@ -24,6 +24,24 @@ TEST_SUITE_FILE = "test_suite.json"
 AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
 
 
+def requires_confirmation(intent: str, memory: dict) -> bool:
+    """Determine if an action needs confirmation based on trust"""
+    # Always confirm high-risk actions
+    if intent in ["delete_file", "deploy"]:
+        return True
+        
+    # Check success rate for this intent
+    stats = memory.get("intent_stats", {}).get(intent, {})
+    success_count = stats.get("success", 0)
+    failure_count = stats.get("failure", 0)
+    total = success_count + failure_count
+    
+    if total < 5:  # Not enough data
+        return True
+        
+    success_rate = success_count / total if total > 0 else 0
+    return success_rate < 0.8  # Require 80% success rate for auto-execution
+
 def run_agent(input_data):
     memory = load_memory()
 
