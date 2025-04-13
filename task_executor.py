@@ -28,22 +28,28 @@ def unsupported_action(action):
     }
 
 def execute_code(plan):
-    """Execute code in a restricted environment"""
+    """Execute code in sandbox environment"""
+    from sandbox_runner import run_code_in_sandbox
+    
     code = plan.get("code", "")
     if not code:
         return {"success": False, "error": "No code provided"}
 
-    try:
-        # Execute in restricted context
-        restricted_globals = {"__builtins__": {}}
-        allowed_builtins = ["print", "len", "str", "int", "float", "list", "dict", "set"]
-        for func in allowed_builtins:
-            restricted_globals["__builtins__"][func] = __builtins__[func]
-
-        exec(code, restricted_globals, {})
-        return {"success": True, "message": "Code executed successfully"}
-    except Exception as e:
-        return {"success": False, "error": f"Code execution failed: {str(e)}"}
+    timeout = plan.get("timeout", 5)  # Default 5 second timeout
+    result = run_code_in_sandbox(code, timeout)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": "Code executed successfully",
+            "output": result["output"]
+        }
+    else:
+        return {
+            "success": False,
+            "error": f"Code execution failed: {result['error']}",
+            "output": result["output"]
+        }
 
 def modify_file(plan):
     """Modify existing file content"""
