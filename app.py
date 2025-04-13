@@ -97,7 +97,10 @@ def logs_snapshot():
     try:
         log_path = os.path.join(os.getcwd(), "render.log")
         if not os.path.exists(log_path):
-            return jsonify({"success": False, "error": "render.log not found."}), 404
+            # Create empty log file if it doesn't exist
+            with open(log_path, "w") as f:
+                f.write("Log file initialized\n")
+            return jsonify({"success": True, "logs": ["Log file initialized"]})
 
         with open(log_path, "r") as f:
             lines = f.readlines()[-100:]
@@ -119,8 +122,8 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
-        # Set timeout for confirmation processing
-        request.environ.setdefault('werkzeug.request', {})['timeout'] = 30
+        from werkzeug.serving import WSGIRequestHandler
+        WSGIRequestHandler.timeout = 30
             
         # Normalize taskId format
         task_id = task_id.replace(":", "_").replace(".", "_")
