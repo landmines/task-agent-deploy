@@ -277,11 +277,34 @@ def delete_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def execute_code(plan):
+    """Execute code in sandbox environment"""
+    code = plan.get("code")
+    if not code:
+        return {"success": False, "error": "No code provided"}
+        
+    from sandbox_runner import run_code
+    result = run_code(code)
+    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": "✅ Code executed successfully",
+            "output": result["output"]
+        }
+    else:
+        return {
+            "success": False,
+            "error": result["error"],
+            "output": result.get("output")
+        }
+
 def simulate_push():
     return {
         "success": True,
         "message": "🧪 Simulated push: Git command not run (unsupported in current environment).",
-        "note": "Try again after migrating to Vercel or enabling Git credentials."
+        "note": "Try again after migrating to Vercel or enabling Git"
+    }ling Git credentials."
     }
 
 def write_diagnostic(plan):

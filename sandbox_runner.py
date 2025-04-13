@@ -1,98 +1,85 @@
-
 import sys
+import os
 import ast
 import builtins
+from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
-from contextlib import contextmanager
-import threading
-import _thread
-import time
+from typing import Dict, Any, Optional
 
 ALLOWED_BUILTINS = {
     'abs', 'all', 'any', 'ascii', 'bin', 'bool', 'bytes', 'chr', 'dict', 
-    'divmod', 'enumerate', 'filter', 'float', 'format', 'frozenset', 'hash', 
-    'hex', 'int', 'isinstance', 'issubclass', 'len', 'list', 'map', 'max',
-    'min', 'next', 'oct', 'ord', 'pow', 'print', 'range', 'repr', 'reversed',
-    'round', 'set', 'slice', 'sorted', 'str', 'sum', 'tuple', 'type', 'zip'
+    'dir', 'divmod', 'enumerate', 'filter', 'float', 'format', 'frozenset',
+    'hash', 'hex', 'int', 'isinstance', 'issubclass', 'len', 'list', 'map',
+    'max', 'min', 'next', 'oct', 'ord', 'pow', 'print', 'range', 'repr',
+    'reversed', 'round', 'set', 'slice', 'sorted', 'str', 'sum', 'tuple', 'type',
+    'zip'
 }
 
-class TimeoutError(Exception):
+RESTRICTED_NODES = {
+    ast.Import, ast.ImportFrom,  # No imports
+    ast.ClassDef,  # No class definitions
+    ast.AsyncFunctionDef,  # No async functions
+    ast.Await, ast.AsyncFor, ast.AsyncWith,  # No async operations
+}
+
+class SandboxViolation(Exception):
     pass
 
-def timeout_handler():
-    _thread.interrupt_main()
-
-@contextmanager
-def timeout(seconds):
-    timer = threading.Timer(seconds, timeout_handler)
-    timer.start()
-    try:
-        yield
-    except KeyboardInterrupt:
-        raise TimeoutError(f"Code execution timed out after {seconds} seconds")
-    finally:
-        timer.cancel()
-
-def check_ast_safety(code_str):
-    """Check if the AST contains potentially dangerous operations"""
-    tree = ast.parse(code_str)
-    
-    for node in ast.walk(tree):
-        # Block imports
-        if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom):
-            raise ValueError("Import statements are not allowed in sandbox")
-        
-        # Block file operations
-        if isinstance(node, ast.Call):
-            if isinstance(node.func, ast.Name):
-                if node.func.id in ['open', 'eval', 'exec', 'compile']:
-                    raise ValueError(f"Function '{node.func.id}' is not allowed in sandbox")
-            elif isinstance(node.func, ast.Attribute):
-                if node.func.attr in ['read', 'write', 'open', 'system']:
-                    raise ValueError(f"Method '{node.func.attr}' is not allowed in sandbox")
-
+def validate_ast(node: ast.AST) -> bool:
+    """Check if AST contains any restricted operations"""
+    for child in ast.walk(node):
+        if any(isinstance(child, restricted) for restricted in RESTRICTED_NODES):
+            raise SandboxViolation(f"Restricted operation: {type(child).__name__}")
     return True
 
-def create_safe_globals():
-    """Create a restricted globals dictionary for code execution"""
+def create_safe_globals() -> Dict[str, Any]:
+    """Create a restricted globals dict for code execution"""
     safe_globals = {
-        '__builtins__': {name: getattr(builtins, name) for name in ALLOWED_BUILTINS}
+        name: getattr(builtins, name) 
+        for name in ALLOWED_BUILTINS
     }
     return safe_globals
 
-def run_code_in_sandbox(code_str, timeout_seconds=5):
-    """Execute code in a restricted environment with timeout"""
-    output_buffer = StringIO()
-    
+def run_code(code: str, timeout: Optional[int] = 5) -> Dict[str, Any]:
+    """
+    Run code in a restricted environment
+    Returns: Dict with success, output, and error information
+    """
     try:
-        check_ast_safety(code_str)
+        # Parse and validate code
+        tree = ast.parse(code)
+        validate_ast(tree)
+
+        # Prepare execution environment
+        stdout = StringIO()
+        stderr = StringIO()
         safe_globals = create_safe_globals()
-        
-        # Redirect stdout to capture output
-        old_stdout = sys.stdout
-        sys.stdout = output_buffer
-        
-        try:
-            with timeout(timeout_seconds):
-                exec(code_str, safe_globals, {})
-        finally:
-            sys.stdout = old_stdout
-            
+
+        # Execute with redirected output
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            exec(code, safe_globals, {})
+
         return {
             "success": True,
-            "output": output_buffer.getvalue(),
-            "error": None
+            "output": stdout.getvalue(),
+            "error": stderr.getvalue() or None
         }
-        
-    except TimeoutError as e:
+
+    except SandboxViolation as e:
         return {
             "success": False,
-            "output": output_buffer.getvalue(),
-            "error": str(e)
+            "error": f"Security violation: {str(e)}",
+            "output": None
+        }
+    except SyntaxError as e:
+        return {
+            "success": False,
+            "error": f"Syntax error: {str(e)}",
+            "output": None
         }
     except Exception as e:
         return {
             "success": False,
-            "output": output_buffer.getvalue(),
-            "error": str(e)
+            "error": f"Runtime error: {str(e)}",
+            "output": None
         }
