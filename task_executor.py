@@ -196,7 +196,20 @@ def execute_task(plan):
     # Cost estimation for various operations
     estimated_cost = 0.0
     if plan.get("uses_gpt"):
-        estimated_cost += 0.02  # Base GPT API cost
+        # Calculate GPT costs based on token usage
+        input_tokens = len(str(plan.get("prompt", ""))) / 4  # Approximate tokens
+        output_tokens = len(str(plan.get("response", ""))) / 4
+        gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006)  # Current GPT-4 pricing
+        estimated_cost += gpt_cost
+        
+        # Log GPT usage costs
+        memory["cost_tracking"]["api_usage_costs"].append({
+            "type": "gpt",
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "cost": gpt_cost,
+            "timestamp": datetime.now(UTC).isoformat()
+        })
     if plan.get("deployment"):
         from deployment_manager import DeploymentManager
         dm = DeploymentManager()

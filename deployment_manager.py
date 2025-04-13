@@ -31,6 +31,19 @@ class DeploymentManager:
 
         total_cost = compute_cost + storage_cost + bandwidth_cost
 
+        # Log the cost details
+        from context_manager import load_memory, save_memory_context
+        memory = load_memory()
+        memory["cost_tracking"]["deployment_costs"].append({
+            "timestamp": datetime.now(UTC).isoformat(),
+            "compute_cost": compute_cost,
+            "storage_cost": storage_cost,
+            "bandwidth_cost": bandwidth_cost,
+            "total_cost": total_cost,
+            "resources": resources
+        })
+        save_memory_context(memory)
+        
         return {
             "total_cost": total_cost,
             "breakdown": {
