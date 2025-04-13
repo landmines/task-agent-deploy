@@ -72,8 +72,23 @@ def run_agent(input_data):
     
     # Check if confirmation needed based on trust
     intent = input_data.get("intent")
-    if intent and requires_confirmation(intent, memory):
-        input_data["confirmationNeeded"] = True
+    if intent:
+        trust_score = get_trust_score(memory, intent)
+        needs_confirmation = requires_confirmation(intent, memory)
+        
+        # Skip confirmation for highly trusted actions
+        if trust_score >= 0.9 and not needs_confirmation:
+            input_data["confirmationNeeded"] = False
+        else:
+            input_data["confirmationNeeded"] = True
+            
+        # Record decision metrics
+        memory["confirmation_decisions"] = memory.get("confirmation_decisions", [])
+        memory["confirmation_decisions"].append({
+            "intent": intent,
+            "trust_score": trust_score,
+            "confirmation_required": input_data["confirmationNeeded"]
+        })
     
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
