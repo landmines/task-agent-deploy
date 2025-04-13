@@ -105,6 +105,7 @@ def execute_code(plan):
         )
 
         if not result["success"]:
+            from context_manager import add_failure_pattern #Import added here
             add_failure_pattern({
                 "type": "code_execution",
                 "error": result["error"],
