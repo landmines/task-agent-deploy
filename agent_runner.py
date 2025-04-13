@@ -27,6 +27,25 @@ AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py",
 def run_agent(input_data):
     memory = load_memory()
 
+    # Handle planning requests
+    if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
+        from planner import plan_tasks, validate_plan
+        goal = input_data.get("goal") or input_data.get("task")
+        plan = plan_tasks(goal)
+        
+        if not validate_plan(plan):
+            return {"success": False, "error": "Invalid plan structure"}
+            
+        memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
+        save_memory_context(memory)
+        
+        return {
+            "success": True,
+            "message": f"✅ Created plan with {len(plan)} steps",
+            "plan": plan,
+            "next_steps": memory["next_steps"]
+        }
+
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if not task:
