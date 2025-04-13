@@ -27,20 +27,22 @@ AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py",
 def requires_confirmation(intent: str, memory: dict) -> bool:
     """Determine if an action needs confirmation based on trust"""
     # Always confirm high-risk actions
-    if intent in ["delete_file", "deploy"]:
+    high_risk = ["delete_file", "deploy", "modify_self"]
+    if intent in high_risk:
+        trust = get_trust_score(memory, intent)
+        return trust < 0.9  # Very high trust needed for risky actions
+        
+    # Check general trust level
+    if memory.get("always_confirm", False):
         return True
         
-    # Check success rate for this intent
-    stats = memory.get("intent_stats", {}).get(intent, {})
-    success_count = stats.get("success", 0)
-    failure_count = stats.get("failure", 0)
-    total = success_count + failure_count
+    trust = get_trust_score(memory, intent)
+    trust_threshold = 0.8
     
-    if total < 5:  # Not enough data
-        return True
+    if intent in ["create_file", "append_to_file"]:
+        trust_threshold = 0.7  # Lower threshold for safe actions
         
-    success_rate = success_count / total if total > 0 else 0
-    return success_rate < 0.8  # Require 80% success rate for auto-execution
+    return trust < trust_threshold
 
 def run_agent(input_data):
     memory = load_memory()
@@ -307,17 +309,30 @@ def run_tests_from_file():
 
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
+    intent = None
+    if task_info:
+        intent = (task_info.get("execution", {}).get("action") or 
+                 task_info.get("execution", {}).get("intent") or 
+                 task_info.get("input", {}).get("intent"))
+    
     if status == "confirmed":
         track_confirmed(memory)
+        if intent:
+            stats = memory.setdefault("intent_stats", {}).setdefault(intent, {})
+            stats["success"] = stats.get("success", 0) + 1
     elif status == "rejected":
         track_rejected(memory)
-        if task_info:
-            action = task_info.get("execution", {}).get("action") \
-                     or task_info.get("execution", {}).get("intent") \
-                     or task_info.get("input", {}).get("intent") \
-                     or "unknown task"
-            add_failure_pattern(memory, {"task": f"{action} – Rejected by user"})
+        if intent:
+            stats = memory.setdefault("intent_stats", {}).setdefault(intent, {})
+            stats["failure"] = stats.get("failure", 0) + 1
+            add_failure_pattern(memory, {
+                "intent": intent,
+                "task": f"{intent} – Rejected by user",
+                "timestamp": datetime.now(UTC).isoformat()
+            })
+    
     save_memory_context(memory)
+    return {"success": True, "status": status, "intent": intent}
 
 
 def modify_self(filename, updated_code):

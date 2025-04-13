@@ -58,7 +58,7 @@ def requires_confirmation(intent, context):
     # Always confirm these actions
     if intent in ["delete_file", "deploy", "modify_self"]:
         return True
-        
+
     # Check trust score
     trust = get_trust_score(context, intent)
     return trust < 0.8 or context.get("always_confirm", False)
@@ -67,12 +67,12 @@ def update_trust_metrics(context, intent, success):
     """Update trust metrics after task execution"""
     if intent not in context.get("intent_stats", {}):
         context["intent_stats"][intent] = {"success": 0, "failure": 0}
-    
+
     if success:
         context["intent_stats"][intent]["success"] += 1
     else:
         context["intent_stats"][intent]["failure"] += 1
-    
+
     save_memory_context(context)
 
 def requires_confirmation(intent, context):
@@ -194,6 +194,43 @@ def summarize_memory(context):
             "queued": context.get("next_steps", []),
         }
     }
+
+def get_current_goal(memory):
+    """Get the current goal from memory"""
+    if not memory.get("next_steps"):
+        return None
+    return memory["next_steps"][0] if memory["next_steps"] else None
+
+def get_next_step(memory):
+    """Get and remove next step from queue"""
+    if not memory.get("next_steps"):
+        return None
+    step = memory["next_steps"].pop(0).get("step") if isinstance(memory["next_steps"][0], dict) else memory["next_steps"].pop(0)
+    save_memory(memory)
+    return step
+
+def track_confirmed(memory):
+    """Track confirmed action"""
+    memory["confirmed_count"] = memory.get("confirmed_count", 0) + 1
+    save_memory(memory)
+
+def track_rejected(memory):
+    """Track rejected action"""
+    memory["rejected_count"] = memory.get("rejected_count", 0) + 1
+    save_memory(memory)
+
+def get_trust_score(memory, intent=None):
+    """Calculate trust score for an intent or overall"""
+    if intent:
+        stats = memory.get("intent_stats", {}).get(intent, {})
+        success = stats.get("success", 0)
+        total = success + stats.get("failure", 0)
+        return (success / total) if total > 5 else 0.0
+
+    confirmed = memory.get("confirmed_count", 0)
+    rejected = memory.get("rejected_count", 0)
+    total = confirmed + rejected
+    return (confirmed / total) if total > 5 else 0.0
 
 def get_current_goal(context):
     if context.get("next_steps"):
