@@ -134,7 +134,8 @@ def download_log_by_task_id(task_id):
         task_id: Can be either a full timestamp or a processed ID
     """
     # Normalize the task_id for consistent matching
-    task_id.replace(":", "_").replace(".", "_")
+    task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_")
+    task_id = task_id.split(".")[0]  # Remove microseconds if present
     service = get_drive_service()
 
     # 1. Gather all folders under ROOT

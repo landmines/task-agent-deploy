@@ -125,8 +125,9 @@ def confirm():
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
 
-        # Normalize taskId format
-        task_id = task_id.replace(":", "_").replace(".", "_")
+        # Normalize taskId format comprehensively
+        task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_")
+        task_id = task_id.split(".")[0]  # Remove microseconds if present
         if not task_id.startswith("log-"):
             task_id = f"log-{task_id}"
 
@@ -139,8 +140,10 @@ def confirm():
                 f"log-{task_id}.json",
                 f"log-{task_id.replace('+00:00', '')}.json",
                 f"log-{task_id.replace('+00_00', '')}.json",
-                f"log-{task_id.split('.')[0]}.json"
+                f"log-{task_id.split('.')[0]}.json",
+                f"log-{task_id.split('T')[0]}*.json"  # Flexible date-based match
             ]
+            print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
 
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
