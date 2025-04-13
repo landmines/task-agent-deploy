@@ -99,10 +99,20 @@ class DeploymentManager:
         if optimize:
             config = self.optimize_deployment(config)
 
-        # Store deployment record
+        # Calculate GitHub-specific costs
+        github_costs = {
+            "storage_mb": config.get("storage_mb", 0),
+            "bandwidth_mb": config.get("bandwidth_mb", 0),
+            "actions_minutes": config.get("actions_minutes", 0),
+            "estimated_cost": 0.0,
+            "timestamp": datetime.now(UTC).isoformat()
+        }
+        
+        # Store deployment record with GitHub cost tracking
         deployment_record = {
             "timestamp": datetime.now(UTC).isoformat(),
             "config": config,
+            "github_costs": github_costs,
             "estimated_costs": self.estimate_deployment_cost({
                 "compute_hours": 24,  # Estimate for 1 day
                 "storage_mb": config.get("storage_mb", 100),

@@ -177,15 +177,29 @@ def track_rejected(context):
     save_memory_context(context)
 
 
-def log_deployment_event(success, source, note=""):
+def log_deployment_event(success, source, note="", cost_data=None):
     context = load_memory()
     context.setdefault("deployment_events", [])
-    context["deployment_events"].append({
+    context.setdefault("cost_tracking", {
+        "total_estimated": 0.0,
+        "deployment_costs": [],
+        "api_usage_costs": [],
+        "github_costs": [],
+        "last_updated": datetime.now(UTC).isoformat()
+    })
+    
+    event = {
         "success": success,
         "source": source,
         "note": note,
-        "timestamp": datetime.now(UTC).isoformat()
-    })
+        "timestamp": datetime.now(UTC).isoformat(),
+        "cost_data": cost_data
+    }
+    
+    if cost_data:
+        context["cost_tracking"]["github_costs"].append(cost_data)
+        
+    context["deployment_events"].append(event)
     if len(context["deployment_events"]) > 20:
         context["deployment_events"] = context["deployment_events"][-20:]
     save_memory(context)
