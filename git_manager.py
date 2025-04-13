@@ -4,7 +4,7 @@ import subprocess
 from datetime import datetime, UTC
 
 def commit_changes(message, files=None):
-    """Commit changes to git repository"""
+    """Commit changes to git repository with memory tracking"""
     try:
         # Create backup of modified files
         if files:
@@ -13,6 +13,33 @@ def commit_changes(message, files=None):
             subprocess.run(["git", "add"] + files, check=True)
         else:
             subprocess.run(["git", "add", "-A"], check=True)
+            
+        # Execute commit
+        result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        pre_commit_hash = result.stdout.strip()
+        
+        subprocess.run(["git", "commit", "-m", message], check=True)
+        
+        # Get new commit hash
+        result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        commit_hash = result.stdout.strip()
+        
+        # Store commit metadata in memory
+        from context_manager import load_memory, save_memory_context
+        memory = load_memory()
+        memory.setdefault("git_commits", [])
+        
+        commit_meta = {
+            "hash": commit_hash,
+            "message": message,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "files": files or [],
+            "previous_hash": pre_commit_hash
+        }
+        
+        memory["git_commits"].append(commit_meta)
+        memory["last_commit"] = commit_meta
+        save_memory_context(memory)
 
 def backup_file(filepath):
     """Create a backup of a file before modification"""

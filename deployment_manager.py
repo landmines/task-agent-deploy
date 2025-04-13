@@ -109,10 +109,16 @@ class DeploymentManager:
         }
         
         # Store deployment record with GitHub cost tracking
+        # Get current commit info
+        from context_manager import load_memory
+        memory = load_memory()
+        last_commit = memory.get("last_commit", {})
+        
         deployment_record = {
             "timestamp": datetime.now(UTC).isoformat(),
             "config": config,
             "github_costs": github_costs,
+            "git_commit": last_commit,
             "estimated_costs": self.estimate_deployment_cost({
                 "compute_hours": 24,  # Estimate for 1 day
                 "storage_mb": config.get("storage_mb", 100),
