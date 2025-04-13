@@ -113,29 +113,9 @@ def execute_code(plan):
 
         return result
 
-    try:
-        from sandbox_runner import run_code_in_sandbox, ResourceLimitExceeded
-        result = run_code_in_sandbox(code, inputs)
+    except Exception as e: # Added basic except block
+        return {"success": False, "error": f"Code execution failed: {str(e)}"}
 
-        if not result["success"]:
-            add_failure_pattern({
-                "type": "code_execution",
-                "error": result["error"],
-                "timestamp": datetime.now(UTC).isoformat()
-            })
-
-        return result
-    except ResourceLimitExceeded as e:
-        return {
-            "success": False,
-            "error": f"Resource limit exceeded: {str(e)}",
-            "resourceError": True
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Code execution failed: {str(e)}"
-        }
 
 def estimate_risk(plan):
     """Estimate risk level of a task"""
@@ -193,19 +173,19 @@ def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
     task_id = plan.get("task_id")
-    
+
     # Handle retry validation
     if plan.get("intent") == "fix_failure":
         validation = plan.get("validation", {})
         retry_count = validation.get("retry_count", 0)
-        
+
         if retry_count >= validation.get("max_retries", 3):
             return {
                 "success": False,
                 "error": "Maximum retry attempts reached",
                 "requires_manual_intervention": True
             }
-            
+
         # Update retry count
         plan["validation"]["retry_count"] = retry_count + 1 # Added to access task_id
 
