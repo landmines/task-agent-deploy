@@ -1,0 +1,208 @@
+==> Cloning from https://github.com/landmines/task-agent-deploy
+==> Checking out commit d63413b67e39400f78d100627e8543257c3eb043 in branch main
+==> Downloading cache...
+==> Transferred 95MB in 7s. Extraction took 4s.
+==> Using Python version 3.11.11 (default)
+==> Docs on specifying a Python version: https://render.com/docs/python-version
+==> Using Poetry version 1.7.1 (default)
+==> Docs on specifying a Poetry version: https://render.com/docs/poetry-version
+==> Running build command 'pip install -r requirements.txt'...
+Collecting flask (from -r requirements.txt (line 1))
+  Using cached flask-3.1.0-py3-none-any.whl.metadata (2.7 kB)
+Collecting flask-cors (from -r requirements.txt (line 2))
+  Using cached flask_cors-5.0.1-py3-none-any.whl.metadata (961 bytes)
+Collecting google-api-python-client (from -r requirements.txt (line 3))
+  Using cached google_api_python_client-2.166.0-py2.py3-none-any.whl.metadata (6.6 kB)
+Collecting google-auth (from -r requirements.txt (line 4))
+  Using cached google_auth-2.38.0-py2.py3-none-any.whl.metadata (4.8 kB)
+Collecting google-auth-httplib2 (from -r requirements.txt (line 5))
+  Using cached google_auth_httplib2-0.2.0-py2.py3-none-any.whl.metadata (2.2 kB)
+Collecting google-auth-oauthlib (from -r requirements.txt (line 6))
+  Using cached google_auth_oauthlib-1.2.1-py2.py3-none-any.whl.metadata (2.7 kB)
+Collecting gunicorn (from -r requirements.txt (line 7))
+  Using cached gunicorn-23.0.0-py3-none-any.whl.metadata (4.4 kB)
+Collecting requests (from -r requirements.txt (line 8))
+  Using cached requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Collecting psutil (from -r requirements.txt (line 9))
+  Using cached psutil-7.0.0-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (22 kB)
+Collecting Werkzeug>=3.1 (from flask->-r requirements.txt (line 1))
+  Using cached werkzeug-3.1.3-py3-none-any.whl.metadata (3.7 kB)
+Collecting Jinja2>=3.1.2 (from flask->-r requirements.txt (line 1))
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting itsdangerous>=2.2 (from flask->-r requirements.txt (line 1))
+  Using cached itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting click>=8.1.3 (from flask->-r requirements.txt (line 1))
+  Using cached click-8.1.8-py3-none-any.whl.metadata (2.3 kB)
+Collecting blinker>=1.9 (from flask->-r requirements.txt (line 1))
+  Using cached blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting httplib2<1.0.0,>=0.19.0 (from google-api-python-client->-r requirements.txt (line 3))
+  Using cached httplib2-0.22.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0,>=1.31.5 (from google-api-python-client->-r requirements.txt (line 3))
+  Using cached google_api_core-2.24.2-py3-none-any.whl.metadata (3.0 kB)
+Collecting uritemplate<5,>=3.0.1 (from google-api-python-client->-r requirements.txt (line 3))
+  Using cached uritemplate-4.1.1-py2.py3-none-any.whl.metadata (2.9 kB)
+Collecting cachetools<6.0,>=2.0.0 (from google-auth->-r requirements.txt (line 4))
+  Using cached cachetools-5.5.2-py3-none-any.whl.metadata (5.4 kB)
+Collecting pyasn1-modules>=0.2.1 (from google-auth->-r requirements.txt (line 4))
+  Using cached pyasn1_modules-0.4.2-py3-none-any.whl.metadata (3.5 kB)
+Collecting rsa<5,>=3.1.4 (from google-auth->-r requirements.txt (line 4))
+  Using cached rsa-4.9-py3-none-any.whl.metadata (4.2 kB)
+Collecting requests-oauthlib>=0.7.0 (from google-auth-oauthlib->-r requirements.txt (line 6))
+  Using cached requests_oauthlib-2.0.0-py2.py3-none-any.whl.metadata (11 kB)
+Collecting packaging (from gunicorn->-r requirements.txt (line 7))
+  Using cached packaging-24.2-py3-none-any.whl.metadata (3.2 kB)
+Collecting charset-normalizer<4,>=2 (from requests->-r requirements.txt (line 8))
+  Using cached charset_normalizer-3.4.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna<4,>=2.5 (from requests->-r requirements.txt (line 8))
+  Using cached idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting urllib3<3,>=1.21.1 (from requests->-r requirements.txt (line 8))
+  Using cached urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting certifi>=2017.4.17 (from requests->-r requirements.txt (line 8))
+  Using cached certifi-2025.1.31-py3-none-any.whl.metadata (2.5 kB)
+Collecting googleapis-common-protos<2.0.0,>=1.56.2 (from google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0,>=1.31.5->google-api-python-client->-r requirements.txt (line 3))
+  Using cached googleapis_common_protos-1.69.2-py3-none-any.whl.metadata (9.3 kB)
+Collecting protobuf!=3.20.0,!=3.20.1,!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,<7.0.0,>=3.19.5 (from google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0,>=1.31.5->google-api-python-client->-r requirements.txt (line 3))
+  Using cached protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting proto-plus<2.0.0,>=1.22.3 (from google-api-core!=2.0.*,!=2.1.*,!=2.2.*,!=2.3.0,<3.0.0,>=1.31.5->google-api-python-client->-r requirements.txt (line 3))
+  Using cached proto_plus-1.26.1-py3-none-any.whl.metadata (2.2 kB)
+Collecting pyparsing!=3.0.0,!=3.0.1,!=3.0.2,!=3.0.3,<4,>=2.4.2 (from httplib2<1.0.0,>=0.19.0->google-api-python-client->-r requirements.txt (line 3))
+  Using cached pyparsing-3.2.3-py3-none-any.whl.metadata (5.0 kB)
+Collecting MarkupSafe>=2.0 (from Jinja2>=3.1.2->flask->-r requirements.txt (line 1))
+  Using cached MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
+Collecting pyasn1<0.7.0,>=0.6.1 (from pyasn1-modules>=0.2.1->google-auth->-r requirements.txt (line 4))
+  Using cached pyasn1-0.6.1-py3-none-any.whl.metadata (8.4 kB)
+Collecting oauthlib>=3.0.0 (from requests-oauthlib>=0.7.0->google-auth-oauthlib->-r requirements.txt (line 6))
+  Using cached oauthlib-3.2.2-py3-none-any.whl.metadata (7.5 kB)
+Using cached flask-3.1.0-py3-none-any.whl (102 kB)
+Using cached flask_cors-5.0.1-py3-none-any.whl (11 kB)
+Using cached google_api_python_client-2.166.0-py2.py3-none-any.whl (13.2 MB)
+Using cached google_auth-2.38.0-py2.py3-none-any.whl (210 kB)
+Using cached google_auth_httplib2-0.2.0-py2.py3-none-any.whl (9.3 kB)
+Using cached google_auth_oauthlib-1.2.1-py2.py3-none-any.whl (24 kB)
+Using cached gunicorn-23.0.0-py3-none-any.whl (85 kB)
+Using cached requests-2.32.3-py3-none-any.whl (64 kB)
+Using cached psutil-7.0.0-cp36-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (277 kB)
+Using cached blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Using cached cachetools-5.5.2-py3-none-any.whl (10 kB)
+Using cached certifi-2025.1.31-py3-none-any.whl (166 kB)
+Using cached charset_normalizer-3.4.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (143 kB)
+Using cached click-8.1.8-py3-none-any.whl (98 kB)
+Using cached google_api_core-2.24.2-py3-none-any.whl (160 kB)
+Using cached httplib2-0.22.0-py3-none-any.whl (96 kB)
+Using cached idna-3.10-py3-none-any.whl (70 kB)
+Using cached itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached pyasn1_modules-0.4.2-py3-none-any.whl (181 kB)
+Using cached requests_oauthlib-2.0.0-py2.py3-none-any.whl (24 kB)
+Using cached rsa-4.9-py3-none-any.whl (34 kB)
+Using cached uritemplate-4.1.1-py2.py3-none-any.whl (10 kB)
+Using cached urllib3-2.4.0-py3-none-any.whl (128 kB)
+Using cached werkzeug-3.1.3-py3-none-any.whl (224 kB)
+Using cached packaging-24.2-py3-none-any.whl (65 kB)
+Using cached googleapis_common_protos-1.69.2-py3-none-any.whl (293 kB)
+Using cached MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (23 kB)
+Using cached oauthlib-3.2.2-py3-none-any.whl (151 kB)
+Using cached proto_plus-1.26.1-py3-none-any.whl (50 kB)
+Using cached protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+Using cached pyasn1-0.6.1-py3-none-any.whl (83 kB)
+Using cached pyparsing-3.2.3-py3-none-any.whl (111 kB)
+Installing collected packages: urllib3, uritemplate, pyparsing, pyasn1, psutil, protobuf, packaging, oauthlib, MarkupSafe, itsdangerous, idna, click, charset-normalizer, certifi, cachetools, blinker, Werkzeug, rsa, requests, pyasn1-modules, proto-plus, Jinja2, httplib2, gunicorn, googleapis-common-protos, requests-oauthlib, google-auth, flask, google-auth-oauthlib, google-auth-httplib2, google-api-core, flask-cors, google-api-python-client
+Successfully installed Jinja2-3.1.6 MarkupSafe-3.0.2 Werkzeug-3.1.3 blinker-1.9.0 cachetools-5.5.2 certifi-2025.1.31 charset-normalizer-3.4.1 click-8.1.8 flask-3.1.0 flask-cors-5.0.1 google-api-core-2.24.2 google-api-python-client-2.166.0 google-auth-2.38.0 google-auth-httplib2-0.2.0 google-auth-oauthlib-1.2.1 googleapis-common-protos-1.69.2 gunicorn-23.0.0 httplib2-0.22.0 idna-3.10 itsdangerous-2.2.0 oauthlib-3.2.2 packaging-24.2 proto-plus-1.26.1 protobuf-6.30.2 psutil-7.0.0 pyasn1-0.6.1 pyasn1-modules-0.4.2 pyparsing-3.2.3 requests-2.32.3 requests-oauthlib-2.0.0 rsa-4.9 uritemplate-4.1.1 urllib3-2.4.0
+[notice] A new release of pip is available: 24.0 -> 25.0.1
+[notice] To update, run: pip install --upgrade pip
+==> Uploading build...
+==> Uploaded in 3.9s. Compression took 1.6s
+==> Build successful 🎉
+==> Deploying...
+==> Running 'gunicorn app:app'
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+    ^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/arbiter.py", line 57, in __init__
+    self.setup(app)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/arbiter.py", line 117, in setup
+    self.app.wsgi()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/opt/render/project/src/app.py", line 11, in <module>
+    from agent_runner import run_agent, finalize_task_execution
+  File "/opt/render/project/src/agent_runner.py", line 16, in <module>
+    from task_executor import execute_task
+  File "/opt/render/project/src/task_executor.py", line 116
+    try:
+    ^^^
+SyntaxError: expected 'except' or 'finally' block
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+==> Running 'gunicorn app:app'
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/bin/gunicorn", line 8, in <module>
+    sys.exit(run())
+             ^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+    WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 235, in run
+    super().run()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 71, in run
+    Arbiter(self).run()
+    ^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/arbiter.py", line 57, in __init__
+    self.setup(app)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/arbiter.py", line 117, in setup
+    self.app.wsgi()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+                    ^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/opt/render/project/src/app.py", line 11, in <module>
+    from agent_runner import run_agent, finalize_task_execution
+  File "/opt/render/project/src/agent_runner.py", line 16, in <module>
+    from task_executor import execute_task
+  File "/opt/render/project/src/task_executor.py", line 116
+    try:
+    ^^^
+SyntaxError: expected 'except' or 'finally' block
