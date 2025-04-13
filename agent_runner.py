@@ -110,6 +110,7 @@ def run_agent(input_data):
     save_memory_context(memory)
 
     try:
+        os.makedirs(LOG_DIR, exist_ok=True)
         with open(log_path, "w") as f:
             json.dump({
                 "timestamp": timestamp,

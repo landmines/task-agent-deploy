@@ -190,6 +190,7 @@ def write_diagnostic(plan):
     log_id = plan.get("filename") or f"log_{datetime.now(UTC).isoformat()}"
     content = plan.get("content") or {}
     os.makedirs(DIAGNOSTICS_DIR, exist_ok=True)
+    os.makedirs(os.path.dirname(DIAGNOSTICS_DIR), exist_ok=True)  # Ensure parent logs dir exists
     filepath = os.path.join(DIAGNOSTICS_DIR, f"{log_id}.json")
     try:
         with open(filepath, "w") as f:
