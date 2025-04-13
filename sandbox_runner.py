@@ -51,9 +51,28 @@ class ResourceMonitor:
     def check_cpu_time(self):
         """Check if CPU time limit exceeded"""
         current_time = time.time()
-        if current_time - self.start_time > MAX_CPU_TIME:
+        elapsed = current_time - self.start_time
+        if elapsed > MAX_CPU_TIME:
             raise ResourceLimitExceeded(f"CPU time exceeded {MAX_CPU_TIME} seconds")
-        return current_time - self.start_time
+        
+        # Check CPU percentage
+        import psutil
+        cpu_percent = psutil.Process().cpu_percent()
+        if cpu_percent > 90:  # 90% CPU threshold
+            raise ResourceLimitExceeded(f"CPU usage too high: {cpu_percent}%")
+            
+        return elapsed
+
+    def check_disk_io(self):
+        """Monitor disk I/O operations"""
+        import psutil
+        io_counters = psutil.Process().io_counters()
+        read_mb = io_counters.read_bytes / (1024 * 1024)
+        write_mb = io_counters.write_bytes / (1024 * 1024)
+        
+        if read_mb > MAX_DISK_MB or write_mb > MAX_DISK_MB:
+            raise ResourceLimitExceeded(f"Disk I/O exceeded {MAX_DISK_MB}MB limit")
+        return (read_mb, write_mb)
 
     def check_all_resources(self):
         """Check all resource limits"""
@@ -62,7 +81,16 @@ class ResourceMonitor:
             self.check_memory_usage()
             self.check_disk_usage()
             self.check_cpu_time()
+            self.check_disk_io()
             self.last_check = current_time
+            
+            # Log resource usage for monitoring
+            return {
+                "memory_mb": self.check_memory_usage(),
+                "disk_mb": self.check_disk_usage(),
+                "cpu_time": self.check_cpu_time(),
+                "disk_io": self.check_disk_io()
+            }
 
 class CodeExecutionError(Exception):
     """Exception raised for code execution errors"""

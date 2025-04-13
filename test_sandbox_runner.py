@@ -103,6 +103,19 @@ os.system('touch test.txt')
         self.assertIsInstance(memory_usage, float)
         self.assertGreater(memory_usage, 0)
         
+        # Test disk I/O monitoring
+        read_mb, write_mb = monitor.check_disk_io()
+        self.assertIsInstance(read_mb, float)
+        self.assertIsInstance(write_mb, float)
+        
+        # Test comprehensive resource check
+        resources = monitor.check_all_resources()
+        self.assertIsInstance(resources, dict)
+        self.assertIn("memory_mb", resources)
+        self.assertIn("disk_mb", resources)
+        self.assertIn("cpu_time", resources)
+        self.assertIn("disk_io", resources)
+        
         # Test CPU time check
         cpu_time = monitor.check_cpu_time()
         self.assertIsInstance(cpu_time, float)
