@@ -89,7 +89,7 @@ def run_agent(input_data):
             "executionPlanned": plan,
             "fallbackUsed": fallback_used,
             "memory": memory,
-            "taskId": task_id,
+            "taskId": task_id,  # Consistently use the generated task_id
             "timestamp": timestamp,
             "roadmap": {
                 "currentPhase": "Phase 4.6",
@@ -99,7 +99,7 @@ def run_agent(input_data):
             "overallGoal": get_current_goal(memory),
             "phase": "Phase 4.6 – Self Awareness and Parallelism",
             "timestamp": timestamp,
-            "taskId": result.get("taskId") or task_id,
+            "taskId": task_id,  # Always use the generated task_id
             "log_filename": log_filename
         }
 
