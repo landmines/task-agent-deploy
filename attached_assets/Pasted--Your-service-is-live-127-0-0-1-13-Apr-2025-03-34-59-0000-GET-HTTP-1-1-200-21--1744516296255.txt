@@ -1,0 +1,105 @@
+==> Your service is live 🎉
+127.0.0.1 - - [13/Apr/2025:03:34:59 +0000] "GET / HTTP/1.1" 200 21 "-" "Go-http-client/2.0"
+[2025-04-13 03:35:58 +0000] [77] [INFO] Handling signal: term
+[2025-04-13 03:35:58 +0000] [78] [INFO] Worker exiting (pid: 78)
+[2025-04-13 03:35:58 +0000] [77] [INFO] Shutting down: Master
+==> Detected service running on port 10000
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+127.0.0.1 - - [13/Apr/2025:03:49:26 +0000] "OPTIONS /run HTTP/1.1" 200 0 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+🟢 /run received: {'intent': 'create_file', 'filename': 'step6_confirm_test.txt', 'content': 'Step 6 test file content', 'confirmationNeeded': True}
+🧪 Writing confirmable log to path: /opt/render/project/src/logs/log-2025-04-13T03_49_26_474471+00_00.json
+✅ Confirmable task log written locally: log-2025-04-13T03_49_26_474471+00_00.json
+🧪 Finished returning confirmable response
+✅ run_agent result: {'result': {'success': True, 'message': '⏸️ Task logged but awaiting user confirmation.', 'pending': True, 'confirmationNeeded': True}, 'executionPlanned': {'intent': 'create_file', 'filename': 'step6_confirm_test.txt', 'content': 'Step 6 test file content', 'confirmationNeeded': True, 'action': 'create_file'}, 'fallbackUsed': True, 'memory': {'confirmed_count': 0, 'rejected_count': 0, 'created': '2025-04-10T13:17:16.307875', 'last_updated': '2025-04-13T03:49:28.107926+00:00', 'last_result': {'task': {'intent': 'create_file', 'filename': 'step6_confirm_test.txt', 'content': 'Step 6 test file content', 'confirmationNeeded': True, 'action': 'create_file'}, 'intent': 'create_file', 'status': 'success', 'timestamp': '2025-04-13T03:49:28.107926+00:00', 'result': {'success': True, 'message': '⏸️ Task logged but awaiting user confirmation.', 'pending': True, 'confirmationNeeded': True}}, 'recent_tasks': [{'task': {'intent': 'create_file', 'filename': 'step6_confirm_test.txt', 'content': 'Step 6 test file content', 'confirmationNeeded': True, 'action': 'create_file'}, 'intent': 'create_file', 'status': 'success', 'timestamp': '2025-04-13T03:49:28.107926+00:00', 'result': {'success': True, 'message': '⏸️ Task logged but awaiting user confirmation.', 'pending': True, 'confirmationNeeded': True}}], 'failure_patterns': [], 'intent_stats': {'create_file': {'success': 1, 'fail': 0}}, 'self_notes': [], 'task_links': [], 'self_edits': [], 'deployment_events': [], 'project_name': 'Task Agent', 'purpose': 'Build and manage projects via user or ChatGPT instructions.', 'next_steps': [{'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ This file was queued and executed by /run_next'}, 'timestamp': '2025-04-10T13:17:16.307882'}, {'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ This file was queued and executed by /run_next'}, 'timestamp': '2025-04-10T13:19:59.050876'}, {'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ This file was queued and executed by /run_next'}, 'timestamp': '2025-04-10T13:20:39.855103'}, {'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ Queued by /run_next test'}, 'timestamp': '2025-04-10T13:21:51.438957'}, {'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ Queued by /run_next test'}, 'timestamp': '2025-04-10T15:19:50.652334'}, {'step': {'intent': 'create_file', 'filename': 'queued_test_file.txt', 'content': '✅ Queued by /run_next test'}, 'timestamp': '2025-04-10T15:22:15.200386'}]}, 'roadmap': {'currentPhase': 'Phase 4.6', 'nextPhase': 'Phase 4.7 – External Tools + Test Suites', 'subgoal': 'Enable self-awareness and task parallelism tracking.'}, 'overallGoal': 'Next: create_file', 'phase': 'Phase 4.6 – Self Awareness and Parallelism', 'timestamp': '2025-04-13T03:49:26.474471+00:00', 'taskId': '2025-04-13T03_49_26_474471+00_00', 'log_filename': 'log-2025-04-13T03_49_26_474471+00_00.json'}
+127.0.0.1 - - [13/Apr/2025:03:49:28 +0000] "POST /run HTTP/1.1" 200 2908 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+127.0.0.1 - - [13/Apr/2025:03:49:32 +0000] "GET /latest HTTP/1.1" 200 414 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+127.0.0.1 - - [13/Apr/2025:03:49:40 +0000] "OPTIONS /confirm HTTP/1.1" 200 0 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+[2025-04-13 03:50:11 +0000] [76] [CRITICAL] WORKER TIMEOUT (pid:78)
+[2025-04-13 03:50:11 +0000] [78] [ERROR] Error handling request /confirm
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 134, in handle
+    self.handle_request(listener, req, client, addr)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/workers/sync.py", line 177, in handle_request
+    respiter = self.wsgi(environ, resp.start_response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/flask/app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/app.py", line 185, in confirm
+    log_data = download_log_by_task_id(task_id)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/drive_uploader.py", line 161, in download_log_by_task_id
+    content = download_drive_log_file(log_file['id'])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/drive_uploader.py", line 106, in download_drive_log_file
+    status, done = downloader.next_chunk()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/googleapiclient/_helpers.py", line 130, in positional_wrapper
+    return wrapped(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/googleapiclient/http.py", line 741, in next_chunk
+    resp, content = _retry_request(
+                    ^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/googleapiclient/http.py", line 191, in _retry_request
+    resp, content = http.request(uri, method, *args, **kwargs)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google_auth_httplib2.py", line 209, in request
+    self.credentials.before_request(self._request, method, uri, request_headers)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/auth/credentials.py", line 239, in before_request
+    self._blocking_refresh(request)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/auth/credentials.py", line 202, in _blocking_refresh
+    self.refresh(request)
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/oauth2/service_account.py", line 448, in refresh
+    access_token, expiry, _ = _client.jwt_grant(
+                              ^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/oauth2/_client.py", line 299, in jwt_grant
+    response_data = _token_endpoint_request(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/oauth2/_client.py", line 259, in _token_endpoint_request
+    response_status_ok, response_data, retryable_error = _token_endpoint_request_no_throw(
+                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google/oauth2/_client.py", line 192, in _token_endpoint_request_no_throw
+    response = request(
+🔍 Received confirm POST: {'taskId': '2025-04-13T03_49_28_107926_00_00', 'confirm': True}
+               ^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/google_auth_httplib2.py", line 119, in __call__
+    response, data = self.http.request(
+🔍 Searching for log files matching patterns: ['log-log-2025-04-13T03_49_28_107926_00_00.json', 'log-log-2025-04-13T03_49_28_107926_00_00.json', 'log-log-2025-04-13T03_49_28_107926_00_00.json', 'log-log-2025-04-13T03_49_28_107926_00_00.json', 'log-log-2025-04-13*.json']
+                     ^^^^^^^^^^^^^^^^^^
+🔍 No local log found for log-2025-04-13T03_49_28_107926_00_00, searching on Drive...
+127.0.0.1 - - [13/Apr/2025:03:50:11 +0000] "POST /confirm HTTP/1.1" 500 0 "-" "-"
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/httplib2/__init__.py", line 1724, in request
+    (response, content) = self._request(
+                          ^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/httplib2/__init__.py", line 1444, in _request
+    (response, content) = self._conn_request(conn, request_uri, method, body, headers)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/httplib2/__init__.py", line 1366, in _conn_request
+    conn.connect()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/httplib2/__init__.py", line 1158, in connect
+    self.sock = self._context.wrap_socket(sock, server_hostname=self.host)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/ssl.py", line 517, in wrap_socket
+    return self.sslsocket_class._create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/ssl.py", line 1104, in _create
+    self.do_handshake()
+  File "/usr/local/lib/python3.11/ssl.py", line 1382, in do_handshake
+    self._sslobj.do_handshake()
+  File "/opt/render/project/src/.venv/lib/python3.11/site-packages/gunicorn/workers/base.py", line 204, in handle_abort
+    sys.exit(1)
+SystemExit: 1
+[2025-04-13 03:50:11 +0000] [78] [INFO] Worker exiting (pid: 78)
+[2025-04-13 03:50:12 +0000] [80] [INFO] Booting worker with pid: 80
+127.0.0.1 - - [13/Apr/2025:03:50:14 +0000] "GET /logs_from_drive HTTP/1.1" 200 182 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+127.0.0.1 - - [13/Apr/2025:03:50:14 +0000] "GET /memory HTTP/1.1" 200 2169 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
+127.0.0.1 - - [13/Apr/2025:03:50:18 +0000] "GET /logs_snapshot HTTP/1.1" 200 49 "https://task-agent-panel.vercel.app/" "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
