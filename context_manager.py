@@ -35,7 +35,26 @@ def load_memory_context():
 
 def save_memory_context(context):
     context["last_updated"] = datetime.now(UTC).isoformat()
-    save_memory(context)
+    return save_memory(context)
+
+def get_trust_score(context, intent=None):
+    """Calculate trust score based on success history"""
+    if intent:
+        stats = context.get("intent_stats", {}).get(intent, {})
+        success = stats.get("success", 0)
+        total = success + stats.get("failure", 0)
+        return success / total if total > 0 else 0
+
+    confirmed = context.get("confirmed_count", 0)
+    total = confirmed + context.get("rejected_count", 0)
+    return confirmed / total if total > 0 else 0
+
+def requires_confirmation(intent, context):
+    """Determine if an action needs confirmation"""
+    if intent in ["delete_file", "deploy", "modify_self"]:
+        return True
+    trust_score = get_trust_score(context, intent)
+    return trust_score < 0.8 or context.get("always_confirm", False)
 
 def record_last_result(context, task, result, fallback=False):
     update_memory_context(
@@ -125,19 +144,6 @@ def track_rejected(context):
     context["rejected_count"] = context.get("rejected_count", 0) + 1
     save_memory_context(context)
 
-def get_trust_score(context, intent=None):
-    """Calculate trust score for an intent or overall"""
-    stats = context.get("intent_stats", {})
-    if intent:
-        intent_data = stats.get(intent, {})
-        success = intent_data.get("success", 0)
-        total = success + intent_data.get("fail", 0)
-        return success / total if total > 0 else 0
-
-    total_confirmed = context.get("confirmed_count", 0)
-    total_rejected = context.get("rejected_count", 0)
-    total = total_confirmed + total_rejected
-    return total_confirmed / total if total > 0 else 0
 
 def log_deployment_event(success, source, note=""):
     context = load_memory()

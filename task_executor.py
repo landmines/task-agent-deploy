@@ -32,14 +32,14 @@ def execute_code(plan):
     code = plan.get("code", "")
     if not code:
         return {"success": False, "error": "No code provided"}
-    
+
     try:
         # Execute in restricted context
         restricted_globals = {"__builtins__": {}}
         allowed_builtins = ["print", "len", "str", "int", "float", "list", "dict", "set"]
         for func in allowed_builtins:
             restricted_globals["__builtins__"][func] = __builtins__[func]
-        
+
         exec(code, restricted_globals, {})
         return {"success": True, "message": "Code executed successfully"}
     except Exception as e:
@@ -50,27 +50,27 @@ def modify_file(plan):
     filename = plan.get("filename")
     old_content = plan.get("old_content")
     new_content = plan.get("new_content")
-    
+
     if not all([filename, old_content, new_content]):
         return {"success": False, "error": "Missing required fields"}
-        
+
     full_path = os.path.join(PROJECT_ROOT, filename)
     if not os.path.exists(full_path):
         return {"success": False, "error": f"File {filename} not found"}
-        
+
     try:
         with open(full_path, "r") as f:
             content = f.read()
-        
+
         if old_content not in content:
             return {"success": False, "error": "Old content not found in file"}
-            
+
         new_content = content.replace(old_content, new_content)
         backup_path = backup_file(full_path)
-        
+
         with open(full_path, "w") as f:
             f.write(new_content)
-            
+
         return {
             "success": True, 
             "message": f"File modified: {filename}",
@@ -79,14 +79,23 @@ def modify_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def estimate_risk(plan):
+    """Estimate risk level of a task"""
+    risk_levels = {
+        "create_file": 1,
+        "append_to_file": 1,
+        "modify_file": 2,
+        "delete_file": 3,
+        "deploy": 2,
+        "execute": 2
+    }
+    return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
+
 def execute_task(plan):
     execution_start = datetime.now(UTC)
-    
-    # Get action type and check risk level
-    action = plan.get("action") or plan.get("intent")
     risk_level = estimate_risk(plan)
-    
-    # Always require confirmation for high-risk actions
+
+    # Require confirmation for high-risk actions
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
             "success": True,
@@ -278,3 +287,11 @@ def write_diagnostic(plan):
         return {"success": True, "message": f"🩺 Diagnostic log saved to {filepath}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+def generate_app_template(template_type):
+    # Placeholder for app template generation
+    return f"Template for {template_type} app"
+
+def deploy_to_replit(project_name):
+    # Placeholder for Replit deployment
+    return f"Deployment configured for {project_name}"

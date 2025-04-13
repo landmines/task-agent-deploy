@@ -23,3 +23,16 @@ def revert_last_commit():
         return {"success": True, "message": "✅ Reverted last commit"}
     except subprocess.CalledProcessError as e:
         return {"success": False, "error": f"Git revert failed: {str(e)}"}
+
+def get_commit_history(limit=10):
+    """Get recent commit history"""
+    try:
+        result = subprocess.run(
+            ["git", "log", f"-{limit}", "--oneline"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.splitlines()
+    except subprocess.CalledProcessError:
+        return []

@@ -44,7 +44,16 @@ def requires_confirmation(intent: str, memory: dict) -> bool:
 
 def run_agent(input_data):
     memory = load_memory()
-
+    
+    # Track execution metadata
+    execution_id = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    memory["current_execution"] = execution_id
+    
+    # Check if confirmation needed based on trust
+    intent = input_data.get("intent")
+    if intent and requires_confirmation(intent, memory):
+        input_data["confirmationNeeded"] = True
+    
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
