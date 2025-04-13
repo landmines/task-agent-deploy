@@ -79,8 +79,38 @@ def validate_plan(steps: List[Dict[str, Any]]) -> tuple[bool, str]:
     valid_intents = {
         "create_app", "deploy", "modify_file", 
         "run_tests", "create_file", "append_to_file", 
-        "delete_file", "execute", "execute_code"
+        "delete_file", "execute", "execute_code",
+        "modify_self", "plan_tasks", "queue_task"
     }
+
+    # Track dependencies between steps
+    resource_states = {}
+    
+    for i, step in enumerate(steps):
+        # Basic validation
+        if not all(field in step for field in required_fields):
+            return False, f"Step {i+1} missing required fields"
+            
+        if step["intent"] not in valid_intents:
+            return False, f"Step {i+1} has invalid intent: {step['intent']}"
+            
+        # Risk assessment
+        risk = estimate_risk(step)
+        if risk > 2:
+            step["confirmationNeeded"] = True
+            
+        # Resource tracking
+        if step["intent"] in ["create_file", "modify_file"]:
+            filename = step.get("filename")
+            if not filename:
+                return False, f"Step {i+1} missing filename"
+            resource_states[filename] = step["intent"]
+            
+        # Dependency validation    
+        if step["intent"] == "modify_file":
+            filename = step.get("filename")
+            if filename not in resource_states:
+                return False, f"Step {i+1} modifies non-existent file: {filename}"
 
     for i, step in enumerate(steps):
         if not all(field in step for field in required_fields):

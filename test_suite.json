@@ -1,4 +1,3 @@
-
 {
   "testSuiteName": "Task Agent Core Functionality",
   "created": "2025-04-13",
@@ -46,6 +45,42 @@
         "success": true,
         "requires_confirmation": true
       }
-    }
+    },
+        {
+            "intent": "execute_code",
+            "code": "print('Hello World')",
+            "expected": {
+                "success": true,
+                "return_value": "Hello World\n"
+            }
+        },
+        {
+            "intent": "create_file",
+            "task": {
+                "filename": "test.txt",
+                "content": "test content"
+            },
+            "expected": {
+                "success": true
+            }
+        },
+        {
+            "intent": "execute_code",
+            "code": "while True: pass",
+            "expected": {
+                "success": false,
+                "error": "timeout"
+            }
+        },
+        {
+            "intent": "modify_file",
+            "task": {
+                "filename": "nonexistent.txt",
+                "content": "test"
+            },
+            "expected": {
+                "success": false
+            }
+        }
   ]
 }
