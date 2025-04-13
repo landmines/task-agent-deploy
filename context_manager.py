@@ -102,12 +102,17 @@ def clear_next_steps(context):
     save_memory(context)
 
 def get_next_step(context):
-    if not context.get("next_steps"):
+    """Get and remove next task from queue with error handling"""
+    try:
+        if not context.get("next_steps"):
+            return None
+        next_item = context["next_steps"].pop(0)
+        context["last_updated"] = datetime.now(UTC).isoformat()
+        save_memory(context)
+        return next_item.get("step") if isinstance(next_item, dict) and "step" in next_item else next_item
+    except Exception as e:
+        print(f"Error getting next step: {e}")
         return None
-    next_item = context["next_steps"].pop(0)
-    context["last_updated"] = datetime.now(UTC).isoformat()
-    save_memory(context)
-    return next_item.get("step", next_item)
 
 def track_confirmed(context):
     increment_confirmed(context)

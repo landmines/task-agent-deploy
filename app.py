@@ -46,10 +46,15 @@ def run_next():
             return jsonify({"error": "⚠️ No queued tasks in memory."}), 400
 
         next_item = queue.pop(0)
-        task = next_item.get("step", next_item)
+        task = next_item.get("step") if isinstance(next_item, dict) and "step" in next_item else next_item
+        memory["next_steps"] = queue
         save_memory(memory)
 
-        result = run_agent(task)
+        try:
+            result = run_agent(task)
+        except Exception as e:
+            return jsonify({"error": f"Task execution failed: {str(e)}"}), 500
+
         return jsonify({
             "message": "✅ Ran next task from memory queue.",
             "task": task,
