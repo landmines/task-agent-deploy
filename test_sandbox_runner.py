@@ -82,6 +82,7 @@ for i in range(100):
 """
         result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
+        self.assertIn("restricted", result["error"].lower())
 
     def test_file_system_access(self):
         code = """
@@ -90,6 +91,41 @@ os.system('touch test.txt')
 """
         result = run_code_in_sandbox(code)
         self.assertFalse(result["success"])
+        self.assertIn("restricted", result["error"].lower())
+
+    def test_resource_monitor(self):
+        """Test resource monitoring functionality"""
+        from sandbox_runner import ResourceMonitor
+        monitor = ResourceMonitor()
+        
+        # Test memory check
+        memory_usage = monitor.check_memory_usage()
+        self.assertIsInstance(memory_usage, float)
+        self.assertGreater(memory_usage, 0)
+        
+        # Test CPU time check
+        cpu_time = monitor.check_cpu_time()
+        self.assertIsInstance(cpu_time, float)
+        self.assertGreaterEqual(cpu_time, 0)
+        
+        # Test disk usage check
+        disk_usage = monitor.check_disk_usage()
+        self.assertIsInstance(disk_usage, float)
+        self.assertGreater(disk_usage, 0)
+
+    def test_resource_limits(self):
+        """Test resource limit enforcement"""
+        # Test memory limit
+        memory_code = "x = bytearray(300 * 1024 * 1024)"  # Try to allocate 300MB
+        result = run_code_in_sandbox(memory_code)
+        self.assertFalse(result["success"])
+        self.assertIn("memory", result["error"].lower())
+        
+        # Test CPU limit with busy loop
+        cpu_code = "while True: pass"
+        result = run_code_in_sandbox(cpu_code)
+        self.assertFalse(result["success"])
+        self.assertIn("time", result["error"].lower())
 
     def test_plan_tasks(self):
         """Test that the planner generates valid task sequences"""
