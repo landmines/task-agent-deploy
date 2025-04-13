@@ -105,8 +105,11 @@ def logs_snapshot():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-@app.route("/confirm", methods=["POST"])
+@app.route("/confirm", methods=["POST", "OPTIONS"])
 def confirm():
+    if request.method == "OPTIONS":
+        return "", 200
+        
     try:
         data = request.get_json()
         print("🔍 Received confirm POST:", data)
@@ -115,6 +118,9 @@ def confirm():
 
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
+
+        # Set timeout for confirmation processing
+        request.environ.setdefault('werkzeug.request', {})['timeout'] = 30
             
         # Normalize taskId format
         task_id = task_id.replace(":", "_").replace(".", "_")
