@@ -59,7 +59,8 @@ def run_agent(input_data):
             "success": True,
             "message": "⏸️ Task logged but awaiting user confirmation.",
             "pending": True,
-            "confirmationNeeded": True
+            "confirmationNeeded": True,
+            "taskId": task_id
         }
 
         try:
