@@ -20,9 +20,6 @@ CORS(app)
 def index():
     return "✅ Agent is running."
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
-
 @app.route("/run", methods=["POST"])
 def run():
     try:
@@ -41,6 +38,8 @@ def run():
         return jsonify(result)
     except Exception as e:
         print("❌ /run error:", traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+eback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 @app.route("/run_next", methods=["POST"])
