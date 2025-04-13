@@ -157,17 +157,24 @@ def execute_task(plan):
         from deployment_manager import DeploymentManager
         dm = DeploymentManager()
         
+        # Estimate resource usage based on project size
+        project_path = plan.get("project_path", ".")
+        storage_mb = sum(os.path.getsize(os.path.join(root, file)) 
+                        for root, _, files in os.walk(project_path) 
+                        for file in files) / (1024 * 1024)
+        
         estimated_costs = dm.estimate_deployment_cost({
             "compute_hours": 24,  # Initial 24-hour estimate
-            "storage_mb": plan.get("storage_mb", 100),
+            "storage_mb": max(100, storage_mb * 1.5),  # Add 50% buffer
             "bandwidth_mb": plan.get("bandwidth_mb", 1000)
         })
         
-        if estimated_costs["total_cost"] > 1.0:  # Dollar threshold
+        if not estimated_costs["within_free_tier"]:
             return {
                 "success": False,
-                "error": "Deployment cost exceeds threshold",
+                "error": "Deployment may incur costs",
                 "estimated_costs": estimated_costs,
+                "message": f"Estimated monthly cost: ${estimated_costs['estimated_monthly']:.2f}",
                 "requires_approval": True
             }
 

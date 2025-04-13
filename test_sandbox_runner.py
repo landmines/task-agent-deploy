@@ -116,6 +116,26 @@ os.system('touch test.txt')
         from deployment_manager import DeploymentManager
 
         dm = DeploymentManager()
+        
+        # Test free tier usage
+        free_resources = {
+            "compute_hours": 100,
+            "storage_mb": 200,
+            "bandwidth_mb": 50000
+        }
+        estimate = dm.estimate_deployment_cost(free_resources)
+        self.assertTrue(estimate["within_free_tier"])
+        self.assertEqual(estimate["total_cost"], 0)
+        
+        # Test paid tier usage
+        paid_resources = {
+            "compute_hours": 1000,
+            "storage_mb": 1000,
+            "bandwidth_mb": 150000
+        }
+        estimate = dm.estimate_deployment_cost(paid_resources)
+        self.assertFalse(estimate["within_free_tier"])
+        self.assertGreater(estimate["total_cost"], 0)
 
         # Test cost estimation
         costs = dm.estimate_deployment_cost({
