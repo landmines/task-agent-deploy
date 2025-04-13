@@ -20,6 +20,9 @@ CORS(app)
 def index():
     return "✅ Agent is running."
 
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=5000)
+
 @app.route("/run", methods=["POST"])
 def run():
     try:
