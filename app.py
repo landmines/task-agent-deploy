@@ -24,9 +24,12 @@ def run():
         print("🟢 /run received:", data)
         result = run_agent(data)
         print("✅ run_agent result:", result)
-        
-        # Add taskId to top level response
-        result["taskId"] = result.get("result", {}).get("taskId") or result.get("taskId")
+
+        # Ensure both top-level and nested result have taskId
+        task_id = result.get("taskId") or result.get("result", {}).get("taskId")
+        result["taskId"] = task_id
+        if "result" in result and isinstance(result["result"], dict):
+            result["result"]["taskId"] = task_id
         result["timestamp"] = result.get("timestamp")
 
         return jsonify(result)
@@ -136,12 +139,9 @@ def confirm():
                 f"log-{clean_id.replace('+00:00', '')}.json",
                 f"log-{clean_id.replace('+00_00', '')}.json",
                 f"log-{clean_id.split('.')[0]}.json",
-                f"log-{clean_id.split('T')[0]}*.json"  # Flexible date-based match
+                f"log-{clean_id.split('T')[0]}*.json"
             ]
             print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
-
-            # Ensure logs directory exists
-            os.makedirs(logs_dir, exist_ok=True)
 
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
@@ -156,12 +156,10 @@ def confirm():
                         matching_files.extend(matches)
 
                 if len(matching_files) > 1:
-                    # Sort by creation time and take most recent
                     matching_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
                     print(f"⚠️ Multiple matches found, using most recent: {matching_files[0].name}")
 
                 if not matching_files:
-                    # Flexible match as last resort
                     matching_files = [f for f in Path(logs_dir).glob("log*.json") 
                                     if any(part in f.name for part in [
                                         task_id, 
