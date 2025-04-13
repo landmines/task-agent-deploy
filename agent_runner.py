@@ -99,7 +99,7 @@ def run_agent(input_data):
             "overallGoal": get_current_goal(memory),
             "phase": "Phase 4.6 – Self Awareness and Parallelism",
             "timestamp": timestamp,
-            "taskId": task_id,
+            "taskId": result.get("taskId") or task_id,
             "log_filename": log_filename
         }
 
