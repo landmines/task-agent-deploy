@@ -145,6 +145,9 @@ def confirm():
             ]
             print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
 
+            # Ensure logs directory exists
+            os.makedirs(logs_dir, exist_ok=True)
+
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
             if os.path.exists(log_file):

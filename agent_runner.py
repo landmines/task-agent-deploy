@@ -17,13 +17,11 @@ from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
 
 MEMORY_PATH = "context.json"
-LOG_DIR = os.path.abspath("logs")
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 RENDER_LOG_FILE = "render.log"
 TEST_SUITE_FILE = "test_suite.json"
 AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
-
-os.makedirs(LOG_DIR, exist_ok=True)
 
 
 def run_agent(input_data):
