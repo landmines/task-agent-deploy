@@ -10,7 +10,13 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
             {
                 "intent": "create_app",
                 "template_type": "web",
-                "project_name": "web-app"
+                "project_name": "web-app",
+                "framework": "flask"
+            },
+            {
+                "intent": "create_file",
+                "filename": "requirements.txt",
+                "content": "flask\n"
             },
             {
                 "intent": "run_tests",
@@ -18,7 +24,8 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
             },
             {
                 "intent": "deploy",
-                "provider": "replit"
+                "provider": "replit",
+                "requires_confirmation": True
             }
         ],
         "modify_code": [
@@ -60,27 +67,36 @@ def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
         "requires_confirmation": True
     }]
 
-def validate_plan(steps: List[Dict[str, Any]]) -> bool:
-    """Validate that a plan's steps are properly structured"""
+def validate_plan(steps: List[Dict[str, Any]]) -> tuple[bool, str]:
+    """
+    Validate that a plan's steps are properly structured
+    Returns: (is_valid, error_message)
+    """
     if not steps:
-        return False
+        return False, "Empty plan"
 
     required_fields = ["intent"]
     valid_intents = {
         "create_app", "deploy", "modify_file", 
         "run_tests", "create_file", "append_to_file", 
-        "delete_file", "execute"
+        "delete_file", "execute", "execute_code"
     }
 
-    for step in steps:
+    for i, step in enumerate(steps):
         if not all(field in step for field in required_fields):
-            return False
+            return False, f"Step {i+1} missing required fields"
         if step["intent"] not in valid_intents:
-            return False
-        if step["intent"] == "deploy" and step.get("provider") != "replit":
-            return False
+            return False, f"Step {i+1} has invalid intent: {step['intent']}"
+        if step["intent"] == "deploy":
+            if not step.get("provider"):
+                step["provider"] = "replit"  # Default to replit
+            elif step["provider"] != "replit":
+                return False, "Only Replit deployment is supported"
+        if step["intent"] in ["modify_file", "create_file", "append_to_file"]:
+            if not step.get("filename"):
+                return False, f"Step {i+1} missing filename"
 
-    return True
+    return True, "Plan is valid"
 
 def estimate_risk(step: Dict[str, Any]) -> int:
     """
