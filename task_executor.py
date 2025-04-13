@@ -38,6 +38,30 @@ def execute_code(plan):
     timeout = plan.get("timeout", 5)  # Default 5 second timeout
     result = run_code_in_sandbox(code, timeout)
 
+def restore_from_backup(backup_path):
+    """Restore a file from its backup"""
+    if not backup_path or not os.path.exists(backup_path):
+        return {"success": False, "error": "Backup file not found"}
+    
+    try:
+        original_path = backup_path.replace("_BACKUP_", "").split(".")[0]
+        original_path = os.path.join(PROJECT_ROOT, os.path.basename(original_path))
+        
+        with open(backup_path, "r") as backup_file:
+            content = backup_file.read()
+            
+        with open(original_path, "w") as original_file:
+            original_file.write(content)
+            
+        return {
+            "success": True,
+            "message": f"✅ Restored from backup: {backup_path}",
+            "restored_file": original_path
+        }
+    except Exception as e:
+        return {"success": False, "error": f"Failed to restore: {str(e)}"}
+
+
     if result["success"]:
         return {
             "success": True,
