@@ -79,7 +79,10 @@ def run_code_in_sandbox(code, timeout=5):
             # Run with resource limits
             cmd = [
                 "python3", "-c",
-                f"import resource; resource.setrlimit(resource.RLIMIT_AS, (500*1024*1024, -1)); " + 
+                f"import resource; " +
+                f"resource.setrlimit(resource.RLIMIT_AS, (500*1024*1024, -1)); " +  # Memory limit: 500MB
+                f"resource.setrlimit(resource.RLIMIT_CPU, (30, -1)); " +  # CPU time limit: 30 seconds
+                f"resource.setrlimit(resource.RLIMIT_NPROC, (50, -1)); " +  # Process limit: 50
                 f"exec(open('{code_file}').read())"
             ]
 

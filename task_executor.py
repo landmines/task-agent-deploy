@@ -99,17 +99,40 @@ def estimate_risk(plan):
 
 def validate_execution_plan(plan):
     """Validate execution plan before running"""
+    if not isinstance(plan, dict):
+        return False, "Plan must be a dictionary"
+
     required_fields = ["action"] if "action" in plan else ["intent"]
     if not all(field in plan for field in required_fields):
         return False, "Missing required fields in plan"
         
     valid_actions = {
         "create_file", "append_to_file", "edit_file", 
-        "delete_file", "execute_code", "push_changes"
+        "delete_file", "execute_code", "push_changes",
+        "create_app", "deploy", "modify_self"
     }
+    
     action = plan.get("action") or plan.get("intent")
     if action not in valid_actions:
         return False, f"Invalid action: {action}"
+
+    # Validate file operations
+    if action in ["create_file", "append_to_file", "edit_file", "delete_file"]:
+        filename = plan.get("filename")
+        if not filename:
+            return False, "Missing filename"
+        if ".." in filename or filename.startswith("/"):
+            return False, "Invalid filename path"
+            
+    # Validate code execution
+    if action == "execute_code":
+        if not plan.get("code"):
+            return False, "Missing code to execute"
+            
+    # Validate deployment
+    if action == "deploy":
+        if not plan.get("project_name"):
+            return False, "Missing project name for deployment"
     
     return True, None
 
