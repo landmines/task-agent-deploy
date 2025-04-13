@@ -53,7 +53,15 @@ def execute_task(plan):
     elif action == "modify_file":
         return unsupported_action(action)
     elif action == "create_app":
-        return unsupported_action(action)
+        try:
+            template = generate_app_template(plan.get("template_type", "web"))
+            return {
+                "success": True,
+                "message": "✅ App template generated",
+                "template": template
+            }
+        except Exception as e:
+            return {"success": False, "error": f"App generation failed: {str(e)}"}
     elif action == "generate_code":
         return unsupported_action(action)
     else:

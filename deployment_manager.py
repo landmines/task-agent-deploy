@@ -31,6 +31,19 @@ def calculate_sha1(file_path):
             sha1.update(chunk)
     return sha1.hexdigest()
 
+def generate_app_template(template_type):
+    templates = {
+        "web": {
+            "files": ["index.html", "style.css", "app.js"],
+            "structure": {"public": [], "src": [], "assets": []}
+        },
+        "api": {
+            "files": ["api.py", "routes.py", "models.py"],
+            "structure": {"api": [], "tests": [], "docs": []}
+        }
+    }
+    return templates.get(template_type, {})
+
 def deploy_to_vercel(api_token, project_name, team_id=None):
     try:
         zip_file_path = zip_directory(".", f"{project_name}-deploy.zip")
