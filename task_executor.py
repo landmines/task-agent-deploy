@@ -103,14 +103,14 @@ def execute_code(plan):
             memory_limit=memory_limit,
             inputs=inputs
         )
-        
+
         if not result["success"]:
             add_failure_pattern({
                 "type": "code_execution",
                 "error": result["error"],
                 "timestamp": datetime.now(UTC).isoformat()
             })
-            
+
         return result
 
     try:
@@ -544,3 +544,12 @@ def execute_action(action_plan):
     except Exception as e:
         result["message"] = f"An error occurred: {str(e)}"
         return result
+
+valid_intents = {
+        "create_app", "deploy", "modify_file", 
+        "run_tests", "create_file", "append_to_file", 
+        "delete_file", "execute", "execute_code",
+        "modify_self", "plan_tasks", "queue_task",
+        "verify_deployment", "run_sandbox_test",
+        "fix_failure"
+    }

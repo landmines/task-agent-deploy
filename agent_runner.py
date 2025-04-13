@@ -31,57 +31,57 @@ def requires_confirmation(intent: str, memory: dict) -> bool:
     if intent in high_risk:
         trust = get_trust_score(memory, intent)
         return trust < 0.9  # Very high trust needed for risky actions
-        
+
     # Check general trust level
     if memory.get("always_confirm", False):
         return True
-        
+
     trust = get_trust_score(memory, intent)
     trust_threshold = 0.8
-    
+
     if intent in ["create_file", "append_to_file"]:
         trust_threshold = 0.7  # Lower threshold for safe actions
-        
+
     return trust < trust_threshold
 
 def run_agent(input_data):
     memory = load_memory()
-    
+
     # Track execution metadata
     execution_id = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
     memory["current_execution"] = execution_id
-    
+
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
         goal = input_data.get("goal") or input_data.get("task")
         plan = plan_tasks(goal)
-        
+
         if not validate_plan(plan):
             return {"success": False, "error": "Invalid plan structure"}
-            
+
         memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
         save_memory_context(memory)
-        
+
         return {
             "success": True,
             "message": f"✅ Created plan with {len(plan)} steps",
             "plan": plan,
             "next_steps": memory["next_steps"]
         }
-    
+
     # Check if confirmation needed based on trust
     intent = input_data.get("intent")
     if intent:
         trust_score = get_trust_score(memory, intent)
         needs_confirmation = requires_confirmation(intent, memory)
-        
+
         # Skip confirmation for highly trusted actions
         if trust_score >= 0.9 and not needs_confirmation:
             input_data["confirmationNeeded"] = False
         else:
             input_data["confirmationNeeded"] = True
-            
+
         # Record decision metrics
         memory["confirmation_decisions"] = memory.get("confirmation_decisions", [])
         memory["confirmation_decisions"].append({
@@ -89,19 +89,19 @@ def run_agent(input_data):
             "trust_score": trust_score,
             "confirmation_required": input_data["confirmationNeeded"]
         })
-    
+
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
         goal = input_data.get("goal") or input_data.get("task")
         plan = plan_tasks(goal)
-        
+
         if not validate_plan(plan):
             return {"success": False, "error": "Invalid plan structure"}
-            
+
         memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
         save_memory_context(memory)
-        
+
         return {
             "success": True,
             "message": f"✅ Created plan with {len(plan)} steps",
@@ -189,8 +189,18 @@ def run_agent(input_data):
     record_last_result(memory, plan, result, fallback_used)
 
     if not result.get("success"):
-        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} – {plan.get('notes', '')}".strip()
+        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} - {plan.get('notes', '')}".strip()
         add_failure_pattern(memory, {"task": task_summary, "result": result})
+
+        # Auto-generate follow-up task
+        follow_up_task = {
+            "intent": "fix_failure",
+            "original_task": task_summary,
+            "error": result.get("error", "Unknown error"),
+            "requires_confirmation": True,
+            "notes": f"Auto-generated fix attempt for failed task: {task_summary}"
+        }
+        add_next_step(memory, follow_up_task)
 
     save_memory_context(memory)
 
@@ -329,7 +339,7 @@ def finalize_task_execution(status, task_info=None):
         intent = (task_info.get("execution", {}).get("action") or 
                  task_info.get("execution", {}).get("intent") or 
                  task_info.get("input", {}).get("intent"))
-    
+
     if status == "confirmed":
         track_confirmed(memory)
         if intent:
@@ -345,7 +355,7 @@ def finalize_task_execution(status, task_info=None):
                 "task": f"{intent} – Rejected by user",
                 "timestamp": datetime.now(UTC).isoformat()
             })
-    
+
     save_memory_context(memory)
     return {"success": True, "status": status, "intent": intent}
 
