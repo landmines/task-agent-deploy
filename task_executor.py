@@ -42,17 +42,17 @@ def restore_from_backup(backup_path):
     """Restore a file from its backup"""
     if not backup_path or not os.path.exists(backup_path):
         return {"success": False, "error": "Backup file not found"}
-    
+
     try:
         original_path = backup_path.replace("_BACKUP_", "").split(".")[0]
         original_path = os.path.join(PROJECT_ROOT, os.path.basename(original_path))
-        
+
         with open(backup_path, "r") as backup_file:
             content = backup_file.read()
-            
+
         with open(original_path, "w") as original_file:
             original_file.write(content)
-            
+
         return {
             "success": True,
             "message": f"✅ Restored from backup: {backup_path}",
@@ -502,10 +502,12 @@ def execute_code(plan):
                 "error": result["error"],
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }
-            from context_manager import add_failure_pattern
-            add_failure_pattern(failure)
-
-        return result
+            try:
+                from context_manager import add_failure_pattern
+                add_failure_pattern(failure)
+            except Exception as e:
+                print(f"Error adding failure pattern: {e}")
+            return result
 
     except ResourceLimitExceeded as e:
         return {
