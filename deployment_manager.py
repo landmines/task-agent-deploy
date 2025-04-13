@@ -272,3 +272,25 @@ def deploy_to_vercel(api_token, project_name, team_id=None):
 
     except Exception as e:
         return {"success": False, "error": str(e)}
+import requests
+from typing import Dict, Any
+from datetime import datetime, UTC
+
+def verify_deployment(url: str, expected_status: int = 200, timeout: int = 30) -> Dict[str, Any]:
+    """Verify a deployment is accessible and responding correctly"""
+    try:
+        response = requests.get(url, timeout=timeout)
+        success = response.status_code == expected_status
+        
+        return {
+            "success": success,
+            "status_code": response.status_code,
+            "response_time": response.elapsed.total_seconds(),
+            "timestamp": datetime.now(UTC).isoformat()
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now(UTC).isoformat()
+        }

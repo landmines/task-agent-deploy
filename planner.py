@@ -80,7 +80,18 @@ def validate_plan(steps: List[Dict[str, Any]]) -> tuple[bool, str]:
         "create_app", "deploy", "modify_file", 
         "run_tests", "create_file", "append_to_file", 
         "delete_file", "execute", "execute_code",
-        "modify_self", "plan_tasks", "queue_task"
+        "modify_self", "plan_tasks", "queue_task",
+        "verify_deployment", "run_sandbox_test"
+    }
+
+    risk_levels = {
+        "create_file": 1,
+        "append_to_file": 1,
+        "modify_file": 2,
+        "delete_file": 3,
+        "deploy": 2,
+        "execute_code": 2,
+        "modify_self": 3
     }
 
     # Track dependencies between steps

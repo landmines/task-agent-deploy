@@ -86,12 +86,32 @@ def modify_file(plan):
         return {"success": False, "error": str(e)}
 
 def execute_code(plan):
-    """Execute code in sandbox environment"""
+    """Execute code in sandbox environment with resource limits"""
     code = plan.get("code")
     inputs = plan.get("inputs", {})
+    timeout = plan.get("timeout", 5)  # Default 5 second timeout
+    memory_limit = plan.get("memory_limit", 100 * 1024 * 1024)  # 100MB default
 
     if not code:
         return {"success": False, "error": "No code provided"}
+
+    try:
+        from sandbox_runner import run_code_in_sandbox
+        result = run_code_in_sandbox(
+            code, 
+            timeout=timeout,
+            memory_limit=memory_limit,
+            inputs=inputs
+        )
+        
+        if not result["success"]:
+            add_failure_pattern({
+                "type": "code_execution",
+                "error": result["error"],
+                "timestamp": datetime.now(UTC).isoformat()
+            })
+            
+        return result
 
     try:
         from sandbox_runner import run_code_in_sandbox, ResourceLimitExceeded
