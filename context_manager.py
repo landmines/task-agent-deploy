@@ -43,11 +43,37 @@ def get_trust_score(context, intent=None):
         stats = context.get("intent_stats", {}).get(intent, {})
         success = stats.get("success", 0)
         total = success + stats.get("failure", 0)
-        return success / total if total > 0 else 0
+        if total < 5:  # Not enough data
+            return 0.3  # Conservative default
+        return success / total
 
     confirmed = context.get("confirmed_count", 0)
     total = confirmed + context.get("rejected_count", 0)
-    return confirmed / total if total > 0 else 0
+    if total < 10:  # Not enough overall data
+        return 0.3  # Conservative default
+    return confirmed / total
+
+def requires_confirmation(intent, context):
+    """Determine if an action needs confirmation"""
+    # Always confirm these actions
+    if intent in ["delete_file", "deploy", "modify_self"]:
+        return True
+        
+    # Check trust score
+    trust = get_trust_score(context, intent)
+    return trust < 0.8 or context.get("always_confirm", False)
+
+def update_trust_metrics(context, intent, success):
+    """Update trust metrics after task execution"""
+    if intent not in context.get("intent_stats", {}):
+        context["intent_stats"][intent] = {"success": 0, "failure": 0}
+    
+    if success:
+        context["intent_stats"][intent]["success"] += 1
+    else:
+        context["intent_stats"][intent]["failure"] += 1
+    
+    save_memory_context(context)
 
 def requires_confirmation(intent, context):
     """Determine if an action needs confirmation"""

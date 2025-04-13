@@ -95,6 +95,17 @@ def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
 
+    # Handle code execution in sandbox
+    if plan.get("action") == "execute_code":
+        from sandbox_runner import run_code_in_sandbox
+        code = plan.get("code", "")
+        result = run_code_in_sandbox(code)
+        return {
+            "success": result["success"],
+            "message": "Code executed in sandbox" if result["success"] else result["error"],
+            "output": result["output"]
+        }
+
     # Require confirmation for high-risk actions
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
