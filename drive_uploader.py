@@ -89,7 +89,7 @@ def list_recent_drive_logs(limit=5):
     sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
     return [file['id'] for file in sorted_logs[:limit]]
 
-def download_drive_log_file(file_id, timeout=30, max_retries=3):
+def download_drive_log_file(file_id, timeout=10, max_retries=2):
     service = get_drive_service()
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
@@ -102,8 +102,12 @@ def download_drive_log_file(file_id, timeout=30, max_retries=3):
     while retry_count < max_retries:
         try:
             done = False
-            while not done:
+            chunk_count = 0
+            while not done and chunk_count < 5:  # Limit chunks
                 status, done = downloader.next_chunk()
+                chunk_count += 1
+            if not done:
+                raise TimeoutError("Download taking too long")
             fh.seek(0)
             return json.load(fh)
         except Exception as e:
@@ -112,7 +116,6 @@ def download_drive_log_file(file_id, timeout=30, max_retries=3):
             if retry_count >= max_retries:
                 print("❌ All Drive download attempts failed")
                 return None
-            socket.setdefaulttimeout(timeout * (retry_count + 1))
 
     fh.seek(0)
     try:
