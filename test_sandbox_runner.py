@@ -116,7 +116,7 @@ os.system('touch test.txt')
         from deployment_manager import DeploymentManager
 
         dm = DeploymentManager()
-        
+
         # Test free tier usage
         free_resources = {
             "compute_hours": 100,
@@ -126,7 +126,7 @@ os.system('touch test.txt')
         estimate = dm.estimate_deployment_cost(free_resources)
         self.assertTrue(estimate["within_free_tier"])
         self.assertEqual(estimate["total_cost"], 0)
-        
+
         # Test paid tier usage
         paid_resources = {
             "compute_hours": 1000,
@@ -161,6 +161,34 @@ os.system('touch test.txt')
         self.assertIn("timestamp", deployment)
         self.assertIn("config", deployment)
         self.assertIn("estimated_costs", deployment)
+
+    def test_resource_limits(self):
+        """Test that resource limits are enforced"""
+        # Test memory limit
+        memory_heavy_code = "x = ' ' * (1024 * 1024 * 1000)"  # Try to allocate 1GB
+        result = run_code_in_sandbox(memory_heavy_code)
+        self.assertFalse(result["success"])
+        self.assertIn("memory", result["error"].lower())
+
+        # Test CPU limit
+        cpu_heavy_code = "while True: pass"
+        result = run_code_in_sandbox(cpu_heavy_code)
+        self.assertFalse(result["success"])
+        self.assertIn("timeout", result["error"].lower())
+
+    def test_file_operations(self):
+        """Test that file operations are blocked"""
+        file_op_code = "with open('test.txt', 'w') as f: f.write('test')"
+        result = run_code_in_sandbox(file_op_code)
+        self.assertFalse(result["success"])
+        self.assertIn("file operations not allowed", result["error"].lower())
+
+    def test_safe_execution(self):
+        """Test that safe code executes properly"""
+        safe_code = "x = [i * 2 for i in range(10)]; result = sum(x)"
+        result = run_code_in_sandbox(safe_code)
+        self.assertTrue(result["success"])
+        self.assertEqual(result["return_value"], 90)
 
 if __name__ == '__main__':
     unittest.main()

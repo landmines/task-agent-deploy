@@ -6,27 +6,50 @@ import time
 from typing import Dict, Any
 from contextlib import contextmanager
 
-RESTRICTED_MODULES = ['os.system', 'subprocess', 'socket', 'requests']
+RESTRICTED_MODULES = ['os.system', 'subprocess', 'socket', 'requests', 'multiprocessing', 'threading']
 TIMEOUT_SECONDS = 5
+MAX_MEMORY_MB = 512
+MAX_CPU_TIME = 2  # seconds
 
 class CodeExecutionError(Exception):
+    """Exception raised for code execution errors"""
     pass
 
-def analyze_code_safety(code: str) -> bool:
-    """Check if code contains potentially unsafe operations"""
+class ResourceLimitExceeded(CodeExecutionError):
+    """Exception raised when code exceeds resource limits"""
+    pass
+
+def analyze_code_safety(code: str) -> tuple[bool, str]:
+    """
+    Check if code contains potentially unsafe operations
+    Returns: (is_safe, reason)
+    """
     try:
         tree = ast.parse(code)
         for node in ast.walk(tree):
+            # Check imports
             if isinstance(node, ast.Import):
                 for name in node.names:
                     if name.name in RESTRICTED_MODULES:
-                        return False
+                        return False, f"Restricted module: {name.name}"
             elif isinstance(node, ast.ImportFrom):
                 if node.module in RESTRICTED_MODULES:
-                    return False
-    except SyntaxError:
-        return False
-    return True
+                    return False, f"Restricted module: {node.module}"
+            
+            # Check for file operations
+            elif isinstance(node, (ast.Open, ast.Call)) and isinstance(node.func, ast.Name):
+                if node.func.id == 'open':
+                    return False, "File operations not allowed in sandbox"
+                    
+            # Check for eval/exec
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                if node.func.id in ['eval', 'exec']:
+                    return False, "eval/exec not allowed in sandbox"
+                    
+    except SyntaxError as e:
+        return False, f"Syntax error: {str(e)}"
+        
+    return True, "Code appears safe"
 
 @contextmanager
 def timeout_handler(seconds: int):
@@ -45,11 +68,12 @@ def timeout_handler(seconds: int):
         signal.alarm(0)
 
 def run_code_in_sandbox(code: str, inputs: Dict[str, Any] = None) -> Dict[str, Any]:
-    """Execute code in a restricted environment"""
-    if not analyze_code_safety(code):
+    """Execute code in a restricted environment with resource limits"""
+    is_safe, reason = analyze_code_safety(code)
+    if not is_safe:
         return {
             "success": False,
-            "error": "Code contains restricted operations",
+            "error": f"Code safety check failed: {reason}",
             "output": None
         }
 
