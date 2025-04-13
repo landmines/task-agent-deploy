@@ -20,10 +20,18 @@ ALLOWED_MODULES = {
     'collections', 'itertools', 'functools'
 }
 
+class ResourceLimitExceeded(Exception):
+    """Exception raised when code exceeds resource limits"""
+    pass
+
 class ResourceMonitor:
     """Monitor and limit resource usage during code execution"""
-    @staticmethod
-    def check_memory_usage():
+    def __init__(self):
+        self.start_time = time.time()
+        self.last_check = self.start_time
+
+    def check_memory_usage(self):
+        """Check current memory usage against limit"""
         import psutil
         process = psutil.Process()
         memory_mb = process.memory_info().rss / (1024 * 1024)
@@ -31,14 +39,30 @@ class ResourceMonitor:
             raise ResourceLimitExceeded(f"Memory usage exceeded {MAX_MEMORY_MB}MB limit")
         return memory_mb
 
-    @staticmethod
-    def check_disk_usage(path="."):
+    def check_disk_usage(self, path="."):
+        """Check current disk usage against limit"""
         import psutil
         disk_usage = psutil.disk_usage(path)
         used_mb = disk_usage.used / (1024 * 1024)
         if used_mb > MAX_DISK_MB:
             raise ResourceLimitExceeded(f"Disk usage exceeded {MAX_DISK_MB}MB limit")
         return used_mb
+
+    def check_cpu_time(self):
+        """Check if CPU time limit exceeded"""
+        current_time = time.time()
+        if current_time - self.start_time > MAX_CPU_TIME:
+            raise ResourceLimitExceeded(f"CPU time exceeded {MAX_CPU_TIME} seconds")
+        return current_time - self.start_time
+
+    def check_all_resources(self):
+        """Check all resource limits"""
+        current_time = time.time()
+        if current_time - self.last_check >= 0.5:  # Check every 0.5 seconds
+            self.check_memory_usage()
+            self.check_disk_usage()
+            self.check_cpu_time()
+            self.last_check = current_time
 
 class CodeExecutionError(Exception):
     """Exception raised for code execution errors"""
@@ -107,22 +131,19 @@ def run_code_in_sandbox(code: str, inputs: Dict[str, Any] = None) -> Dict[str, A
         }
 
     monitor = ResourceMonitor()
-    start_time = time.time()
-    last_memory_check = start_time
     
-    def check_resources():
-        nonlocal last_memory_check
-        current_time = time.time()
-        
-        # Check CPU time
-        if current_time - start_time > MAX_CPU_TIME:
-            raise ResourceLimitExceeded(f"CPU time exceeded {MAX_CPU_TIME} seconds")
-            
-        # Check memory periodically (every 0.5 seconds)
-        if current_time - last_memory_check >= 0.5:
-            monitor.check_memory_usage()
-            monitor.check_disk_usage()
-            last_memory_check = current_time
+    # Set up resource limits
+    import resource
+    resource.setrlimit(resource.RLIMIT_AS, (MAX_MEMORY_MB * 1024 * 1024, -1))
+    resource.setrlimit(resource.RLIMIT_CPU, (MAX_CPU_TIME, -1))
+    
+    # Create restricted globals with only safe builtins
+    safe_globals = {
+        '__builtins__': {
+            name: getattr(__builtins__, name)
+            for name in ALLOWED_MODULES
+        }
+    }
         
     # Check memory limit
     import resource
