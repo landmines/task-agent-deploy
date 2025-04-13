@@ -61,5 +61,36 @@ def test_plan_tasks(self):
         self.assertEqual(plan[0]["intent"], "run_tests")
         self.assertEqual(plan[1]["intent"], "deploy")
 
+def test_deployment_manager(self):
+        """Test deployment management functionality"""
+        from deployment_manager import DeploymentManager
+        
+        dm = DeploymentManager()
+        
+        # Test cost estimation
+        costs = dm.estimate_deployment_cost({
+            "compute_hours": 24,
+            "storage_mb": 100,
+            "bandwidth_mb": 1000
+        })
+        self.assertIsInstance(costs["total_cost"], float)
+        self.assertTrue(costs["total_cost"] > 0)
+        
+        # Test deployment optimization
+        config = {
+            "memory_mb": 1024,
+            "instances": 5,
+            "storage_mb": 100
+        }
+        optimized = dm.optimize_deployment(config)
+        self.assertLess(optimized["memory_mb"], config["memory_mb"])
+        self.assertLess(optimized["instances"], config["instances"])
+        
+        # Test deployment and rollback
+        deployment = dm.deploy(config)
+        self.assertIn("timestamp", deployment)
+        self.assertIn("config", deployment)
+        self.assertIn("estimated_costs", deployment)
+
 if __name__ == '__main__':
     unittest.main()

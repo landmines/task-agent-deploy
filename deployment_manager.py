@@ -1,9 +1,118 @@
-# deployment_manager.py
 import os
+import json
+from datetime import datetime, UTC
+from typing import Dict, Any, List
 import zipfile
 import time
 import requests
 import hashlib
+
+class DeploymentManager:
+    def __init__(self):
+        self.cost_metrics = {
+            "compute": 0.000012,  # Per second
+            "storage": 0.000001,  # Per MB per hour
+            "bandwidth": 0.00001  # Per MB
+        }
+
+    def estimate_deployment_cost(self, resources: Dict[str, Any]) -> Dict[str, float]:
+        """Estimate deployment costs based on resource usage"""
+        compute_hours = resources.get("compute_hours", 0)
+        storage_mb = resources.get("storage_mb", 0)
+        bandwidth_mb = resources.get("bandwidth_mb", 0)
+
+        return {
+            "compute_cost": compute_hours * 3600 * self.cost_metrics["compute"],
+            "storage_cost": storage_mb * self.cost_metrics["storage"] * 24,
+            "bandwidth_cost": bandwidth_mb * self.cost_metrics["bandwidth"],
+            "total_cost": (compute_hours * 3600 * self.cost_metrics["compute"]) + 
+                         (storage_mb * self.cost_metrics["storage"] * 24) + 
+                         (bandwidth_mb * self.cost_metrics["bandwidth"])
+        }
+
+    def optimize_deployment(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Optimize deployment configuration"""
+        optimized = config.copy()
+
+        # Optimize memory allocation
+        if "memory_mb" in optimized:
+            optimized["memory_mb"] = max(128, min(optimized["memory_mb"], 512))
+
+        # Optimize instance count
+        if "instances" in optimized:
+            optimized["instances"] = max(1, min(optimized["instances"], 3))
+
+        # Set reasonable timeouts
+        optimized.setdefault("timeout_seconds", 30)
+        optimized.setdefault("startup_timeout_seconds", 60)
+
+        return optimized
+
+    def deploy(self, config: Dict[str, Any], optimize: bool = True) -> Dict[str, Any]:
+        """Deploy application with optimization"""
+        if optimize:
+            config = self.optimize_deployment(config)
+
+        # Store deployment record
+        deployment_record = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "config": config,
+            "estimated_costs": self.estimate_deployment_cost({
+                "compute_hours": 24,  # Estimate for 1 day
+                "storage_mb": config.get("storage_mb", 100),
+                "bandwidth_mb": config.get("bandwidth_mb", 1000)
+            })
+        }
+
+        self._save_deployment_record(deployment_record)
+        return deployment_record
+
+    def _save_deployment_record(self, record: Dict[str, Any]) -> None:
+        """Save deployment record for tracking"""
+        records_file = "deployment_records.json"
+        try:
+            if os.path.exists(records_file):
+                with open(records_file, "r") as f:
+                    records = json.load(f)
+            else:
+                records = []
+
+            records.append(record)
+            with open(records_file, "w") as f:
+                json.dump(records, f, indent=2)
+        except Exception as e:
+            print(f"Failed to save deployment record: {e}")
+
+    def rollback(self, deployment_id: str) -> Dict[str, Any]:
+        """Rollback to previous deployment"""
+        try:
+            with open("deployment_records.json", "r") as f:
+                records = json.load(f)
+
+            # Find target deployment
+            target = None
+            for record in records:
+                if record.get("id") == deployment_id:
+                    target = record
+                    break
+
+            if not target:
+                return {"success": False, "error": "Deployment not found"}
+
+            # Execute rollback
+            rollback_record = {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "type": "rollback",
+                "target_deployment": deployment_id,
+                "config": target["config"]
+            }
+
+            self._save_deployment_record(rollback_record)
+            return {"success": True, "message": "Rollback successful", "record": rollback_record}
+
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
 
 def zip_directory(source_dir, zip_name):
     zip_path = os.path.join("/tmp", zip_name)
@@ -60,6 +169,7 @@ def deploy_to_replit(project_name, environment="production"):
 
 def deploy_to_vercel(api_token, project_name, team_id=None):
     try:
+        deployment_manager = DeploymentManager()
         zip_file_path = zip_directory(".", f"{project_name}-deploy.zip")
         digest = calculate_sha1(zip_file_path)
 
@@ -122,7 +232,8 @@ def deploy_to_vercel(api_token, project_name, team_id=None):
             deploy_data = deploy_response.json()
             url = deploy_data.get("url")
             print(f"✅ Deployed to Vercel: https://{url}")
-            return {"success": True, "url": f"https://{url}"}
+            deployment_record = deployment_manager.deploy({"name": project_name, "url": url})
+            return {"success": True, "url": f"https://{url}", "deployment_record": deployment_record}
         else:
             return {"success": False, "error": deploy_response.text}
 

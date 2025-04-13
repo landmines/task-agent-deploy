@@ -139,6 +139,25 @@ def validate_execution_plan(plan):
 def execute_task(plan):
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
+    
+    # Add cost estimation for deployments
+    if plan.get("action") == "deploy" or plan.get("intent") == "deploy":
+        from deployment_manager import DeploymentManager
+        dm = DeploymentManager()
+        
+        estimated_costs = dm.estimate_deployment_cost({
+            "compute_hours": 24,  # Initial 24-hour estimate
+            "storage_mb": plan.get("storage_mb", 100),
+            "bandwidth_mb": plan.get("bandwidth_mb", 1000)
+        })
+        
+        if estimated_costs["total_cost"] > 1.0:  # Dollar threshold
+            return {
+                "success": False,
+                "error": "Deployment cost exceeds threshold",
+                "estimated_costs": estimated_costs,
+                "requires_approval": True
+            }
 
     # Validate plan before execution
     is_valid, error = validate_execution_plan(plan)
