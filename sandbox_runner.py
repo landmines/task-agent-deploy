@@ -62,13 +62,17 @@ class ResourceMonitor:
 
     def check_disk_io(self):
         """Monitor disk I/O operations"""
-        io_counters = psutil.Process().io_counters()
-        read_mb = io_counters.read_bytes / (1024 * 1024)
-        write_mb = io_counters.write_bytes / (1024 * 1024)
+        try:
+            io_counters = psutil.Process().io_counters()
+            read_mb = io_counters.read_bytes / (1024 * 1024)
+            write_mb = io_counters.write_bytes / (1024 * 1024)
 
-        if read_mb > MAX_DISK_MB or write_mb > MAX_DISK_MB:
-            raise ResourceLimitExceeded(f"Disk I/O exceeded {MAX_DISK_MB}MB limit")
-        return (read_mb, write_mb)
+            if read_mb > MAX_DISK_MB or write_mb > MAX_DISK_MB:
+                raise ResourceLimitExceeded(f"Disk I/O exceeded {MAX_DISK_MB}MB limit")
+            return (read_mb, write_mb)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            # Return minimal values if unable to get IO counters
+            return (0.0, 0.0)
 
     def check_all_resources(self):
         """Check all resource limits"""

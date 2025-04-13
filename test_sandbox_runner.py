@@ -71,6 +71,13 @@ with open('test.txt', 'w') as f:
         self.assertIsInstance(disk_usage, float)
         self.assertGreater(disk_usage, 0)
 
+        # Test disk I/O monitoring
+        io_read, io_write = monitor.check_disk_io()
+        self.assertIsInstance(io_read, float)
+        self.assertIsInstance(io_write, float)
+        self.assertGreaterEqual(io_read, 0)
+        self.assertGreaterEqual(io_write, 0)
+
 
     def test_plan_tasks(self):
         """Test that the planner generates valid task sequences"""
