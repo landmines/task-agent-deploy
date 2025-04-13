@@ -85,6 +85,17 @@ def modify_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+def execute_code(plan):
+    """Execute code in sandbox environment"""
+    code = plan.get("code")
+    inputs = plan.get("inputs", {})
+    
+    if not code:
+        return {"success": False, "error": "No code provided"}
+        
+    from sandbox_runner import run_code_in_sandbox
+    return run_code_in_sandbox(code, inputs)
+
 def estimate_risk(plan):
     """Estimate risk level of a task"""
     risk_levels = {
@@ -93,7 +104,8 @@ def estimate_risk(plan):
         "modify_file": 2,
         "delete_file": 3,
         "deploy": 2,
-        "execute": 2
+        "execute": 2,
+        "execute_code": 2
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
 
