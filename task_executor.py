@@ -45,7 +45,7 @@ def restore_from_backup(backup_path):
 
         return {
             "success": True,
-            "message": f"âœ… Restored from backup: {backup_path}",
+            "message": f"Ã¢Å“â€¦ Restored from backup: {backup_path}",
             "restored_file": original_path
         }
     except Exception as e:
@@ -247,7 +247,7 @@ def execute_task(plan):
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
-        print(f"âš ï¸ Warning: This action may incur costs: ${estimated_cost:.2f}")
+        print(f"Ã¢Å¡ Ã¯Â¸Â Warning: This action may incur costs: ${estimated_cost:.2f}")
 
         # Hard threshold - block actions over $10
         if estimated_cost > 10.0:
@@ -322,7 +322,7 @@ def execute_task(plan):
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
             "success": True,
-            "message": "â¸ï¸ Task logged but awaiting user confirmation.",
+            "message": "Ã¢ÂÂ¸Ã¯Â¸Â Task logged but awaiting user confirmation.",
             "pending": True,
             "confirmationNeeded": True,
             "execution_metadata": {
@@ -370,7 +370,7 @@ def create_file(plan):
     try:
         with open(full_path, "w") as f:
             f.write(content)
-        return {"success": True, "message": f"âœ… File created at: {full_path}"}
+        return {"success": True, "message": f"Ã¢Å“â€¦ File created at: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -389,7 +389,7 @@ def append_to_file(plan):
             was_created = False
         with open(full_path, "a") as f:
             f.write("\n" + content)
-        msg = f"âœ… Appended to file: {full_path}"
+        msg = f"Ã¢Å“â€¦ Appended to file: {full_path}"
         if was_created:
             msg += " (file was auto-created)"
         return {"success": True, "message": msg}
@@ -417,7 +417,7 @@ def edit_file(plan):
                 new_content = original.replace(target, repl)
                 change_made = True
             else:
-                return {"success": False, "error": f"âŒ Text '{target}' not found for replacement."}
+                return {"success": False, "error": f"Ã¢ÂÅ’ Text '{target}' not found for replacement."}
 
         match = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
         if match:
@@ -428,7 +428,7 @@ def edit_file(plan):
                 new_content = "\n".join(filtered) + "\n"
                 change_made = True
             else:
-                return {"success": False, "error": f"âŒ No lines found containing '{keyword}'"}
+                return {"success": False, "error": f"Ã¢ÂÅ’ No lines found containing '{keyword}'"}
 
         match = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
         if match:
@@ -446,10 +446,10 @@ def edit_file(plan):
                 new_content = "\n".join(updated) + "\n"
                 change_made = True
             else:
-                return {"success": False, "error": f"âŒ Exact line '{old_line}' not found."}
+                return {"success": False, "error": f"Ã¢ÂÅ’ Exact line '{old_line}' not found."}
 
         if not change_made:
-            return {"success": False, "error": "âŒ Could not understand or apply edit instructions."}
+            return {"success": False, "error": "Ã¢ÂÅ’ Could not understand or apply edit instructions."}
 
         backup_path = backup_file(full_path)
         with open(full_path, "w") as f:
@@ -457,7 +457,7 @@ def edit_file(plan):
 
         return {
             "success": True,
-            "message": f"âœ… File '{filename}' edited.",
+            "message": f"Ã¢Å“â€¦ File '{filename}' edited.",
             "backup": backup_path,
             "original_file": filename,
             "instructions": instructions,
@@ -476,7 +476,7 @@ def delete_file(plan):
         return {"success": False, "error": f"File '{full_path}' not found. Nothing to delete."}
     try:
         os.remove(full_path)
-        return {"success": True, "message": f"ðŸ—‘ï¸ File deleted: {full_path}"}
+        return {"success": True, "message": f"Ã°Å¸â€”â€˜Ã¯Â¸Â File deleted: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -485,7 +485,7 @@ def delete_file(plan):
 def simulate_push():
     return {
         "success": True,
-        "message": "ðŸ§ª Simulated push: Git command not run (unsupported in current environment).",
+        "message": "Ã°Å¸Â§Âª Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
@@ -508,7 +508,7 @@ def write_diagnostic(plan):
     try:
         with open(filepath, "w") as f:
             json.dump(content, f, indent=2)
-        return {"success": True, "message": f"ðŸ©º Diagnostic log saved to {filepath}"}
+        return {"success": True, "message": f"Ã°Å¸Â©Âº Diagnostic log saved to {filepath}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -558,4 +558,4 @@ valid_intents = {
         "modify_self", "plan_tasks", "queue_task",
         "verify_deployment", "run_sandbox_test",
         "fix_failure"
-    }
+}
