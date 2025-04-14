@@ -167,9 +167,9 @@ def confirm():
                 print(f"🔍 No local log found for {task_id}, searching on Drive...")
                 try:
                     log_data = download_log_by_task_id(task_id)
-                    if from werkzeug.serving import WSGIRequestHandler
-                    WSGIRequestHandler.timeout = 30  # Reduced timeout
-                    log_data = download_log_by_task_id(task_id)
+                    if log_data is None:
+                    print("⚠️ No log data found")
+                    return jsonify({"error": "Failed to retrieve log data"}), 500
                 except TimeoutError:
                     return jsonify({"error": "Drive operation timed out", "suggestion": "Try again"}), 408
                 except Exception as e:
@@ -177,9 +177,10 @@ def confirm():
                     return jsonify({"error": "Failed to retrieve log", "suggestion": "Try again"}), 500
 
                 if not log_data:
-                    return jsonify({"error": "Log not found locally or in Drive"}), 404                 "error": f"No matching log found for ID: {task_id}",
-                    "details": "Checked both local storage and Drive"
-                }), 404
+                    return jsonify({
+                        "error": f"No matching log found for ID: {task_id}",
+                        "details": "Checked both local storage and Drive"
+                    }), 404
         except Exception as e:
             return jsonify({"error": f"Error accessing logs: {str(e)}"}), 500
 
