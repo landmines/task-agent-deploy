@@ -52,18 +52,7 @@ def restore_from_backup(backup_path):
         return {"success": False, "error": f"Failed to restore: {str(e)}"}
 
 
-    if result["success"]:
-        return {
-            "success": True,
-            "message": "Code executed successfully",
-            "output": result["output"]
-        }
-    else:
-        return {
-            "success": False,
-            "error": f"Code execution failed: {result['error']}",
-            "output": result["output"]
-        }
+    
 
 def modify_file(plan):
     """Modify existing file content"""
