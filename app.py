@@ -185,43 +185,51 @@ def confirm():
                         "suggestion": "Check system logs for details"
                     }), 500
 
-        if approve is False:
-            log_data["rejected"] = True
-            finalize_task_execution("rejected", log_data)
-            return jsonify({"message": "❌ Task rejected and logged."})
+            try:
+                if approve is False:
+                    print("❌ Task rejected by user")
+                    result = {"success": False, "message": "Task rejected by user"}
+                    log_data["rejected"] = True
+                    finalize_task_execution("rejected", log_data)
+                    return jsonify({"message": "❌ Task rejected and logged."})
 
-        log_data["confirmationNeeded"] = False
-        plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+                log_data["confirmationNeeded"] = False
+                plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
 
-        if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
-            plan_to_execute.pop("confirmationNeeded", None)
+                if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
+                    plan_to_execute.pop("confirmationNeeded", None)
 
-        try:
-            result = execute_task(plan_to_execute)
-            log_data["executionResult"] = result
-            log_data.setdefault("logs", []).append({"execution": result})
+                result = execute_task(plan_to_execute)
+                log_data["executionResult"] = result
+                log_data.setdefault("logs", []).append({"execution": result})
+                finalize_task_execution("confirmed")
+
+            except Exception as e:
+                result = {"success": False, "error": f"Execution failed: {str(e)}"}
+                log_data["executionResult"] = result
+                log_data.setdefault("logs", []).append({"executionError": result})
+                finalize_task_execution("failed")
+
+
+            updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
+            try:
+                with open(updated_path, "w") as f:
+                    json.dump(log_data, f, indent=2)
+            except Exception as e:
+                print(f"⚠️ Could not update local log file: {e}")
+
+            memory = load_memory()
+            record_last_result(memory, plan_to_execute, result)
+
+            return jsonify({
+                "message": "✅ Task confirmed and executed.",
+                "result": result,
+                "success": True
+            })
+
         except Exception as e:
-            result = {"success": False, "error": f"Execution failed: {str(e)}"}
-            log_data["executionResult"] = result
-            log_data.setdefault("logs", []).append({"executionError": result})
-
-        finalize_task_execution("confirmed")
-
-        updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
-        try:
-            with open(updated_path, "w") as f:
-                json.dump(log_data, f, indent=2)
-        except Exception as e:
-            print(f"⚠️ Could not update local log file: {e}")
-
-        memory = load_memory()
-        record_last_result(memory, plan_to_execute, result)
-
-        return jsonify({
-            "message": "✅ Task confirmed and executed.",
-            "result": result,
-            "success": True
-        })
+            print(f"❌ Error during log processing or task execution in /confirm: {traceback.format_exc()}")
+            return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
     except Exception as e:
         print("❌ /confirm handler error:", traceback.format_exc())
