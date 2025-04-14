@@ -12,7 +12,7 @@ UTC = tz.utc
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task, restore_from_backup
-from drive_uploader import download_log_by_task_id  # ✅ Required for Drive fallback
+from drive_uploader impodownload_log_by_task_id  # ✅ Required for Drive fallback
 
 app = Flask(__name__)
 CORS(app)
