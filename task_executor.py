@@ -541,8 +541,7 @@ def execute_action(action_plan):
             case "delete_file":
                 result.update(delete_file(action_plan))
             case "execute_code":
-                from sandbox_runner import execute_code_safely
-                result.update(execute_code_safely(action_plan.get("code", "")))
+                result.update(execute_code(action_plan))
             case _:
                 result["message"] = "Unsupported action"
         return result
