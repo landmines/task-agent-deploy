@@ -4,6 +4,7 @@ import os
 import json
 from pathlib import Path
 import traceback
+import re
 from datetime import datetime, timezone as tz
 
 UTC = tz.utc
@@ -38,23 +39,6 @@ def run():
         return jsonify(result)
     except Exception as e:
         print("❌ /run error:", traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/memory", methods=["GET"])
-def memory():
-    try:
-        memory = load_memory()
-        return jsonify(memory)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/memory/summary", methods=["GET"])
-def memory_summary():
-    try:
-        memory = load_memory()
-        summary = summarize_memory(memory)
-        return jsonify(summary)
-    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/logs_from_drive", methods=["GET"])
@@ -100,13 +84,14 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
+        # Set timeout once at the start
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
 
-        # Normalize taskId format comprehensively
-        task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_").replace("T", "_")
-        task_id = task_id.split(".")[0]  # Remove microseconds if present
-        task_id = task_id.split("+")[0]  # Remove timezone if present
+        # Normalize taskId format comprehensively and safely
+        if task_id:
+            task_id = re.sub(r'[:\./\+T]', '_', task_id)
+            task_id = task_id.split('_')[0] if '_' in task_id else task_id
 
         # Try variations of the task ID for more flexible matching
         task_id_variations = [
@@ -166,12 +151,23 @@ def confirm():
                     log_data = download_log_by_task_id(task_id)
                     if log_data is None:
                         print("⚠️ No log data found")
-                        return jsonify({"error": "Failed to retrieve log data"}), 500
+                        return jsonify({
+                            "error": "Failed to retrieve log data",
+                            "task_id": task_id,
+                            "suggestion": "Check if the task ID is correct"
+                        }), 404
                 except TimeoutError:
-                    return jsonify({"error": "Drive operation timed out", "suggestion": "Try again"}), 408
+                    return jsonify({
+                        "error": "Drive operation timed out",
+                        "suggestion": "Try again in a few moments"
+                    }), 408
                 except Exception as e:
                     print(f"⚠️ Error retrieving log: {e}")
-                    return jsonify({"error": "Failed to retrieve log", "suggestion": "Try again"}), 500
+                    return jsonify({
+                        "error": str(e),
+                        "type": "log_retrieval_error",
+                        "suggestion": "Check system logs for details"
+                    }), 500
 
                 if not log_data:
                     return jsonify({
