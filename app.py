@@ -40,24 +40,22 @@ def run():
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
-        memord_memory()
-    last = memory.get("last_result")
-    if not last:
-        return jsonify({"message": "No latest result available."}), 200
+@app.route("/memory", methods=["GET"])
+def memory():
+    try:
+        memory = load_memory()
+        return jsonify(memory)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    task = last.get("task", {})
-    task_id = last.get("taskId")
-
-    return jsonify({
-        "content": {
-            "confirmationNeeded": task.get("confirmationNeeded", False),
-            "timestamp": last.get("timestamp"),
-            "result": last.get("result"),
-            "task": task,
-            "intent": last.get("intent"),
-            "taskId": task_id
-        }
-    }), 200
+@app.route("/memory/summary", methods=["GET"])
+def memory_summary():
+    try:
+        memory = load_memory()
+        summary = summarize_memory(memory)
+        return jsonify(summary)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
@@ -104,9 +102,6 @@ def confirm():
 
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
-
-        # Normalize taskId format comprehensively
-        task_120  # Increased timeout
 
         # Normalize taskId format comprehensively
         task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_").replace("T", "_")
@@ -165,11 +160,13 @@ def confirm():
                     log_data = json.load(f)
             else:
                 print(f"🔍 No local log found for {task_id}, searching on Drive...")
+                from werkzeug.serving import WSGIRequestHandler
+                WSGIRequestHandler.timeout = 30  # Reduced timeout
                 try:
                     log_data = download_log_by_task_id(task_id)
                     if log_data is None:
-                    print("⚠️ No log data found")
-                    return jsonify({"error": "Failed to retrieve log data"}), 500
+                        print("⚠️ No log data found")
+                        return jsonify({"error": "Failed to retrieve log data"}), 500
                 except TimeoutError:
                     return jsonify({"error": "Drive operation timed out", "suggestion": "Try again"}), 408
                 except Exception as e:
@@ -192,7 +189,7 @@ def confirm():
         log_data["confirmationNeeded"] = False
         plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
 
-        if plan_to_execute.get("confirmationNeeded"):
+        if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
             plan_to_execute.pop("confirmationNeeded", None)
 
         try:
@@ -225,23 +222,6 @@ def confirm():
     except Exception as e:
         print("❌ /confirm handler error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {e}"}), 500
-
-@app.route("/memory", methods=["GET"])
-def memory():
-    try:
-        memory = load_memory()
-        return jsonify(memory)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/memory/summary", methods=["GET"])
-def memory_summary():
-    try:
-        memory = load_memory()
-        summary = summarize_memory(memory)
-        return jsonify(summary)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
