@@ -52,7 +52,18 @@ def restore_from_backup(backup_path):
         return {"success": False, "error": f"Failed to restore: {str(e)}"}
 
 
-    
+    if result["success"]:
+        return {
+            "success": True,
+            "message": "Code executed successfully",
+            "output": result["output"]
+        }
+    else:
+        return {
+            "success": False,
+            "error": f"Code execution failed: {result['error']}",
+            "output": result["output"]
+        }
 
 def modify_file(plan):
     """Modify existing file content"""
@@ -539,22 +550,13 @@ def write_diagnostic(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-    def generate_app_template(template_type):
-        # Placeholder for app template generation
-        return f"Template for {template_type} app"
+def generate_app_template(template_type):
+    # Placeholder for app template generation
+    return f"Template for {template_type} app"
 
-    def deploy_to_replit(project_name):
-        # Placeholder for Replit deployment
-        return f"Deployment configured for {project_name}"
-
-    valid_intents = {
-    "create_app", "deploy", "modify_file", 
-    "run_tests", "create_file", "append_to_file", 
-    "delete_file", "execute", "execute_code",
-    "modify_self", "plan_tasks", "queue_task",
-    "verify_deployment", "run_sandbox_test",
-    "fix_failure"
-}
+def deploy_to_replit(project_name):
+    # Placeholder for Replit deployment
+    return f"Deployment configured for {project_name}"
 
 def execute_action(action_plan):
     result = {
@@ -584,3 +586,12 @@ def execute_action(action_plan):
     except Exception as e:
         result["message"] = f"An error occurred: {str(e)}"
         return result
+
+valid_intents = {
+        "create_app", "deploy", "modify_file", 
+        "run_tests", "create_file", "append_to_file", 
+        "delete_file", "execute", "execute_code",
+        "modify_self", "plan_tasks", "queue_task",
+        "verify_deployment", "run_sandbox_test",
+        "fix_failure"
+    }
