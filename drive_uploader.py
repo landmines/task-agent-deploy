@@ -6,14 +6,23 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
-SERVICE_ACCOUNT_FILE = 'agentdriveuploader.json'
+import os
+from json import loads
+
 SCOPES = ['https://www.googleapis.com/auth/drive']
 ROOT_FOLDER_ID = '1hDKqx9xPpDXBLEWu9i6358hj8jqv9VCq'  # Your AgentLogs folder ID
 
 def get_drive_service():
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES
-    )
+    creds_json = os.environ.get('GOOGLE_DRIVE_CREDENTIALS')
+    if not creds_json:
+        print("⚠️ Missing Google Drive credentials")
+        return None
+        
+    try:
+        info = loads(creds_json)
+        credentials = service_account.Credentials.from_service_account_info(
+            info, scopes=SCOPES
+        )
     return build('drive', 'v3', credentials=credentials)
 
 def upload_log_to_drive(log_file_path, subfolder_name):
