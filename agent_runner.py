@@ -59,6 +59,10 @@ def requires_confirmation(intent: str, memory: dict) -> bool:
     return trust < trust_threshold
 
 def run_agent(input_data):
+    # Ensure logs directory exists
+    logs_dir = os.path.join(os.getcwd(), "logs")
+    os.makedirs(logs_dir, exist_ok=True)
+    
     memory = load_memory()
 
     # Track execution metadata

@@ -26,7 +26,11 @@ def get_drive_service():
     return build('drive', 'v3', credentials=credentials)
 
 def upload_log_to_drive(log_file_path, subfolder_name):
-    service = get_drive_service()
+    try:
+        service = get_drive_service()
+        if not service:
+            print("⚠️ Drive service unavailable - saving locally only")
+            return None, None
 
     # Step 1: Ensure subfolder exists
     folder_id = find_or_create_subfolder(service, subfolder_name)

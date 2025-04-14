@@ -72,7 +72,9 @@ def logs_from_drive():
 def logs_snapshot():
     try:
         logs_dir = os.path.join(os.getcwd(), "logs")
-        os.makedirs(logs_dir, exist_ok=True)
+        if not os.path.exists(logs_dir):
+            os.makedirs(logs_dir, exist_ok=True)
+            print(f"📁 Created logs directory at: {logs_dir}")
         
         log_path = os.path.join(logs_dir, "render.log")
         if not os.path.exists(log_path):
