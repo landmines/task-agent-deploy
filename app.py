@@ -112,21 +112,21 @@ def confirm():
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
 
-        if task_id:
-            task_id = re.sub(r'[:\./\+T]', '_', task_id)
-            task_id = task_id.split('_')[0] if '_' in task_id else task_id
-
-        task_id_variations = [
-            task_id,
-            task_id.replace('T', '_'),
-            task_id.replace('+00:00', ''),
-            task_id.replace('+00_00', '')
-        ]
-
-        logs_dir = os.path.join(os.getcwd(), "logs")
-        os.makedirs(logs_dir, exist_ok=True)
-
         try:
+            if task_id:
+                task_id = re.sub(r'[:\./\+T]', '_', task_id)
+                task_id = task_id.split('_')[0] if '_' in task_id else task_id
+
+            task_id_variations = [
+                task_id,
+                task_id.replace('T', '_'),
+                task_id.replace('+00:00', ''),
+                task_id.replace('+00_00', '')
+            ]
+
+            logs_dir = os.path.join(os.getcwd(), "logs")
+            os.makedirs(logs_dir, exist_ok=True)
+
             clean_id = task_id.replace('log-', '')
             timestamp_formats = [f"log-{v}.json" for v in task_id_variations]
             timestamp_formats.extend([
