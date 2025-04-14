@@ -12,7 +12,7 @@ UTC = tz.utc
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task, restore_from_backup
-from drive_uploader impodownload_log_by_task_id  # ✅ Required for Drive fallback
+from drive_uploader import download_log_by_task_id  # ✅ Required for Drive fallback
 
 app = Flask(__name__)
 CORS(app)
@@ -185,32 +185,29 @@ def confirm():
                         "suggestion": "Check system logs for details"
                     }), 500
 
+            if approve is False:
+                print("❌ Task rejected by user")
+                result = {"success": False, "message": "Task rejected by user"}
+                log_data["rejected"] = True
+                finalize_task_execution("rejected", log_data)
+                return jsonify({"message": "❌ Task rejected and logged."})
+
+            log_data["confirmationNeeded"] = False
+            plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+
+            if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
+                plan_to_execute.pop("confirmationNeeded", None)
+
             try:
-                if approve is False:
-                    print("❌ Task rejected by user")
-                    result = {"success": False, "message": "Task rejected by user"}
-                    log_data["rejected"] = True
-                    finalize_task_execution("rejected", log_data)
-                    return jsonify({"message": "❌ Task rejected and logged."})
-
-                try:
-                    log_data["confirmationNeeded"] = False
-                    plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
-
-                    if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
-                        plan_to_execute.pop("confirmationNeeded", None)
-
-                    result = execute_task(plan_to_execute)
-                    log_data["executionResult"] = result
-                    log_data.setdefault("logs", []).append({"execution": result})
-                    finalize_task_execution("confirmed", log_data)
-                    
-                except Exception as e:
-                    result = {"success": False, "error": f"Execution failed: {str(e)}"}
-                    log_data["executionResult"] = result
-                    log_data.setdefault("logs", []).append({"executionError": result})
-                    finalize_task_execution("failed", log_data)
-
+                result = execute_task(plan_to_execute)
+                log_data["executionResult"] = result
+                log_data.setdefault("logs", []).append({"execution": result})
+                finalize_task_execution("confirmed", log_data)
+            except Exception as e:
+                result = {"success": False, "error": f"Execution failed: {str(e)}"}
+                log_data["executionResult"] = result
+                log_data.setdefault("logs", []).append({"executionError": result})
+                finalize_task_execution("failed", log_data)
 
             updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
             try:
