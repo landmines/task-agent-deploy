@@ -69,7 +69,6 @@ def rollback_changes(commit_hash=None):
     except subprocess.CalledProcessError as e:
         return {"success": False, "error": f"Failed to rollback: {str(e)}"}
             
-        subprocess.run(["git", "commit", "-m", message], check=True)
         return {"success": True, "message": f"✅ Changes committed: {message}"}
     except subprocess.CalledProcessError as e:
         return {"success": False, "error": f"Git commit failed: {str(e)}"}

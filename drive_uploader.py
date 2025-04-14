@@ -17,7 +17,7 @@ def get_drive_service():
     if not creds_json:
         print("⚠️ Missing Google Drive credentials")
         return None
-        
+
     try:
         info = loads(creds_json)
         credentials = service_account.Credentials.from_service_account_info(
@@ -110,16 +110,16 @@ def download_drive_log_file(file_id, timeout=30, max_retries=3):
     if not service:
         print("❌ Could not initialize Drive service")
         return None
-        
+
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
 
     import socket
     socket.setdefaulttimeout(timeout)
-    
+
     print(f"🔄 Attempting to download Drive file: {file_id}")
-    
+
     retry_count = 0
     while retry_count < max_retries:
         try:
@@ -154,7 +154,7 @@ def download_log_by_task_id(task_id):
     """
     Searches all available Drive logs (by file name and content) for a matching taskId.
     Returns the parsed JSON log if found, or None.
-    
+
     Args:
         task_id: Can be either a full timestamp or a processed ID
     """
@@ -188,9 +188,6 @@ def download_log_by_task_id(task_id):
                     return content
             except Exception as e:
                 print(f"Error reading log file {log_file['id']}: {str(e)}")
-                continue
-
-    return None
                 continue
 
     return None

@@ -27,17 +27,6 @@ def unsupported_action(action):
         "hint": "Check your task type or add implementation for this action."
     }
 
-def execute_code(plan):
-    """Execute code in sandbox environment"""
-    from sandbox_runner import run_code_in_sandbox
-
-    code = plan.get("code", "")
-    if not code:
-        return {"success": False, "error": "No code provided"}
-
-    timeout = plan.get("timeout", 5)  # Default 5 second timeout
-    result = run_code_in_sandbox(code, timeout)
-
 def restore_from_backup(backup_path):
     """Restore a file from its backup"""
     if not backup_path or not os.path.exists(backup_path):
