@@ -186,29 +186,41 @@ def confirm():
                         "suggestion": "Check system logs for details"
                     }), 500
 
-            if approve is False:
-                print("❌ Task rejected by user")
-                result = {"success": False, "message": "Task rejected by user"}
-                log_data["rejected"] = True
-                finalize_task_execution("rejected", log_data)
-                return jsonify({"message": "❌ Task rejected and logged."})
-
-            log_data["confirmationNeeded"] = False
-            plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
-
-            if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
-                plan_to_execute.pop("confirmationNeeded", None)
-
             try:
+                if approve is False:
+                    print("❌ Task rejected by user")
+                    result = {"success": False, "message": "Task rejected by user"}
+                    log_data["rejected"] = True
+                    finalize_task_execution("rejected", log_data)
+                    return jsonify({"message": "❌ Task rejected and logged."})
+
+                log_data["confirmationNeeded"] = False
+                plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+
+                if not plan_to_execute:
+                    return jsonify({"error": "No execution plan found"}), 400
+
+                if plan_to_execute.get("confirmationNeeded"):
+                    plan_to_execute.pop("confirmationNeeded", None)
+
                 result = execute_task(plan_to_execute)
                 log_data["executionResult"] = result
                 log_data.setdefault("logs", []).append({"execution": result})
                 finalize_task_execution("confirmed", log_data)
+                
+                return jsonify({
+                    "message": "✅ Task confirmed and executed.",
+                    "result": result,
+                    "success": True
+                })
+
             except Exception as e:
-                result = {"success": False, "error": f"Execution failed: {str(e)}"}
+                error_msg = f"Execution failed: {str(e)}"
+                result = {"success": False, "error": error_msg}
                 log_data["executionResult"] = result
                 log_data.setdefault("logs", []).append({"executionError": result})
                 finalize_task_execution("failed", log_data)
+                return jsonify({"error": error_msg}), 500
 
             updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
             try:
