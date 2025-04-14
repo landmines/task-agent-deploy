@@ -71,9 +71,11 @@ def logs_from_drive():
 @app.route("/logs_snapshot", methods=["GET"])
 def logs_snapshot():
     try:
-        log_path = os.path.join(os.getcwd(), "render.log")
+        logs_dir = os.path.join(os.getcwd(), "logs")
+        os.makedirs(logs_dir, exist_ok=True)
+        
+        log_path = os.path.join(logs_dir, "render.log")
         if not os.path.exists(log_path):
-            # Create empty log file if it doesn't exist
             with open(log_path, "w") as f:
                 f.write("Log file initialized\n")
             return jsonify({"success": True, "logs": ["Log file initialized"]})
@@ -241,6 +243,7 @@ def memory_summary():
 def rollback_task(task_id):
     try:
         logs_dir = os.path.join(os.getcwd(), "logs")
+        os.makedirs(logs_dir, exist_ok=True)
         log_file = os.path.join(logs_dir, f"log-{task_id}.json")
 
         if not os.path.exists(log_file):
