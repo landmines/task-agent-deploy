@@ -40,9 +40,7 @@ def run():
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
-@app.route("/latest", methods=["GET"])
-def get_latest_result():
-    memory = load_memory()
+        memord_memory()
     last = memory.get("last_result")
     if not last:
         return jsonify({"message": "No latest result available."}), 200
@@ -101,7 +99,10 @@ def confirm():
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
         from werkzeug.serving import WSGIRequestHandler
-        WSGIRequestHandler.timeout = 120  # Increased timeout
+        WSGIRequestHandler.timeout = 30
+
+        # Normalize taskId format comprehensively
+        task_120  # Increased timeout
 
         # Normalize taskId format comprehensively
         task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_").replace("T", "_")
@@ -126,8 +127,7 @@ def confirm():
             timestamp_formats.extend([
                 f"log-*{clean_id}*.json",
                 f"log-*{clean_id.split('T')[0]}*.json"
-            ])
-            print(f"🔍 Searching for log files matching patterns: {timestamp_formats}")
+            ])timestamp_formats}")
 
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
@@ -161,7 +161,8 @@ def confirm():
             else:
                 print(f"🔍 No local log found for {task_id}, searching on Drive...")
                 try:
-                    from werkzeug.serving import WSGIRequestHandler
+                    log_data = download_log_by_task_id(task_id)
+                    if from werkzeug.serving import WSGIRequestHandler
                     WSGIRequestHandler.timeout = 30  # Reduced timeout
                     log_data = download_log_by_task_id(task_id)
                 except TimeoutError:
@@ -171,11 +172,7 @@ def confirm():
                     return jsonify({"error": "Failed to retrieve log", "suggestion": "Try again"}), 500
 
                 if not log_data:
-                    return jsonify({"error": "Log not found locally or in Drive"}), 404
-
-            if not log_data:
-                return jsonify({
-                    "error": f"No matching log found for ID: {task_id}",
+                    return jsonify({"error": "Log not found locally or in Drive"}), 404                 "error": f"No matching log found for ID: {task_id}",
                     "details": "Checked both local storage and Drive"
                 }), 404
         except Exception as e:
