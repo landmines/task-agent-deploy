@@ -480,45 +480,7 @@ def delete_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def execute_code(plan):
-    """Execute code in sandbox environment with resource monitoring"""
-    code = plan.get("code")
-    inputs = plan.get("inputs", {})
 
-    if not code:
-        return {"success": False, "error": "No code provided"}
-
-    try:
-        from sandbox_runner import run_code_in_sandbox, ResourceLimitExceeded
-        from datetime import datetime, timezone
-
-        result = run_code_in_sandbox(code, inputs)
-
-        if not result["success"]:
-            # Track failure patterns for learning
-            failure = {
-                "type": "code_execution",
-                "error": result["error"],
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }
-            try:
-                from context_manager import add_failure_pattern
-                add_failure_pattern(failure)
-            except Exception as e:
-                print(f"Error adding failure pattern: {e}")
-            return result
-
-    except ResourceLimitExceeded as e:
-        return {
-            "success": False, 
-            "error": f"Resource limit exceeded: {str(e)}",
-            "resourceError": True
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Code execution failed: {str(e)}"
-        }
 
 def simulate_push():
     return {
@@ -552,7 +514,7 @@ def write_diagnostic(plan):
 
 def generate_app_template(template_type):
     # Placeholder for app template generation
-    return f"Template for {template_type} app"e):
+    return f"Template for {template_type} app"
 
 def deploy_to_replit(project_name):
     # Placeholder for Replit deployment
@@ -568,8 +530,10 @@ def execute_action(action_plan):
 
     try:
         match action_plan.get("action"):
-            case "modify_file" | "edit_file":
+            case "modify_file":
                 result.update(modify_file(action_plan))
+            case "edit_file":
+                result.update(edit_file(action_plan))
             case "create_file":
                 result.update(create_file(action_plan))
             case "append_to_file":
