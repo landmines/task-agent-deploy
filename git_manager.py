@@ -72,6 +72,8 @@ def rollback_changes(commit_hash=None):
         return {"success": True, "message": f"✅ Changes committed: {message}"}
     except subprocess.CalledProcessError as e:
         return {"success": False, "error": f"Git commit failed: {str(e)}"}
+    
+    return {"success": True, "message": f"✅ Changes committed: {message}"}
 
 def revert_last_commit():
     """Revert the last commit"""
