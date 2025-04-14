@@ -193,22 +193,23 @@ def confirm():
                     finalize_task_execution("rejected", log_data)
                     return jsonify({"message": "❌ Task rejected and logged."})
 
-                log_data["confirmationNeeded"] = False
-                plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+                try:
+                    log_data["confirmationNeeded"] = False
+                    plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
 
-                if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
-                    plan_to_execute.pop("confirmationNeeded", None)
+                    if plan_to_execute and plan_to_execute.get("confirmationNeeded"):
+                        plan_to_execute.pop("confirmationNeeded", None)
 
-                result = execute_task(plan_to_execute)
-                log_data["executionResult"] = result
-                log_data.setdefault("logs", []).append({"execution": result})
-                finalize_task_execution("confirmed")
-
-            except Exception as e:
-                result = {"success": False, "error": f"Execution failed: {str(e)}"}
-                log_data["executionResult"] = result
-                log_data.setdefault("logs", []).append({"executionError": result})
-                finalize_task_execution("failed")
+                    result = execute_task(plan_to_execute)
+                    log_data["executionResult"] = result
+                    log_data.setdefault("logs", []).append({"execution": result})
+                    finalize_task_execution("confirmed", log_data)
+                    
+                except Exception as e:
+                    result = {"success": False, "error": f"Execution failed: {str(e)}"}
+                    log_data["executionResult"] = result
+                    log_data.setdefault("logs", []).append({"executionError": result})
+                    finalize_task_execution("failed", log_data)
 
 
             updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
