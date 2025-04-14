@@ -3,6 +3,7 @@ import os
 import re
 import json
 from datetime import datetime, UTC
+from context_manager import load_memory
 
 PROJECT_ROOT = "/opt/render/project/src" if os.getenv("RENDER") else os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
