@@ -236,7 +236,6 @@ def confirm():
     except Exception as e:
         print("❌ /confirm handler error:", traceback.format_exc())
         return jsonify({"error": f"Confirm handler failed: {str(e)}"}), 500
-        return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
