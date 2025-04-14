@@ -23,7 +23,10 @@ def get_drive_service():
         credentials = service_account.Credentials.from_service_account_info(
             info, scopes=SCOPES
         )
-    return build('drive', 'v3', credentials=credentials)
+        return build('drive', 'v3', credentials=credentials)
+    except Exception as e:
+        print(f"❌ Drive service creation failed: {str(e)}")
+        return None
 
 def upload_log_to_drive(log_file_path, subfolder_name):
     try:
@@ -104,6 +107,10 @@ def list_recent_drive_logs(limit=5):
 
 def download_drive_log_file(file_id, timeout=30, max_retries=3):
     service = get_drive_service()
+    if not service:
+        print("❌ Could not initialize Drive service")
+        return None
+        
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
     downloader = MediaIoBaseDownload(fh, request)
