@@ -553,8 +553,6 @@ def write_diagnostic(plan):
 def generate_app_template(template_type):
     # Placeholder for app template generation
     return f"Template for {template_type} app"e):
-    # Placeholder for app template generation
-    return f"Template for {template_type} app"
 
 def deploy_to_replit(project_name):
     # Placeholder for Replit deployment
