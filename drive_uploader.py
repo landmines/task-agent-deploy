@@ -186,7 +186,11 @@ def download_log_by_task_id(task_id):
                 content = download_drive_log_file(log_file['id'])
                 if task_id in json.dumps(content):
                     return content
-            except Exception:
+            except Exception as e:
+                print(f"Error reading log file {log_file['id']}: {str(e)}")
+                continue
+
+    return None
                 continue
 
     return None
