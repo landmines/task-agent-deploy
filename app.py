@@ -12,22 +12,33 @@ UTC = tz.utc
 from agent_runner import run_agent, finalize_task_execution
 from context_manager import load_memory, summarize_memory, save_memory, record_last_result
 from task_executor import execute_task, restore_from_backup
-from drive_uploader import download_log_by_task_id  # ✅ Required for Drive fallback
+from drive_uploader import download_log_by_task_id  # âœ… Required for Drive fallback
 
 app = Flask(__name__)
 CORS(app)
 
+def write_render_log(message):
+    try:
+        log_path = os.path.join(os.getcwd(), "logs", "render.log")
+        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_path, "a") as f:
+            f.write(f"[{timestamp}] {message}\n")
+    except Exception as e:
+        print(f"âš ï¸ Failed to write to render.log: {e}")
+
+
 @app.route("/")
 def index():
-    return "✅ Agent is running."
+    return "âœ… Agent is running."
 
 @app.route("/run", methods=["POST"])
 def run():
     try:
         data = request.get_json()
-        print("🟢 /run received:", data)
+        print("ðŸŸ¢ /run received:", data)
         result = run_agent(data)
-        print("✅ run_agent result:", result)
+        print("âœ… run_agent result:", result)
+        write_render_log(f"Task received: {data}")
 
         task_id = result.get("taskId") or result.get("result", {}).get("taskId")
         result["taskId"] = task_id
@@ -37,7 +48,7 @@ def run():
 
         return jsonify(result)
     except Exception as e:
-        print("❌ /run error:", traceback.format_exc())
+        print("âŒ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 @app.route("/latest", methods=["GET"])
@@ -57,7 +68,7 @@ def latest():
             return jsonify({"error": "No log files found"}), 404
 
         latest_log_path = log_files[0]
-        print(f"📄 Latest log selected: {latest_log_path}")
+        print(f"ðŸ“„ Latest log selected: {latest_log_path}")
 
         with open(latest_log_path, "r") as f:
             log_data = json.load(f)
@@ -81,7 +92,7 @@ def logs_snapshot():
         logs_dir = os.path.join(os.getcwd(), "logs")
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir, exist_ok=True)
-            print(f"📁 Created logs directory at: {logs_dir}")
+            print(f"ðŸ“ Created logs directory at: {logs_dir}")
 
         log_path = os.path.join(logs_dir, "render.log")
         if not os.path.exists(log_path):
@@ -102,7 +113,7 @@ def confirm():
 
     try:
         data = request.get_json()
-        print("🔍 Received confirm POST:", data)
+        print("ðŸ” Received confirm POST:", data)
         task_id = data.get("taskId")
         approve = data.get("confirm")
 
@@ -133,7 +144,7 @@ def confirm():
                 f"log-*{clean_id}*.json",
                 f"log-*{clean_id.split('T')[0]}*.json"
             ])
-            print("📁 Trying timestamp formats:", timestamp_formats)
+            print("ðŸ“ Trying timestamp formats:", timestamp_formats)
 
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
             if os.path.exists(log_file):
@@ -143,12 +154,12 @@ def confirm():
                 for pattern in timestamp_formats:
                     matches = list(Path(logs_dir).glob(pattern))
                     if matches:
-                        print(f"📁 Found logs matching {pattern}:", [f.name for f in matches])
+                        print(f"ðŸ“ Found logs matching {pattern}:", [f.name for f in matches])
                         matching_files.extend(matches)
 
                 if len(matching_files) > 1:
                     matching_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-                    print(f"⚠️ Multiple matches found, using most recent: {matching_files[0].name}")
+                    print(f"âš ï¸ Multiple matches found, using most recent: {matching_files[0].name}")
 
                 if not matching_files:
                     matching_files = [f for f in Path(logs_dir).glob("log*.json")
@@ -160,11 +171,11 @@ def confirm():
 
             log_data = None
             if matching_files:
-                print(f"📝 Found local log file: {matching_files[0]}")
+                print(f"ðŸ“ Found local log file: {matching_files[0]}")
                 with open(matching_files[0], "r") as f:
                     log_data = json.load(f)
             else:
-                print(f"🔍 No local log found for {task_id}, searching on Drive...")
+                print(f"ðŸ” No local log found for {task_id}, searching on Drive...")
                 try:
                     log_data = download_log_by_task_id(task_id)
                     if log_data is None:
@@ -187,11 +198,11 @@ def confirm():
 
             try:
                 if approve is False:
-                    print("❌ Task rejected by user")
+                    print("âŒ Task rejected by user")
                     result = {"success": False, "message": "Task rejected by user"}
                     log_data["rejected"] = True
                     finalize_task_execution("rejected", log_data)
-                    return jsonify({"message": "❌ Task rejected and logged."})
+                    return jsonify({"message": "âŒ Task rejected and logged."})
 
                 log_data["confirmationNeeded"] = False
                 plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
@@ -204,6 +215,7 @@ def confirm():
 
                 result = execute_task(plan_to_execute)
                 log_data["executionResult"] = result
+                write_render_log(f"Task confirmed: {task_id} | success: {result.get('success')}")
                 log_data.setdefault("logs", []).append({"execution": result})
                 finalize_task_execution("confirmed", log_data)
 
@@ -214,7 +226,7 @@ def confirm():
                 memory = load_memory()
                 record_last_result(memory, plan_to_execute, result)
                 return jsonify({
-                    "message": "✅ Task confirmed and executed.",
+                    "message": "âœ… Task confirmed and executed.",
                     "result": result,
                     "success": True
                 })
@@ -223,6 +235,7 @@ def confirm():
                 error_msg = f"Execution failed: {str(e)}"
                 result = {"success": False, "error": error_msg}
                 log_data["executionResult"] = result
+                write_render_log(f"Task confirmed: {task_id} | success: {result.get('success')}")
                 log_data.setdefault("logs", []).append({"executionError": result})
                 finalize_task_execution("failed", log_data)
                 return jsonify({"error": error_msg}), 500
@@ -230,12 +243,12 @@ def confirm():
 
         except Exception as e:
             error_msg = f"Error during log processing or task execution: {str(e)}"
-            print(f"❌ {error_msg}\n{traceback.format_exc()}")
+            print(f"âŒ {error_msg}\n{traceback.format_exc()}")
             return jsonify({"error": error_msg}), 500
 
     except Exception as e:
         error_msg = f"Confirm handler failed: {str(e)}"
-        print("❌ /confirm handler error:", traceback.format_exc())
+        print("âŒ /confirm handler error:", traceback.format_exc())
         return jsonify({
             "error": error_msg,
             "success": False,
