@@ -33,7 +33,9 @@ def run():
         result["taskId"] = task_id
         if "result" in result and isinstance(result["result"], dict):
             result["result"]["taskId"] = task_id
-        result["timestamp"] = result.get("timestamp")
+        # Removed duplicate timestamp assignment
+        if "timestamp" not in result:
+            result["timestamp"] = datetime.now(UTC).isoformat()
 
         return jsonify(result)
     except Exception as e:
@@ -151,12 +153,12 @@ def confirm():
                     print(f"⚠️ Multiple matches found, using most recent: {matching_files[0].name}")
 
                 if not matching_files:
-                    matching_files = [f for f in Path(logs_dir).glob("log*.json") 
-                                    if any(part in f.name for part in [
-                                        task_id, 
-                                        task_id.replace('+00:00', ''),
-                                        task_id.replace(':', '_').replace('.', '_')
-                                    ])]
+                    matching_files = [f for f in Path(logs_dir).glob("log*.json")
+                                      if any(part in f.name for part in [
+                                          task_id,
+                                          task_id.replace('+00:00', ''),
+                                          task_id.replace(':', '_').replace('.', '_')
+                                      ])]
 
             log_data = None
             if matching_files:
