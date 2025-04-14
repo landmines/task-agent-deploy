@@ -517,6 +517,8 @@ def simulate_push():
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
+from context_manager import load_memory
+
 def write_diagnostic(plan):
     execution_complete = datetime.now(UTC)
     log_id = plan.get("filename") or f"log_{execution_complete.isoformat()}"
