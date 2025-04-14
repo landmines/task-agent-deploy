@@ -35,25 +35,32 @@ def upload_log_to_drive(log_file_path, subfolder_name):
             print("⚠️ Drive service unavailable - saving locally only")
             return None, None
 
-    # Step 1: Ensure subfolder exists
-    folder_id = find_or_create_subfolder(service, subfolder_name)
+        try:
+            folder_id = find_or_create_subfolder(service, subfolder_name)
+        except Exception as e:
+            print(f"Error creating or finding subfolder: {e}")
+            return None, None
 
-    # Step 2: Upload the log file
-    file_metadata = {
-        'name': os.path.basename(log_file_path),
-        'mimeType': 'application/json',
-        'parents': [folder_id]
-    }
-    media = MediaFileUpload(log_file_path, mimetype='application/json')
-    uploaded_file = service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id'
-    ).execute()
+        # Step 2: Upload the log file
+        file_metadata = {
+            'name': os.path.basename(log_file_path),
+            'mimeType': 'application/json',
+            'parents': [folder_id]
+        }
+        media = MediaFileUpload(log_file_path, mimetype='application/json')
+        uploaded_file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
 
-    file_id = uploaded_file.get('id')
-    shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
-    return file_id, shareable_link
+        file_id = uploaded_file.get('id')
+        shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
+        return file_id, shareable_link
+    except Exception as e:
+        print(f"Error uploading log file: {e}")
+        return None, None
+
 
 def find_or_create_subfolder(service, subfolder_name):
     query = (
