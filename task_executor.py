@@ -45,7 +45,7 @@ def restore_from_backup(backup_path):
 
         return {
             "success": True,
-            "message": f"✅ Restored from backup: {backup_path}",
+            "message": f"âœ… Restored from backup: {backup_path}",
             "restored_file": original_path
         }
     except Exception as e:
@@ -233,12 +233,21 @@ def execute_task(plan):
 
     # Update cost tracking in memory
     memory = load_memory()
+
+    # Ensure cost_tracking is initialized
+    if "cost_tracking" not in memory:
+        memory["cost_tracking"] = {
+            "total_estimated": 0.0,
+            "api_usage_costs": [],
+            "last_updated": None
+        }
+
     memory["cost_tracking"]["total_estimated"] += estimated_cost
     memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
-        print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
+        print(f"âš ï¸ Warning: This action may incur costs: ${estimated_cost:.2f}")
 
         # Hard threshold - block actions over $10
         if estimated_cost > 10.0:
@@ -313,7 +322,7 @@ def execute_task(plan):
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
             "success": True,
-            "message": "⏸️ Task logged but awaiting user confirmation.",
+            "message": "â¸ï¸ Task logged but awaiting user confirmation.",
             "pending": True,
             "confirmationNeeded": True,
             "execution_metadata": {
@@ -361,7 +370,7 @@ def create_file(plan):
     try:
         with open(full_path, "w") as f:
             f.write(content)
-        return {"success": True, "message": f"✅ File created at: {full_path}"}
+        return {"success": True, "message": f"âœ… File created at: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -380,7 +389,7 @@ def append_to_file(plan):
             was_created = False
         with open(full_path, "a") as f:
             f.write("\n" + content)
-        msg = f"✅ Appended to file: {full_path}"
+        msg = f"âœ… Appended to file: {full_path}"
         if was_created:
             msg += " (file was auto-created)"
         return {"success": True, "message": msg}
@@ -408,7 +417,7 @@ def edit_file(plan):
                 new_content = original.replace(target, repl)
                 change_made = True
             else:
-                return {"success": False, "error": f"❌ Text '{target}' not found for replacement."}
+                return {"success": False, "error": f"âŒ Text '{target}' not found for replacement."}
 
         match = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
         if match:
@@ -419,7 +428,7 @@ def edit_file(plan):
                 new_content = "\n".join(filtered) + "\n"
                 change_made = True
             else:
-                return {"success": False, "error": f"❌ No lines found containing '{keyword}'"}
+                return {"success": False, "error": f"âŒ No lines found containing '{keyword}'"}
 
         match = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
         if match:
@@ -437,10 +446,10 @@ def edit_file(plan):
                 new_content = "\n".join(updated) + "\n"
                 change_made = True
             else:
-                return {"success": False, "error": f"❌ Exact line '{old_line}' not found."}
+                return {"success": False, "error": f"âŒ Exact line '{old_line}' not found."}
 
         if not change_made:
-            return {"success": False, "error": "❌ Could not understand or apply edit instructions."}
+            return {"success": False, "error": "âŒ Could not understand or apply edit instructions."}
 
         backup_path = backup_file(full_path)
         with open(full_path, "w") as f:
@@ -448,7 +457,7 @@ def edit_file(plan):
 
         return {
             "success": True,
-            "message": f"✅ File '{filename}' edited.",
+            "message": f"âœ… File '{filename}' edited.",
             "backup": backup_path,
             "original_file": filename,
             "instructions": instructions,
@@ -467,7 +476,7 @@ def delete_file(plan):
         return {"success": False, "error": f"File '{full_path}' not found. Nothing to delete."}
     try:
         os.remove(full_path)
-        return {"success": True, "message": f"🗑️ File deleted: {full_path}"}
+        return {"success": True, "message": f"ðŸ—‘ï¸ File deleted: {full_path}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -514,7 +523,7 @@ def execute_code(plan):
 def simulate_push():
     return {
         "success": True,
-        "message": "🧪 Simulated push: Git command not run (unsupported in current environment).",
+        "message": "ðŸ§ª Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
@@ -537,52 +546,8 @@ def write_diagnostic(plan):
     try:
         with open(filepath, "w") as f:
             json.dump(content, f, indent=2)
-        return {"success": True, "message": f"🩺 Diagnostic log saved to {filepath}"}
+        return {"success": True, "message": f"ðŸ©º Diagnostic log saved to {filepath}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def generate_app_template(template_type):
-    # Placeholder for app template generation
-    return f"Template for {template_type} app"
-
-def deploy_to_replit(project_name):
-    # Placeholder for Replit deployment
-    return f"Deployment configured for {project_name}"
-
-def execute_action(action_plan):
-    result = {
-        "action": action_plan.get("action"),
-        "success": False,
-        "message": "",
-        "timestamp": datetime.now(UTC).isoformat()
-    }
-
-    try:
-        match action_plan.get("action"):
-            case "modify_file" | "edit_file":
-                result.update(modify_file(action_plan))
-            case "create_file":
-                result.update(create_file(action_plan))
-            case "append_to_file":
-                result.update(append_to_file(action_plan))
-            case "delete_file":
-                result.update(delete_file(action_plan))
-            case "execute_code":
-                from sandbox_runner import execute_code_safely
-                result.update(execute_code_safely(action_plan.get("code", "")))
-            case _:
-                result["message"] = "Unsupported action"
-        return result
-
-    except Exception as e:
-        result["message"] = f"An error occurred: {str(e)}"
-        return result
-
-valid_intents = {
-        "create_app", "deploy", "modify_file", 
-        "run_tests", "create_file", "append_to_file", 
-        "delete_file", "execute", "execute_code",
-        "modify_self", "plan_tasks", "queue_task",
-        "verify_deployment", "run_sandbox_test",
-        "fix_failure"
-    }
+def generate_app_template(template_typ
