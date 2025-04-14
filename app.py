@@ -75,7 +75,7 @@ def logs_snapshot():
         if not os.path.exists(logs_dir):
             os.makedirs(logs_dir, exist_ok=True)
             print(f"📁 Created logs directory at: {logs_dir}")
-        
+
         log_path = os.path.join(logs_dir, "render.log")
         if not os.path.exists(log_path):
             with open(log_path, "w") as f:
@@ -131,7 +131,8 @@ def confirm():
             timestamp_formats.extend([
                 f"log-*{clean_id}*.json",
                 f"log-*{clean_id.split('T')[0]}*.json"
-            ])timestamp_formats}")
+            ])
+            print("📁 Trying timestamp formats:", timestamp_formats)
 
             # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
