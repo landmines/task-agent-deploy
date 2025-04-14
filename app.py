@@ -33,7 +33,6 @@ def run():
         result["taskId"] = task_id
         if "result" in result and isinstance(result["result"], dict):
             result["result"]["taskId"] = task_id
-        # Removed duplicate timestamp assignment
         if "timestamp" not in result:
             result["timestamp"] = datetime.now(UTC).isoformat()
 
