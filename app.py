@@ -234,8 +234,13 @@ def confirm():
             return jsonify({"error": error_msg}), 500
 
     except Exception as e:
+        error_msg = f"Confirm handler failed: {str(e)}"
         print("❌ /confirm handler error:", traceback.format_exc())
-        return jsonify({"error": f"Confirm handler failed: {str(e)}"}), 500
+        return jsonify({
+            "error": error_msg,
+            "success": False,
+            "details": traceback.format_exc()
+        }), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
