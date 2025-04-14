@@ -29,7 +29,6 @@ def run():
         result = run_agent(data)
         print("✅ run_agent result:", result)
 
-        # Ensure both top-level and nested result have taskId
         task_id = result.get("taskId") or result.get("result", {}).get("taskId")
         result["taskId"] = task_id
         if "result" in result and isinstance(result["result"], dict):
@@ -40,6 +39,32 @@ def run():
     except Exception as e:
         print("❌ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
+
+@app.route("/latest", methods=["GET"])
+def latest():
+    try:
+        logs_dir = os.path.join(os.getcwd(), "logs")
+        if not os.path.exists(logs_dir):
+            return jsonify({"error": "No logs directory found"}), 404
+
+        log_files = sorted(
+            [f for f in Path(logs_dir).glob("log-*.json") if f.is_file()],
+            key=lambda f: f.stat().st_mtime,
+            reverse=True
+        )
+
+        if not log_files:
+            return jsonify({"error": "No log files found"}), 404
+
+        latest_log_path = log_files[0]
+        print(f"📄 Latest log selected: {latest_log_path}")
+
+        with open(latest_log_path, "r") as f:
+            log_data = json.load(f)
+
+        return jsonify(log_data)
+    except Exception as e:
+        return jsonify({"error": f"Failed to load latest log: {e}"}), 500
 
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
@@ -84,16 +109,13 @@ def confirm():
         if not task_id or approve is None:
             return jsonify({"error": "Missing taskId or confirm field"}), 400
 
-        # Set timeout once at the start
         from werkzeug.serving import WSGIRequestHandler
         WSGIRequestHandler.timeout = 30
 
-        # Normalize taskId format comprehensively and safely
         if task_id:
             task_id = re.sub(r'[:\./\+T]', '_', task_id)
             task_id = task_id.split('_')[0] if '_' in task_id else task_id
 
-        # Try variations of the task ID for more flexible matching
         task_id_variations = [
             task_id,
             task_id.replace('T', '_'),
@@ -105,7 +127,6 @@ def confirm():
         os.makedirs(logs_dir, exist_ok=True)
 
         try:
-            # Try multiple timestamp formats for local files
             clean_id = task_id.replace('log-', '')
             timestamp_formats = [f"log-{v}.json" for v in task_id_variations]
             timestamp_formats.extend([
@@ -114,7 +135,6 @@ def confirm():
             ])
             print("📁 Trying timestamp formats:", timestamp_formats)
 
-            # Direct path attempt first
             log_file = os.path.join(logs_dir, f"log-{task_id}.json")
             if os.path.exists(log_file):
                 matching_files = [Path(log_file)]
@@ -145,12 +165,9 @@ def confirm():
                     log_data = json.load(f)
             else:
                 print(f"🔍 No local log found for {task_id}, searching on Drive...")
-                from werkzeug.serving import WSGIRequestHandler
-                WSGIRequestHandler.timeout = 30  # Reduced timeout
                 try:
                     log_data = download_log_by_task_id(task_id)
                     if log_data is None:
-                        print("⚠️ No log data found")
                         return jsonify({
                             "error": "Failed to retrieve log data",
                             "task_id": task_id,
@@ -162,20 +179,11 @@ def confirm():
                         "suggestion": "Try again in a few moments"
                     }), 408
                 except Exception as e:
-                    print(f"⚠️ Error retrieving log: {e}")
                     return jsonify({
                         "error": str(e),
                         "type": "log_retrieval_error",
                         "suggestion": "Check system logs for details"
                     }), 500
-
-                if not log_data:
-                    return jsonify({
-                        "error": f"No matching log found for ID: {task_id}",
-                        "details": "Checked both local storage and Drive"
-                    }), 404
-        except Exception as e:
-            return jsonify({"error": f"Error accessing logs: {str(e)}"}), 500
 
         if approve is False:
             log_data["rejected"] = True
