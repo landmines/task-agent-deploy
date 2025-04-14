@@ -221,21 +221,24 @@ def confirm():
                 finalize_task_execution("failed", log_data)
                 return jsonify({"error": error_msg}), 500
 
-            updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
             try:
+                updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
                 with open(updated_path, "w") as f:
                     json.dump(log_data, f, indent=2)
+                
+                memory = load_memory()
+                record_last_result(memory, plan_to_execute, result)
+                return jsonify({
+                    "message": "✅ Task confirmed and executed.",
+                    "result": result,
+                    "success": True
+                })
             except Exception as e:
-                print(f"⚠️ Could not update local log file: {e}")
-
-            memory = load_memory()
-            record_last_result(memory, plan_to_execute, result)
-            #Fixed potential infinite loop by using updated_path
-            return jsonify({
-                "message": "✅ Task confirmed and executed.",
-                "result": result,
-                "success": True
-            })
+                print(f"⚠️ Error in confirm route finalization: {e}")
+                return jsonify({
+                    "error": "Failed to finalize task execution",
+                    "details": str(e)
+                }), 500
 
         except Exception as e:
             print(f"❌ Error during log processing or task execution in /confirm: {traceback.format_exc()}")
