@@ -89,7 +89,7 @@ def list_recent_drive_logs(limit=5):
     sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
     return [file['id'] for file in sorted_logs[:limit]]
 
-def download_drive_log_file(file_id, timeout=10, max_retries=2):
+def download_drive_log_file(file_id, timeout=30, max_retries=3):
     service = get_drive_service()
     request = service.files().get_media(fileId=file_id)
     fh = io.BytesIO()
@@ -97,6 +97,8 @@ def download_drive_log_file(file_id, timeout=10, max_retries=2):
 
     import socket
     socket.setdefaulttimeout(timeout)
+    
+    print(f"🔄 Attempting to download Drive file: {file_id}")
     
     retry_count = 0
     while retry_count < max_retries:
