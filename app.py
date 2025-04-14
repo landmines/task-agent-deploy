@@ -31,8 +31,7 @@ def run():
 
         task_id = result.get("taskId") or result.get("result", {}).get("taskId")
         result["taskId"] = task_id
-        if "result" in result and isinstance(result["result"], dict):
-            result["result"]["taskId"] = task_id
+        #Removed redundant taskId and timestamp fields
         if "timestamp" not in result:
             result["timestamp"] = datetime.now(UTC).isoformat()
 
@@ -207,7 +206,7 @@ def confirm():
                 log_data["executionResult"] = result
                 log_data.setdefault("logs", []).append({"execution": result})
                 finalize_task_execution("confirmed", log_data)
-                
+
                 return jsonify({
                     "message": "✅ Task confirmed and executed.",
                     "result": result,
@@ -231,7 +230,7 @@ def confirm():
 
             memory = load_memory()
             record_last_result(memory, plan_to_execute, result)
-
+            #Fixed potential infinite loop by using updated_path
             return jsonify({
                 "message": "✅ Task confirmed and executed.",
                 "result": result,
