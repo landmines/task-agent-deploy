@@ -229,7 +229,9 @@ def confirm():
 
 
         except Exception as e:
-            print(f"❌ Error during log processing or task execution in /confirm: {traceback.format_exc()}")
+            error_msg = f"Error during log processing or task execution: {str(e)}"
+            print(f"❌ {error_msg}\n{traceback.format_exc()}")
+            return jsonify({"error": error_msg}), 500
             return jsonify({"error": f"Confirm handler failed: {e}"}), 500
 
     except Exception as e:
