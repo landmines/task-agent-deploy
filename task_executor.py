@@ -539,4 +539,48 @@ def write_diagnostic(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def generate_app_template(template_typ
+    def generate_app_template(template_type):
+        # Placeholder for app template generation
+        return f"Template for {template_type} app"
+
+    def deploy_to_replit(project_name):
+        # Placeholder for Replit deployment
+        return f"Deployment configured for {project_name}"
+
+    def execute_action(action_plan):
+        result = {
+            "action": action_plan.get("action"),
+            "success": False,
+            "message": "",
+            "timestamp": datetime.now(UTC).isoformat()
+        }
+
+        try:
+            match action_plan.get("action"):
+                case "modify_file" | "edit_file":
+                    result.update(modify_file(action_plan))
+                case "create_file":
+                    result.update(create_file(action_plan))
+                case "append_to_file":
+                    result.update(append_to_file(action_plan))
+                case "delete_file":
+                    result.update(delete_file(action_plan))
+                case "execute_code":
+                    from sandbox_runner import execute_code_safely
+                    result.update(execute_code_safely(action_plan.get("code", "")))
+                case _:
+                    result["message"] = "Unsupported action"
+            return result
+
+        except Exception as e:
+            result["message"] = f"An error occurred: {str(e)}"
+            return result
+
+    valid_intents = {
+            "create_app", "deploy", "modify_file", 
+            "run_tests", "create_file", "append_to_file", 
+            "delete_file", "execute", "execute_code",
+            "modify_self", "plan_tasks", "queue_task",
+            "verify_deployment", "run_sandbox_test",
+            "fix_failure"
+        }
