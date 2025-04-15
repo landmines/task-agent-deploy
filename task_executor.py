@@ -397,7 +397,7 @@ def execute_task(plan):
 def create_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
-    if not filename or "/" in filename or "\\" in filename:
+    if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
     try:
@@ -414,7 +414,7 @@ def create_file(plan):
 def append_to_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
-    if not filename or "/" in filename or "\\" in filename:
+    if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
     try:
@@ -437,7 +437,7 @@ def append_to_file(plan):
 def edit_file(plan):
     filename = plan.get("filename")
     instructions = plan.get("instructions", "")
-    if not filename or "/" in filename or "\\" in filename:
+    if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
     if not os.path.exists(full_path):
@@ -528,7 +528,7 @@ def edit_file(plan):
 
 def delete_file(plan):
     filename = plan.get("filename")
-    if not filename or "/" in filename or "\\" in filename:
+    if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
     if not os.path.exists(full_path):
@@ -570,8 +570,6 @@ def write_diagnostic(plan):
         }
     }
     os.makedirs(DIAGNOSTICS_DIR, exist_ok=True)
-    os.makedirs(os.path.dirname(DIAGNOSTICS_DIR),
-                exist_ok=True)  # Ensure parent logs dir exists
     filepath = os.path.join(DIAGNOSTICS_DIR, f"{log_id}.json")
     try:
         with open(filepath, "w") as f:
