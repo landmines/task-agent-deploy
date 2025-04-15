@@ -5,6 +5,7 @@ import glob
 from datetime import datetime, UTC
 from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
+from context_manager import finalize_task_execution  # Added to track confirmation stats
 
 def confirm_task(task_id):
     logs_dir = "logs"
@@ -46,6 +47,9 @@ def confirm_task(task_id):
             json.dump(log_data, f, indent=2)
     except Exception as e:
         return {"success": False, "error": f"❌ Failed to save updated log: {str(e)}"}
+
+    # Apply confirmation memory update
+    finalize_task_execution("confirmed", log_data)
 
     # Optional: Upload to Drive
     try:
