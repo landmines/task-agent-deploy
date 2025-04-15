@@ -4,6 +4,7 @@ from datetime import datetime, UTC, timedelta
 
 MEMORY_FILE = "context.json"
 
+
 def load_memory():
     if not os.path.exists(MEMORY_FILE):
         return {
@@ -26,23 +27,28 @@ def load_memory():
             "self_edits": [],
             "deployment_events": [],
             "project_name": "Task Agent",
-            "purpose": "Build and manage projects via user or ChatGPT instructions.",
+            "purpose":
+            "Build and manage projects via user or ChatGPT instructions.",
             "next_steps": []
         }
     with open(MEMORY_FILE, "r") as f:
         return json.load(f)
 
+
 def save_memory(context):
     with open(MEMORY_FILE, "w") as f:
         json.dump(context, f, indent=2)
 
+
 def load_memory_context():
     return load_memory()
+
 
 def save_memory_context(context):
     context["last_updated"] = datetime.now(UTC).isoformat()
     save_memory(context)
     return context
+
 
 def get_confirmation_status(memory):
     confirmed = memory.get("confirmed_count", 0)
@@ -50,11 +56,13 @@ def get_confirmation_status(memory):
     total = confirmed + rejected
     return (confirmed / total) if total > 5 else 0.0
 
+
 def get_next_step_info(context):
     if context.get("next_steps"):
         step = context["next_steps"][0].get("step", {})
         return f"Next: {step.get('intent', 'unknown')}"
     return "Idle – no current goal."
+
 
 def get_trust_score(memory, intent=None):
     """Calculate trust score based on success history"""
@@ -75,6 +83,7 @@ def get_trust_score(memory, intent=None):
     total = confirmed + rejected
     return (confirmed / total) if total > 5 else 0.0
 
+
 def update_trust_settings(memory, settings):
     """Update trust and confirmation settings"""
     memory.setdefault("trust_settings", {})
@@ -82,33 +91,40 @@ def update_trust_settings(memory, settings):
     memory["trust_settings"]["last_updated"] = datetime.now(UTC).isoformat()
 
     # Track safety preferences
-    memory["trust_settings"].setdefault("safety_preferences", {
-        "always_confirm": False,
-        "force_trust": False,
-        "auto_rollback": True,
-        "failure_threshold": 3
-    })
+    memory["trust_settings"].setdefault(
+        "safety_preferences", {
+            "always_confirm": False,
+            "force_trust": False,
+            "auto_rollback": True,
+            "failure_threshold": 3
+        })
 
     save_memory_context(memory)
     return memory["trust_settings"]
+
 
 def check_failure_patterns(memory, task_result):
     """Check if task needs automatic rollback"""
     if not task_result.get("success"):
         patterns = memory.get("failure_patterns", [])
-        recent_failures = [p for p in patterns 
-                         if p.get("timestamp", "") > 
-                         (datetime.now(UTC) - timedelta(hours=1)).isoformat()]
+        recent_failures = [
+            p for p in patterns
+            if p.get("timestamp", "") > (datetime.now(UTC) -
+                                         timedelta(hours=1)).isoformat()
+        ]
 
-        if len(recent_failures) >= memory.get("trust_settings", {}).get("safety_preferences", {}).get("failure_threshold", 3):
+        if len(recent_failures) >= memory.get("trust_settings", {}).get(
+                "safety_preferences", {}).get("failure_threshold", 3):
             return True
     return False
+
 
 def get_current_goal(memory):
     """Get the current goal from memory"""
     if not memory.get("next_steps"):
         return None
     return memory["next_steps"][0] if memory["next_steps"] else None
+
 
 def requires_confirmation(intent, context):
     """Determine if an action needs confirmation"""
@@ -119,6 +135,7 @@ def requires_confirmation(intent, context):
     # Check trust score
     trust = get_trust_score(context, intent)
     return trust < 0.8 or context.get("always_confirm", False)
+
 
 def update_trust_metrics(context, intent, success):
     """Update trust metrics after task execution"""
@@ -137,20 +154,22 @@ def update_trust_metrics(context, intent, success):
     trust_score = get_trust_score(context, intent)
     return trust_score < 0.8 or context.get("always_confirm", False)
 
+
 def record_last_result(context, task, result, fallback=False):
-    update_memory_context(
-        context=context,
-        task=task,
-        intent=task.get("intent") or task.get("action"),
-        success=result.get("success", False),
-        result=result
-    )
+    update_memory_context(context=context,
+                          task=task,
+                          intent=task.get("intent") or task.get("action"),
+                          success=result.get("success", False),
+                          result=result)
+
 
 def increment_confirmed(context):
     context["confirmed_count"] += 1
 
+
 def increment_rejected(context):
     context["rejected_count"] += 1
+
 
 def record_intent_stats(context, intent, success):
     if intent not in context["intent_stats"]:
@@ -160,20 +179,23 @@ def record_intent_stats(context, intent, success):
     else:
         context["intent_stats"][intent]["failure"] += 1
 
+
 def append_self_note(context, note):
     context["self_notes"].append({
         "note": note,
         "timestamp": datetime.now(UTC).isoformat()
     })
 
+
 def add_failure_pattern(context, pattern):
     context["failure_patterns"].append({
-        **pattern,
-        "timestamp": datetime.now(UTC).isoformat()
+        **pattern, "timestamp":
+        datetime.now(UTC).isoformat()
     })
 
     if len(context["failure_patterns"]) > 10:
         context["failure_patterns"] = context["failure_patterns"][-10:]
+
 
 def update_memory_context(context, task, intent, success, result=None):
     context["last_updated"] = datetime.now(UTC).isoformat()
@@ -190,6 +212,7 @@ def update_memory_context(context, task, intent, success, result=None):
     record_intent_stats(context, intent, success)
     save_memory(context)
 
+
 def add_next_step(context, step):
     context.setdefault("next_steps", [])
     context["next_steps"].append({
@@ -198,9 +221,11 @@ def add_next_step(context, step):
     })
     save_memory(context)
 
+
 def clear_next_steps(context):
     context["next_steps"] = []
     save_memory(context)
+
 
 def get_next_step(context):
     """Get and remove next task from queue with error handling"""
@@ -210,15 +235,18 @@ def get_next_step(context):
         next_item = context["next_steps"].pop(0)
         context["last_updated"] = datetime.now(UTC).isoformat()
         save_memory(context)
-        return next_item.get("step") if isinstance(next_item, dict) and "step" in next_item else next_item
+        return next_item.get("step") if isinstance(
+            next_item, dict) and "step" in next_item else next_item
     except Exception as e:
         print(f"Error getting next step: {e}")
         return None
+
 
 def track_confirmed(context):
     """Track a confirmed task execution"""
     context["confirmed_count"] = context.get("confirmed_count", 0) + 1
     save_memory_context(context)
+
 
 def track_rejected(context):
     """Track a rejected task execution"""
@@ -229,13 +257,14 @@ def track_rejected(context):
 def log_deployment_event(success, source, note="", cost_data=None):
     context = load_memory()
     context.setdefault("deployment_events", [])
-    context.setdefault("cost_tracking", {
-        "total_estimated": 0.0,
-        "deployment_costs": [],
-        "api_usage_costs": [],
-        "github_costs": [],
-        "last_updated": datetime.now(UTC).isoformat()
-    })
+    context.setdefault(
+        "cost_tracking", {
+            "total_estimated": 0.0,
+            "deployment_costs": [],
+            "api_usage_costs": [],
+            "github_costs": [],
+            "last_updated": datetime.now(UTC).isoformat()
+        })
 
     event = {
         "success": success,
@@ -252,6 +281,7 @@ def log_deployment_event(success, source, note="", cost_data=None):
     if len(context["deployment_events"]) > 20:
         context["deployment_events"] = context["deployment_events"][-20:]
     save_memory(context)
+
 
 def summarize_memory(context):
     return {
