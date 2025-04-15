@@ -41,23 +41,74 @@ def load_memory_context():
 
 def save_memory_context(context):
     context["last_updated"] = datetime.now(UTC).isoformat()
-    return save_memory(context)
+    save_memory(context)
+    return context
 
-def get_trust_score(context, intent=None):
+def get_confirmation_status(memory):
+    confirmed = memory.get("confirmed_count", 0)
+    rejected = memory.get("rejected_count", 0)
+    total = confirmed + rejected
+    return (confirmed / total) if total > 5 else 0.0
+
+def get_next_step_info(context):
+    if context.get("next_steps"):
+        step = context["next_steps"][0].get("step", {})
+        return f"Next: {step.get('intent', 'unknown')}"
+    return "Idle – no current goal."
+
+def get_trust_score(memory, intent=None):
     """Calculate trust score based on success history"""
+    # Check for trust override settings
+    if memory.get("trust_settings", {}).get("force_trust"):
+        return 1.0
+    if memory.get("trust_settings", {}).get("always_confirm"):
+        return 0.0
+
     if intent:
-        stats = context.get("intent_stats", {}).get(intent, {})
+        stats = memory.get("intent_stats", {}).get(intent, {})
         success = stats.get("success", 0)
         total = success + stats.get("failure", 0)
-        if total < 5:  # Not enough data
-            return 0.3  # Conservative default
-        return success / total
+        return (success / total) if total > 5 else 0.0
 
-    confirmed = context.get("confirmed_count", 0)
-    total = confirmed + context.get("rejected_count", 0)
-    if total < 10:  # Not enough overall data
-        return 0.3  # Conservative default
-    return confirmed / total
+    confirmed = memory.get("confirmed_count", 0)
+    rejected = memory.get("rejected_count", 0)
+    total = confirmed + rejected
+    return (confirmed / total) if total > 5 else 0.0
+
+def update_trust_settings(memory, settings):
+    """Update trust and confirmation settings"""
+    memory.setdefault("trust_settings", {})
+    memory["trust_settings"].update(settings)
+    memory["trust_settings"]["last_updated"] = datetime.now(UTC).isoformat()
+
+    # Track safety preferences
+    memory["trust_settings"].setdefault("safety_preferences", {
+        "always_confirm": False,
+        "force_trust": False,
+        "auto_rollback": True,
+        "failure_threshold": 3
+    })
+
+    save_memory_context(memory)
+    return memory["trust_settings"]
+
+def check_failure_patterns(memory, task_result):
+    """Check if task needs automatic rollback"""
+    if not task_result.get("success"):
+        patterns = memory.get("failure_patterns", [])
+        recent_failures = [p for p in patterns 
+                         if p.get("timestamp", "") > 
+                         (datetime.now(UTC) - timedelta(hours=1)).isoformat()]
+
+        if len(recent_failures) >= memory.get("trust_settings", {}).get("safety_preferences", {}).get("failure_threshold", 3):
+            return True
+    return False
+
+def get_current_goal(memory):
+    """Get the current goal from memory"""
+    if not memory.get("next_steps"):
+        return None
+    return memory["next_steps"][0] if memory["next_steps"] else None
 
 def requires_confirmation(intent, context):
     """Determine if an action needs confirmation"""
@@ -212,71 +263,3 @@ def summarize_memory(context):
             "queued": context.get("next_steps", []),
         }
     }
-
-def get_current_goal(memory):
-    """Get the current goal from memory"""
-    if not memory.get("next_steps"):
-        return None
-    return memory["next_steps"][0] if memory["next_steps"] else None
-
-    if not memory.get("next_steps"):
-        return None
-    step = memory["next_steps"].pop(0).get("step") if isinstance(memory["next_steps"][0], dict) else memory["next_steps"].pop(0)
-    save_memory(memory)
-    return step
-
-    memory["confirmed_count"] = memory.get("confirmed_count", 0) + 1
-    save_memory(memory)
-
-    memory["rejected_count"] = memory.get("rejected_count", 0) + 1
-    save_memory(memory)
-
-    # Check for trust override settings
-    if memory.get("trust_settings", {}).get("force_trust"):
-        return 1.0
-    if memory.get("trust_settings", {}).get("always_confirm"):
-        return 0.0
-
-    if intent:
-        stats = memory.get("intent_stats", {}).get(intent, {})
-        success = stats.get("success", 0)
-        total = success + stats.get("failure", 0)
-        return (success / total) if total > 5 else 0.0
-
-def update_trust_settings(memory, settings):
-    """Update trust and confirmation settings"""
-    memory.setdefault("trust_settings", {})
-    memory["trust_settings"].update(settings)
-    memory["trust_settings"]["last_updated"] = datetime.now(UTC).isoformat()
-
-    # Track safety preferences
-    memory["trust_settings"].setdefault("safety_preferences", {
-        "always_confirm": False,
-        "force_trust": False,
-        "auto_rollback": True,
-        "failure_threshold": 3
-    })
-
-    save_memory_context(memory)
-    return memory["trust_settings"]
-
-def check_failure_patterns(memory, task_result):
-    """Check if task needs automatic rollback"""
-    if not task_result.get("success"):
-        patterns = memory.get("failure_patterns", [])
-        recent_failures = [p for p in patterns 
-                         if p.get("timestamp", "") > 
-                         (datetime.now(UTC) - timedelta(hours=1)).isoformat()]
-
-        if len(recent_failures) >= memory.get("trust_settings", {}).get("safety_preferences", {}).get("failure_threshold", 3):
-            return True
-    return False
-
-    rejected = memory.get("rejected_count", 0)
-    total = confirmed + rejected
-    return (confirmed / total) if total > 5 else 0.0
-
-    if context.get("next_steps"):
-        step = context["next_steps"][0].get("step", {})
-        return f"Next: {step.get('intent', 'unknown')}"
-    return "Idle – no current goal."
