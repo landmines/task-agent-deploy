@@ -1,6 +1,8 @@
 import os
 import json
 import shutil
+from task_executor import execute_task
+from drive_uploader import upload_log_to_drive
 from datetime import datetime, UTC
 from context_manager import (
     load_memory,
@@ -13,6 +15,7 @@ from context_manager import (
     track_confirmed,
     track_rejected,
 )
+
 
 def get_trust_score(memory: dict, intent: str) -> float:
     """Calculate trust score based on past performance"""
@@ -27,15 +30,16 @@ def get_trust_score(memory: dict, intent: str) -> float:
         return 0.5
 
     return successes / (successes + failures)
-from task_executor import execute_task
-from drive_uploader import upload_log_to_drive
+
 
 MEMORY_PATH = "context.json"
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 RENDER_LOG_FILE = "render.log"
 TEST_SUITE_FILE = "test_suite.json"
-AGENT_CORE_FILES = ["agent_runner.py", "context_manager.py", "task_executor.py", "app.py"]
+AGENT_CORE_FILES = [
+    "agent_runner.py", "context_manager.py", "task_executor.py", "app.py"
+]
 
 
 def requires_confirmation(intent: str, memory: dict) -> bool:
@@ -58,6 +62,7 @@ def requires_confirmation(intent: str, memory: dict) -> bool:
 
     return trust < trust_threshold
 
+
 def run_agent(input_data):
     # Ensure logs directory exists
     logs_dir = os.path.join(os.getcwd(), "logs")
@@ -78,7 +83,10 @@ def run_agent(input_data):
         if not validate_plan(plan):
             return {"success": False, "error": "Invalid plan structure"}
 
-        memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
+        memory["next_steps"] = [{
+            "step": step,
+            "timestamp": datetime.now(UTC).isoformat()
+        } for step in plan]
         save_memory_context(memory)
 
         return {
@@ -101,22 +109,28 @@ def run_agent(input_data):
             input_data["confirmationNeeded"] = True
 
         # Record decision metrics
-        memory["confirmation_decisions"] = memory.get("confirmation_decisions", [])
+        memory["confirmation_decisions"] = memory.get("confirmation_decisions",
+                                                      [])
         memory["confirmation_decisions"].append({
-            "intent": intent,
-            "trust_score": trust_score,
-            "confirmation_required": input_data["confirmationNeeded"]
+            "intent":
+            intent,
+            "trust_score":
+            trust_score,
+            "confirmation_required":
+            input_data["confirmationNeeded"]
         })
 
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
-        
 
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if not task:
-            return {"success": False, "error": "Missing 'task' for queue_task intent."}
+            return {
+                "success": False,
+                "error": "Missing 'task' for queue_task intent."
+            }
         add_next_step(memory, task)
         save_memory_context(memory)
         return {
@@ -133,7 +147,8 @@ def run_agent(input_data):
     log_path = os.path.join(LOG_DIR, log_filename)
     subfolder = timestamp[:10]
 
-    plan = input_data.get("executionPlanned") or input_data.get("plan") or input_data.get("task") or input_data
+    plan = input_data.get("executionPlanned") or input_data.get(
+        "plan") or input_data.get("task") or input_data
     fallback_used = False
     if "action" not in plan and "intent" in input_data:
         plan["action"] = input_data["intent"]
@@ -152,15 +167,18 @@ def run_agent(input_data):
         try:
             print(f"🧪 Writing confirmable log to path: {log_path}")
             with open(log_path, "w") as f:
-                json.dump({
-                    "timestamp": timestamp,
-                    "taskId": task_id,
-                    "log_filename": log_filename,
-                    "input": input_data,
-                    "execution": plan,
-                    "result": result,
-                    "memory": memory
-                }, f, indent=2)
+                json.dump(
+                    {
+                        "timestamp": timestamp,
+                        "taskId": task_id,
+                        "log_filename": log_filename,
+                        "input": input_data,
+                        "execution": plan,
+                        "result": result,
+                        "memory": memory
+                    },
+                    f,
+                    indent=2)
             print(f"✅ Confirmable task log written locally: {log_filename}")
         except Exception as e:
             print(f"❌ Failed to write confirmable task log: {e}")
@@ -180,12 +198,11 @@ def run_agent(input_data):
             "roadmap": {
                 "currentPhase": "Phase 4.6",
                 "nextPhase": "Phase 4.7 – External Tools + Test Suites",
-                "subgoal": "Enable self-awareness and task parallelism tracking."
+                "subgoal":
+                "Enable self-awareness and task parallelism tracking."
             },
             "overallGoal": get_current_goal(memory),
             "phase": "Phase 4.6 – Self Awareness and Parallelism",
-            "timestamp": timestamp,
-            "taskId": task_id,  # Always use the generated task_id
             "log_filename": log_filename
         }
 
@@ -193,7 +210,8 @@ def run_agent(input_data):
     record_last_result(memory, plan, result, fallback_used)
 
     if not result.get("success"):
-        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} - {plan.get('notes', '')}".strip()
+        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} - {plan.get('notes', '')}".strip(
+        )
         add_failure_pattern(memory, {"task": task_summary, "result": result})
 
         # Auto-generate follow-up task
@@ -202,7 +220,8 @@ def run_agent(input_data):
             "original_task": task_summary,
             "error": result.get("error", "Unknown error"),
             "requires_confirmation": True,
-            "notes": f"Auto-generated fix attempt for failed task: {task_summary}"
+            "notes":
+            f"Auto-generated fix attempt for failed task: {task_summary}"
         }
         add_next_step(memory, follow_up_task)
 
@@ -211,21 +230,23 @@ def run_agent(input_data):
     try:
         os.makedirs(LOG_DIR, exist_ok=True)
         with open(log_path, "w") as f:
-            json.dump({
-                "timestamp": timestamp,
-                "taskId": task_id,
-                "log_filename": log_filename,
-                "input": input_data,
-                "execution": plan,
-                "result": result,
-                "memory": memory
-            }, f, indent=2)
+            json.dump(
+                {
+                    "timestamp": timestamp,
+                    "taskId": task_id,
+                    "log_filename": log_filename,
+                    "input": input_data,
+                    "execution": plan,
+                    "result": result,
+                    "memory": memory
+                },
+                f,
+                indent=2)
         print(f"✅ Log file written: {log_filename}")
     except Exception as e:
         print(f"❌ Failed to write log file: {e}")
         print("📁 Verifying file presence at:", log_path)
         print("📂 Logs directory contains:", os.listdir(LOG_DIR))
-
 
     upload_log_to_drive(log_path, subfolder)
 
@@ -259,22 +280,26 @@ def run_and_log_task(memory, task):
     record_last_result(memory, task, result)
 
     if not result.get("success"):
-        summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip()
+        summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip(
+        )
         add_failure_pattern(memory, {"task": summary, "result": result})
 
     save_memory_context(memory)
 
     try:
         with open(log_path, "w") as f:
-            json.dump({
-                "timestamp": timestamp,
-                "taskId": task_id,
-                "log_filename": log_filename,
-                "input": task,
-                "execution": task,
-                "result": result,
-                "memory": memory
-            }, f, indent=2)
+            json.dump(
+                {
+                    "timestamp": timestamp,
+                    "taskId": task_id,
+                    "log_filename": log_filename,
+                    "input": task,
+                    "execution": task,
+                    "result": result,
+                    "memory": memory
+                },
+                f,
+                indent=2)
         print(f"✅ Task log saved: {log_filename}")
     except Exception as e:
         print(f"❌ Error saving task log: {e}")
@@ -340,25 +365,28 @@ def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     intent = None
     if task_info:
-        intent = (task_info.get("execution", {}).get("action") or 
-                 task_info.get("execution", {}).get("intent") or 
-                 task_info.get("input", {}).get("intent"))
+        intent = (task_info.get("execution", {}).get("action")
+                  or task_info.get("execution", {}).get("intent")
+                  or task_info.get("input", {}).get("intent"))
 
     if status == "confirmed":
         track_confirmed(memory)
         if intent:
-            stats = memory.setdefault("intent_stats", {}).setdefault(intent, {})
+            stats = memory.setdefault("intent_stats",
+                                      {}).setdefault(intent, {})
             stats["success"] = stats.get("success", 0) + 1
     elif status == "rejected":
         track_rejected(memory)
         if intent:
-            stats = memory.setdefault("intent_stats", {}).setdefault(intent, {})
+            stats = memory.setdefault("intent_stats",
+                                      {}).setdefault(intent, {})
             stats["failure"] = stats.get("failure", 0) + 1
-            add_failure_pattern(memory, {
-                "intent": intent,
-                "task": f"{intent} – Rejected by user",
-                "timestamp": datetime.now(UTC).isoformat()
-            })
+            add_failure_pattern(
+                memory, {
+                    "intent": intent,
+                    "task": f"{intent} – Rejected by user",
+                    "timestamp": datetime.now(UTC).isoformat()
+                })
 
     save_memory_context(memory)
     return {"success": True, "status": status, "intent": intent}
@@ -378,4 +406,7 @@ def modify_self(filename, updated_code):
     })
     save_memory_context(memory)
 
-    return {"success": True, "message": f"✅ Modified {filename}, backup saved as {backup_name}"}
+    return {
+        "success": True,
+        "message": f"✅ Modified {filename}, backup saved as {backup_name}"
+    }
