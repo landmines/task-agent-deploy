@@ -111,7 +111,7 @@ def run_agent(input_data):
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
-        }
+        
 
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
