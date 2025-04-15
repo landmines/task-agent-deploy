@@ -5,8 +5,7 @@ import json
 from datetime import datetime, UTC
 from context_manager import load_memory
 
-PROJECT_ROOT = "/opt/render/project/src" if os.getenv(
-    "RENDER") else os.getcwd()
+PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
