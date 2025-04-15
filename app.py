@@ -15,7 +15,7 @@ from task_executor import execute_task, restore_from_backup
 from drive_uploader import download_log_by_task_id  # ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Required for Drive fallback
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 def write_render_log(message):
     try:
