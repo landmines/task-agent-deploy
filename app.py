@@ -51,6 +51,16 @@ def run():
         print("ÃƒÂ¢Ã‚ÂÃ…â€™ /run error:", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
+@app.route("/run_next", methods=["POST"])
+def run_next():
+    try:
+        # Run a queued task from the memory or task queue (you can customize this logic)
+        result = run_agent({"intent": "run_next"})
+        write_render_log("Task executed via /run_next")
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": f"run_next failed: {str(e)}"}), 500
+
 @app.route("/latest", methods=["GET"])
 def latest():
     try:
