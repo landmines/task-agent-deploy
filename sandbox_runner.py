@@ -1,4 +1,3 @@
-
 import os
 import ast
 import psutil
@@ -13,6 +12,7 @@ class ResourceLimitExceeded(Exception):
 
 
 class ResourceMonitor:
+
     def __init__(self):
         self.process = psutil.Process()
         self._start_time = time.time()
@@ -23,7 +23,8 @@ class ResourceMonitor:
 
     def check_cpu_time(self) -> float:
         current = self.process.cpu_times()
-        return (current.user - self._start_cpu.user) + (current.system - self._start_cpu.system)
+        return (current.user - self._start_cpu.user) + (current.system -
+                                                        self._start_cpu.system)
 
     def check_disk_usage(self) -> float:
         return psutil.disk_usage('/').used / (1024 * 1024)
@@ -44,8 +45,10 @@ def resource_limits(max_cpu_time: int = 5, max_memory_mb: int = 100):
     try:
         yield
     finally:
-        resource.setrlimit(resource.RLIMIT_CPU, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
-        resource.setrlimit(resource.RLIMIT_AS, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+        resource.setrlimit(resource.RLIMIT_CPU,
+                           (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+        resource.setrlimit(resource.RLIMIT_AS,
+                           (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
 
 
 @contextmanager
@@ -89,9 +92,9 @@ def analyze_code_safety(code: str) -> tuple[bool, str]:
 
 
 def run_code_in_sandbox(code: str,
-                      inputs: Dict[str, Any] = None,
-                      timeout: int = 5,
-                      memory_limit_mb: int = 100) -> Dict[str, Any]:
+                        inputs: Dict[str, Any] = None,
+                        timeout: int = 5,
+                        memory_limit_mb: int = 100) -> Dict[str, Any]:
     monitor = ResourceMonitor()
     result = {
         "success": False,
