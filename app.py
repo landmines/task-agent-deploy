@@ -20,7 +20,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def write_render_log(message):
     try:
         log_path = os.path.join(os.getcwd(), "logs", "render.log")
-        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         with open(log_path, "a") as f:
             f.write(f"[{timestamp}] {message}\n")
     except Exception as e:
