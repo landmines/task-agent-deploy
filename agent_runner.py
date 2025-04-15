@@ -18,14 +18,14 @@ def get_trust_score(memory: dict, intent: str) -> float:
     """Calculate trust score based on past performance"""
     if not memory or not intent:
         return 0.5  # Default moderate trust
-        
+
     stats = memory.get("intent_stats", {}).get(intent, {})
     successes = stats.get("success", 0)
     failures = stats.get("failure", 0)
-    
+
     if successes + failures == 0:
         return 0.5
-        
+
     return successes / (successes + failures)
 from task_executor import execute_task
 from drive_uploader import upload_log_to_drive
@@ -62,7 +62,7 @@ def run_agent(input_data):
     # Ensure logs directory exists
     logs_dir = os.path.join(os.getcwd(), "logs")
     os.makedirs(logs_dir, exist_ok=True)
-    
+
     memory = load_memory()
 
     # Track execution metadata
@@ -111,20 +111,6 @@ def run_agent(input_data):
     # Handle planning requests
     if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
         from planner import plan_tasks, validate_plan
-        goal = input_data.get("goal") or input_data.get("task")
-        plan = plan_tasks(goal)
-
-        if not validate_plan(plan):
-            return {"success": False, "error": "Invalid plan structure"}
-
-        memory["next_steps"] = [{"step": step, "timestamp": datetime.now(UTC).isoformat()} for step in plan]
-        save_memory_context(memory)
-
-        return {
-            "success": True,
-            "message": f"✅ Created plan with {len(plan)} steps",
-            "plan": plan,
-            "next_steps": memory["next_steps"]
         }
 
     if input_data.get("intent") == "queue_task":
