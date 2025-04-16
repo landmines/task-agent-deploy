@@ -1,4 +1,3 @@
-# task_executor.py
 import os
 import re
 import json
@@ -8,7 +7,6 @@ from context_manager import load_memory
 PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
-
 
 def backup_file(filepath):
     if not os.path.exists(filepath):
@@ -22,14 +20,12 @@ def backup_file(filepath):
         f_out.write(f_in.read())
     return backup_path
 
-
 def unsupported_action(action):
     return {
         "success": False,
         "error": f"Unsupported or unimplemented action: {action}.",
         "hint": "Check your task type or add implementation for this action."
     }
-
 
 def restore_from_backup(backup_path):
     """Restore a file from its backup"""
@@ -56,13 +52,16 @@ def restore_from_backup(backup_path):
         return {"success": False, "error": f"Failed to restore: {str(e)}"}
 
 def modify_file(plan):
-    """Modify existing file content"""
+    """Modify existing file content with proper validation"""
     filename = plan.get("filename")
     old_content = plan.get("old_content")
     new_content = plan.get("new_content")
 
     if not all([filename, old_content, new_content]):
         return {"success": False, "error": "Missing required fields"}
+
+    if not isinstance(filename, str) or not isinstance(old_content, str) or not isinstance(new_content, str):
+        return {"success": False, "error": "Invalid data types provided"}
 
     full_path = os.path.join(PROJECT_ROOT, filename)
     if not os.path.exists(full_path):
@@ -75,11 +74,13 @@ def modify_file(plan):
         if old_content not in content:
             return {"success": False, "error": "Old content not found in file"}
 
-        new_content = content.replace(old_content, new_content)
         backup_path = backup_file(full_path)
+        if not backup_path:
+            return {"success": False, "error": "Failed to create backup"}
 
+        new_content_full = content.replace(old_content, new_content)
         with open(full_path, "w") as f:
-            f.write(new_content)
+            f.write(new_content_full)
 
         return {
             "success": True,
@@ -89,37 +90,34 @@ def modify_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def execute_code(plan):
-    """Execute code in sandbox environment with resource limits"""
+    """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
     inputs = plan.get("inputs", {})
-    timeout = plan.get("timeout", 5)  # Default 5 second timeout
-    memory_limit = plan.get("memory_limit", 100 * 1024 * 1024)  # 100MB default
+    timeout = min(plan.get("timeout", 5), 30)  # Cap at 30 seconds
+    memory_limit = min(plan.get("memory_limit", 100 * 1024 * 1024), 512 * 1024 * 1024)  # Cap at 512MB
 
     if not code:
         return {"success": False, "error": "No code provided"}
 
     try:
         from sandbox_runner import run_code_in_sandbox
-        result = run_code_in_sandbox(code,
-                                     timeout=timeout,
-                                     memory_limit=memory_limit,
-                                     inputs=inputs)
-
-        if not result["success"]:
-            from context_manager import add_failure_pattern  #Import added here
-            add_failure_pattern({
-                "type": "code_execution",
-                "error": result["error"],
-                "timestamp": datetime.now(UTC).isoformat()
-            })
-
+        result = run_code_in_sandbox(
+            code,
+            timeout=timeout,
+            memory_limit=memory_limit,
+            inputs=inputs
+        )
         return result
-
-    except Exception as e:  # Added basic except block
-        return {"success": False, "error": f"Code execution failed: {str(e)}"}
-
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Code execution failed: {str(e)}",
+            "details": {
+                "timeout": timeout,
+                "memory_limit": memory_limit
+            }
+        }
 
 def estimate_risk(plan):
     """Estimate risk level of a task"""
@@ -133,7 +131,6 @@ def estimate_risk(plan):
         "execute_code": 2
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
-
 
 def validate_execution_plan(plan):
     """Validate execution plan before running"""
@@ -173,7 +170,6 @@ def validate_execution_plan(plan):
             return False, "Missing project name for deployment"
 
     return True, None
-
 
 def execute_task(plan):
     execution_start = datetime.now(UTC)
@@ -380,7 +376,6 @@ def execute_task(plan):
         }
     return result
 
-
 def create_file(plan):
     filename = plan.get("filename")
     content = plan.get("content", "")
@@ -396,7 +391,6 @@ def create_file(plan):
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
-
 
 def append_to_file(plan):
     filename = plan.get("filename")
@@ -419,7 +413,6 @@ def append_to_file(plan):
         return {"success": True, "message": msg}
     except Exception as e:
         return {"success": False, "error": str(e)}
-
 
 def edit_file(plan):
     filename = plan.get("filename")
@@ -512,7 +505,6 @@ def edit_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def delete_file(plan):
     filename = plan.get("filename")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
@@ -532,7 +524,6 @@ def delete_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def simulate_push():
     return {
         "success": True,
@@ -543,7 +534,6 @@ def simulate_push():
 
 
 from context_manager import load_memory
-
 
 def write_diagnostic(plan):
     execution_complete = datetime.now(UTC)
@@ -568,21 +558,51 @@ def write_diagnostic(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-
 def generate_app_template(template_type):
     # Placeholder for app template generation
     return f"Template for {template_type} app"
 
+def deploy_to_replit(project_name, config=None):
+    """Deploy project to Replit with proper configuration"""
+    try:
+        if not project_name:
+            return {
+                "success": False,
+                "error": "Project name is required"
+            }
 
-def deploy_to_replit(project_name):
-    # Placeholder for Replit deployment
-    return f"Deployment configured for {project_name}"
+        config = config or {}
+        config.setdefault("port", 5000)
+        config.setdefault("start_command", "python app.py")
 
+        # Create or update deployment configuration
+        deploy_config = {
+            "name": project_name,
+            "run_command": config["start_command"],
+            "env": config.get("env", {}),
+            "port": config["port"]
+        }
+
+        # Write deployment configuration
+        with open(".replit", "w") as f:
+            json.dump(deploy_config, f, indent=2)
+
+        return {
+            "success": True,
+            "message": f"Deployment configured for {project_name}",
+            "config": deploy_config
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Deployment configuration failed: {str(e)}"
+        }
 
 def execute_action(action_plan):
+    """Execute actions with consistent status handling"""
     result = {
-        "action": action_plan.get("action"),
         "success": False,
+        "action": action_plan.get("action"),
         "message": "",
         "timestamp": datetime.now(UTC).isoformat()
     }
@@ -591,8 +611,6 @@ def execute_action(action_plan):
         match action_plan.get("action"):
             case "modify_file":
                 result.update(modify_file(action_plan))
-            case "edit_file":
-                result.update(edit_file(action_plan))
             case "create_file":
                 result.update(create_file(action_plan))
             case "append_to_file":
@@ -603,64 +621,19 @@ def execute_action(action_plan):
                 result.update(execute_code(action_plan))
             case "patch_code":
                 result.update(patch_code(action_plan))
-
-            case "run_shell":
-                command = action_plan.get("command")
-                if not command:
-                    result["message"] = "Missing shell command"
-                else:
-                    try:
-                        import subprocess
-                        output = subprocess.check_output(
-                            command,
-                            shell=True,
-                            stderr=subprocess.STDOUT,
-                            timeout=10,
-                            text=True
-                        )
-                        result.update({
-                            "success": True,
-                            "message": "Shell command executed",
-                            "output": output
-                        })
-                    except subprocess.CalledProcessError as e:
-                        result.update({
-                            "success": False,
-                            "message": "Shell command failed",
-                            "error": e.output
-                        })
-                    except Exception as e:
-                        result.update({
-                            "success": False,
-                            "message": f"Exception during shell execution: {str(e)}"
-                        })
-
-            case "run_python":
-                code = action_plan.get("code")
-                if not code:
-                    result["message"] = "Missing Python code"
-                else:
-                    try:
-                        local_vars = {}
-                        exec(code, {}, local_vars)
-                        result.update({
-                            "success": True,
-                            "message": "Python code executed",
-                            "output": str(local_vars)
-                        })
-                    except Exception as e:
-                        result.update({
-                            "success": False,
-                            "message": f"Python execution failed: {str(e)}"
-                        })
-
             case _:
-                result["message"] = "Unsupported action"
+                result.update({
+                    "success": False,
+                    "error": f"Unsupported action: {action_plan.get('action')}"
+                })
 
         return result
 
     except Exception as e:
-        result["message"] = f"An error occurred: {str(e)}"
+        result.update({
+            "success": False,
+            "error": f"Action execution failed: {str(e)}"
+        })
         return result
 
 valid_intents = {
@@ -670,18 +643,36 @@ valid_intents = {
     "fix_failure"
 }
 def patch_code(plan):
+    """Patch code with improved validation"""
     try:
+        if not all(plan.get(key) for key in ["filename", "function", "after_line", "new_code"]):
+            return {
+                "success": False,
+                "error": "Missing required fields for patch_code"
+            }
+
+        filename = plan["filename"]
+        function = plan["function"]
+        anchor_line = plan["after_line"]
+        new_code = plan["new_code"]
+
+        if not os.path.exists(filename):
+            return {
+                "success": False,
+                "error": f"File not found: {filename}"
+            }
+
         from agent_tools.code_editor import insert_code_after_line_in_function
-        filename = plan.get("filename")
-        function = plan.get("function")
-        anchor_line = plan.get("after_line")
-        new_code = plan.get("new_code")
-
-        if not all([filename, function, anchor_line, new_code]):
-            return {"success": False, "error": "Missing required fields for patch_code"}
-
         result = insert_code_after_line_in_function(filename, function, anchor_line, new_code)
+
+        if result["success"]:
+            backup_path = backup_file(filename)
+            result["backup"] = backup_path
+
         return result
 
     except Exception as e:
-        return {"success": False, "error": f"Patch code failed: {str(e)}"}
+        return {
+            "success": False,
+            "error": f"Patch code failed: {str(e)}"
+        }
