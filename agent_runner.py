@@ -149,13 +149,6 @@ def run_agent(input_data):
                 "error": f"Dependency mapper failed: {str(e)}"
             }
 
-    # ✅ Unified timestamp for taskId and log
-    timestamp = datetime.now(UTC).isoformat()
-    task_id = timestamp.replace(":", "_").replace(".", "_")
-    log_filename = f"log-{task_id}.json"
-    log_path = os.path.join(LOG_DIR, log_filename)
-    subfolder = timestamp[:10]
-
     plan = input_data.get("executionPlanned") or input_data.get(
         "plan") or input_data.get("task") or input_data
     fallback_used = False
@@ -340,7 +333,6 @@ def run_tests_from_file():
 
     with open(TEST_SUITE_FILE, "r") as f:
         test_suite = json.load(f)  
-    #test_suite = json.load(f) #removed duplicate line
 
     test_results = []
 
