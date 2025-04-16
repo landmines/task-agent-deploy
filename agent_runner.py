@@ -112,6 +112,7 @@ def run_agent(input_data):
             "confirmation_required": input_data["confirmationNeeded"]
         })
 
+    # Handle queue task requests
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if task:
@@ -133,21 +134,6 @@ def run_agent(input_data):
     log_filename = f"log-{task_id}.json"
     log_path = os.path.join(LOG_DIR, log_filename)
     subfolder = timestamp[:10]
-
-    if input_data.get("intent") == "map_dependencies":
-        try:
-            from agent_tools.dependency_mapper import run_dependency_mapper
-            graph_result = run_dependency_mapper()
-            return {
-                "success": True,
-                "message": "✅ Dependency graph generated.",
-                "result": graph_result
-            }
-        except Exception as e:
-            return {
-                "success": False,
-                "error": f"Dependency mapper failed: {str(e)}"
-            }
 
     plan = input_data.get("executionPlanned") or input_data.get(
         "plan") or input_data.get("task") or input_data
@@ -332,7 +318,7 @@ def run_tests_from_file():
         return {"error": "No test_suite.json found."}
 
     with open(TEST_SUITE_FILE, "r") as f:
-        test_suite = json.load(f)  
+        test_suite = json.load(f)
 
     test_results = []
 
