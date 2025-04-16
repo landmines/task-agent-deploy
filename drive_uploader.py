@@ -47,20 +47,29 @@ def upload_log_to_drive(log_file_path, subfolder_name):
             'mimeType': 'application/json',
             'parents': [folder_id]
         }
+
+        print(f"📤 Attempting to upload log to Drive: {log_file_path}")
+
         media = MediaFileUpload(log_file_path, mimetype='application/json')
-        uploaded_file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
-        ).execute()
 
-        file_id = uploaded_file.get('id')
-        shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
-        return file_id, shareable_link
-    except Exception as e:
-        print(f"Error uploading log file: {e}")
-        return None, None
+        try:
+            uploaded_file = service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id'
+            ).execute()
 
+            file_id = uploaded_file.get('id')
+            if not file_id:
+                raise ValueError("Upload succeeded but no file ID returned")
+
+            shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
+            print(f"✅ Upload succeeded: {shareable_link}")
+            return file_id, shareable_link
+
+        except Exception as e:
+            print(f"❌ Drive upload failed: {e}")
+            return None, None
 
 def find_or_create_subfolder(service, subfolder_name):
     query = (
