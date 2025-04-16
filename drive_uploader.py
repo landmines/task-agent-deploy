@@ -1,25 +1,25 @@
+
 # drive_uploader.py
 import os
 import io
 import json
+from typing import Optional, Tuple
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-
-import os
-from json import loads
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 ROOT_FOLDER_ID = '1hDKqx9xPpDXBLEWu9i6358hj8jqv9VCq'  # Your AgentLogs folder ID
 
 def get_drive_service():
+    """Initialize and return Google Drive service with proper error handling."""
     creds_json = os.environ.get('GOOGLE_DRIVE_CREDENTIALS')
     if not creds_json:
         print("⚠️ Missing Google Drive credentials")
         return None
 
     try:
-        info = loads(creds_json)
+        info = json.loads(creds_json)
         credentials = service_account.Credentials.from_service_account_info(
             info, scopes=SCOPES
         )
@@ -28,59 +28,17 @@ def get_drive_service():
         print(f"❌ Drive service creation failed: {str(e)}")
         return None
 
-def upload_log_to_drive(log_file_path, subfolder_name):
-    try:
-        service = get_drive_service()
-        if not service:
-            print("⚠️ Drive service unavailable - saving locally only")
-            return None, None
-
-        try:
-            folder_id = find_or_create_subfolder(service, subfolder_name)
-        except Exception as e:
-            print(f"Error creating or finding subfolder: {e}")
-            return None, None
-
-        # Step 2: Upload the log file
-        file_metadata = {
-            'name': os.path.basename(log_file_path),
-            'mimeType': 'application/json',
-            'parents': [folder_id]
-        }
-
-        print(f"📤 Attempting to upload log to Drive: {log_file_path}")
-
-        media = MediaFileUpload(log_file_path, mimetype='application/json')
-
-        try:
-            uploaded_file = service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id'
-            ).execute()
-
-            file_id = uploaded_file.get('id')
-            if not file_id:
-                raise ValueError("Upload succeeded but no file ID returned")
-
-            shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
-            print(f"✅ Upload succeeded: {shareable_link}")
-            return file_id, shareable_link
-
-        except Exception as e:
-            print(f"❌ Drive upload failed: {e}")
-            return None, None
-
-def find_or_create_subfolder(service, subfolder_name):
-    try: 
-    query = (
-
-def find_or_create_subfolder(service, subfolder_name):
+def find_or_create_subfolder(service, subfolder_name: str) -> Optional[str]:
+    """Find or create a subfolder in the root folder."""
+    if not service:
+        return None
+        
     try:
         query = (
             f"'{ROOT_FOLDER_ID}' in parents and "
             f"name = '{subfolder_name}' and "
-            "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            "mimeType = 'application/vnd.google-apps.folder' and "
+            "trashed = false"
         )
 
         results = service.files().list(q=query, fields="files(id, name)").execute()
@@ -102,38 +60,88 @@ def find_or_create_subfolder(service, subfolder_name):
         print(f"❌ Error in find_or_create_subfolder: {e}")
         return None
 
-def list_recent_drive_logs(limit=5):
-    service = get_drive_service()
+def upload_log_to_drive(log_file_path: str, subfolder_name: str) -> Tuple[Optional[str], Optional[str]]:
+    """Upload a log file to Google Drive with proper error handling."""
+    try:
+        service = get_drive_service()
+        if not service:
+            print("⚠️ Drive service unavailable - saving locally only")
+            return None, None
 
-    # Step 1: Gather subfolders in ROOT_FOLDER_ID
-    folder_query = (
-        f"'{ROOT_FOLDER_ID}' in parents and "
-        f"mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    )
-    folder_results = service.files().list(q=folder_query, fields="files(id, name)").execute()
-    folders = folder_results.get('files', [])
+        folder_id = find_or_create_subfolder(service, subfolder_name)
+        if not folder_id:
+            print("❌ Failed to create or find subfolder")
+            return None, None
 
-    all_logs = []
+        if not os.path.exists(log_file_path):
+            print(f"❌ Log file not found: {log_file_path}")
+            return None, None
 
-    # Step 2: Collect JSON logs from each subfolder
-    for folder in folders:
-        folder_id = folder['id']
-        log_query = (
-            f"'{folder_id}' in parents and "
-            f"mimeType = 'application/json' and trashed = false"
-        )
-        log_results = service.files().list(
-            q=log_query,
-            orderBy='modifiedTime desc',
-            fields="files(id, name, modifiedTime)"
+        file_metadata = {
+            'name': os.path.basename(log_file_path),
+            'mimeType': 'application/json',
+            'parents': [folder_id]
+        }
+
+        media = MediaFileUpload(log_file_path, mimetype='application/json', resumable=True)
+        
+        file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
         ).execute()
-        all_logs.extend(log_results.get('files', []))
 
-    # Step 3: Sort and limit results
-    sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
-    return [file['id'] for file in sorted_logs[:limit]]
+        file_id = file.get('id')
+        if not file_id:
+            print("❌ Upload succeeded but no file ID returned")
+            return None, None
 
-def download_drive_log_file(file_id, timeout=30, max_retries=3):
+        shareable_link = f"https://drive.google.com/file/d/{file_id}/view"
+        print(f"✅ Upload succeeded: {shareable_link}")
+        return file_id, shareable_link
+
+    except Exception as e:
+        print(f"❌ Drive upload failed: {str(e)}")
+        return None, None
+
+def list_recent_drive_logs(limit: int = 5) -> list:
+    """List recent logs from Drive with proper error handling."""
+    service = get_drive_service()
+    if not service:
+        print("❌ Drive service unavailable")
+        return []
+
+    try:
+        folder_query = (
+            f"'{ROOT_FOLDER_ID}' in parents and "
+            f"mimeType = 'application/vnd.google-apps.folder' and "
+            "trashed = false"
+        )
+        folder_results = service.files().list(q=folder_query, fields="files(id, name)").execute()
+        folders = folder_results.get('files', [])
+
+        all_logs = []
+        for folder in folders:
+            log_query = (
+                f"'{folder['id']}' in parents and "
+                f"mimeType = 'application/json' and "
+                "trashed = false"
+            )
+            log_results = service.files().list(
+                q=log_query,
+                orderBy='modifiedTime desc',
+                fields="files(id, name, modifiedTime)"
+            ).execute()
+            all_logs.extend(log_results.get('files', []))
+
+        sorted_logs = sorted(all_logs, key=lambda x: x['modifiedTime'], reverse=True)
+        return [file['id'] for file in sorted_logs[:limit]]
+    except Exception as e:
+        print(f"❌ Error listing logs: {str(e)}")
+        return []
+
+def download_drive_log_file(file_id: str, timeout: int = 30, max_retries: int = 3) -> Optional[dict]:
+    """Download and parse a log file from Drive with proper error handling."""
     service = get_drive_service()
     if not service:
         print("❌ Could not initialize Drive service")
@@ -167,55 +175,50 @@ def download_drive_log_file(file_id, timeout=30, max_retries=3):
                 print("❌ All Drive download attempts failed")
                 return None
 
-    fh.seek(0)
-    try:
-        return json.load(fh)
-    except Exception as e:
-        print(f"⚠️ Failed to parse Drive log: {str(e)}")
-        return None
+    return None
 
-# ✅ Step 3 Fix: Alias for compatibility with /logs_from_drive
+# Alias for compatibility
 list_recent_logs = list_recent_drive_logs
 
-# ✅ NEW FUNCTION: Search all drive logs for one matching the task ID
-def download_log_by_task_id(task_id):
-    """
-    Searches all available Drive logs (by file name and content) for a matching taskId.
-    Returns the parsed JSON log if found, or None.
-
-    Args:
-        task_id: Can be either a full timestamp or a processed ID
-    """
-    # Normalize the task_id for consistent matching
+def download_log_by_task_id(task_id: str) -> Optional[dict]:
+    """Download a log file by task ID with proper error handling."""
     task_id = task_id.replace(":", "_").replace(".", "_").replace("/", "_").replace("+", "_")
     task_id = task_id.split(".")[0]  # Remove microseconds if present
+    
     service = get_drive_service()
+    if not service:
+        print("❌ Drive service unavailable")
+        return None
 
-    # 1. Gather all folders under ROOT
-    folder_query = (
-        f"'{ROOT_FOLDER_ID}' in parents and "
-        f"mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    )
-    folders = service.files().list(q=folder_query, fields="files(id, name)").execute().get("files", [])
-
-    # 2. Search all logs within all folders
-    for folder in folders:
-        log_query = (
-            f"'{folder['id']}' in parents and "
-            f"mimeType = 'application/json' and trashed = false"
+    try:
+        folder_query = (
+            f"'{ROOT_FOLDER_ID}' in parents and "
+            f"mimeType = 'application/vnd.google-apps.folder' and "
+            "trashed = false"
         )
-        logs = service.files().list(q=log_query, fields="files(id, name)").execute().get("files", [])
+        folders = service.files().list(q=folder_query, fields="files(id, name)").execute().get("files", [])
 
-        for log_file in logs:
-            if task_id in log_file['name']:
-                return download_drive_log_file(log_file['id'])
+        for folder in folders:
+            log_query = (
+                f"'{folder['id']}' in parents and "
+                f"mimeType = 'application/json' and "
+                "trashed = false"
+            )
+            logs = service.files().list(q=log_query, fields="files(id, name)").execute().get("files", [])
 
-            try:
-                content = download_drive_log_file(log_file['id'])
-                if task_id in json.dumps(content):
-                    return content
-            except Exception as e:
-                print(f"Error reading log file {log_file['id']}: {str(e)}")
-                continue
+            for log_file in logs:
+                if task_id in log_file['name']:
+                    return download_drive_log_file(log_file['id'])
 
-    return None
+                try:
+                    content = download_drive_log_file(log_file['id'])
+                    if content and task_id in json.dumps(content):
+                        return content
+                except Exception as e:
+                    print(f"Error reading log file {log_file['id']}: {str(e)}")
+                    continue
+
+        return None
+    except Exception as e:
+        print(f"❌ Error searching for task ID: {str(e)}")
+        return None
