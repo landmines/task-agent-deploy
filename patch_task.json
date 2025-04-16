@@ -1,0 +1,8 @@
+{
+  "intent": "patch_code",
+  "action": "patch_code",
+  "filename": "agent_runner.py",
+  "function": "run_agent",
+  "after_line": "if input_data.get(\"intent\") == \"queue_task\":",
+  "new_code": "if input_data.get(\"intent\") == \"map_dependencies\":\n    try:\n        from agent_tools.dependency_mapper import run_dependency_mapper\n        graph_result = run_dependency_mapper()\n        return {\"success\": true, \"message\": \"✅ Dependency graph generated.\", \"result\": graph_result }\n    except Exception as e:\n        return {\"success\": false, \"error\": f\"Dependency mapper failed: {str(e)}\" }"
+}

@@ -159,6 +159,7 @@ def validate_execution_plan(plan):
         return False, "Missing required fields in plan"
 
     valid_actions = {
+        "patch_code",
         "create_file", "append_to_file", "edit_file", "delete_file",
         "execute_code", "push_changes", "create_app", "deploy", "modify_self"
     }
@@ -613,6 +614,8 @@ def execute_action(action_plan):
             case "delete_file":
                 result.update(delete_file(action_plan))
             case "execute_code":
+            case "patch_code":
+                result.update(patch_code(action_plan))
                 result.update(execute_code(action_plan))
             case _:
                 result["message"] = "Unsupported action"
@@ -629,3 +632,19 @@ valid_intents = {
     "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test",
     "fix_failure"
 }
+def patch_code(plan):
+    try:
+        from agent_tools.code_editor import insert_code_after_line_in_function
+        filename = plan.get("filename")
+        function = plan.get("function")
+        anchor_line = plan.get("after_line")
+        new_code = plan.get("new_code")
+
+        if not all([filename, function, anchor_line, new_code]):
+            return {"success": False, "error": "Missing required fields for patch_code"}
+
+        result = insert_code_after_line_in_function(filename, function, anchor_line, new_code)
+        return result
+
+    except Exception as e:
+        return {"success": False, "error": f"Patch code failed: {str(e)}"}
