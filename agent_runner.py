@@ -16,7 +16,6 @@ from context_manager import (
     track_rejected,
 )
 
-
 def get_trust_score(memory: dict, intent: str) -> float:
     """Calculate trust score based on past performance"""
     if not memory or not intent:
@@ -31,7 +30,6 @@ def get_trust_score(memory: dict, intent: str) -> float:
 
     return successes / (successes + failures)
 
-
 MEMORY_PATH = "context.json"
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -40,7 +38,6 @@ TEST_SUITE_FILE = "test_suite.json"
 AGENT_CORE_FILES = [
     "agent_runner.py", "context_manager.py", "task_executor.py", "app.py"
 ]
-
 
 def requires_confirmation(intent: str, memory: dict) -> bool:
     """Determine if an action needs confirmation based on trust"""
@@ -61,7 +58,6 @@ def requires_confirmation(intent: str, memory: dict) -> bool:
         trust_threshold = 0.7  # Lower threshold for safe actions
 
     return trust < trust_threshold
-
 
 def run_agent(input_data):
     # Ensure logs directory exists
@@ -119,10 +115,7 @@ def run_agent(input_data):
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if task:
-            memory["next_steps"].append({
-                "step": task,
-                "timestamp": datetime.now(UTC).isoformat()
-            })
+            add_next_step(memory, task)
             save_memory_context(memory)
             return {
                 "success": True,
@@ -134,6 +127,13 @@ def run_agent(input_data):
             "error": "No task provided"
         }
 
+    # ✅ Unified timestamp for taskId and log
+    timestamp = datetime.now(UTC).isoformat()
+    task_id = timestamp.replace(":", "_").replace(".", "_")
+    log_filename = f"log-{task_id}.json"
+    log_path = os.path.join(LOG_DIR, log_filename)
+    subfolder = timestamp[:10]
+
     if input_data.get("intent") == "map_dependencies":
         try:
             from agent_tools.dependency_mapper import run_dependency_mapper
@@ -142,6 +142,11 @@ def run_agent(input_data):
                 "success": True,
                 "message": "✅ Dependency graph generated.",
                 "result": graph_result
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Dependency mapper failed: {str(e)}"
             }
         except Exception as e:
             return {
@@ -159,6 +164,7 @@ def run_agent(input_data):
     plan = input_data.get("executionPlanned") or input_data.get(
         "plan") or input_data.get("task") or input_data
     fallback_used = False
+
     if "action" not in plan and "intent" in input_data:
         plan["action"] = input_data["intent"]
         fallback_used = True
@@ -219,8 +225,7 @@ def run_agent(input_data):
     record_last_result(memory, plan, result, fallback_used)
 
     if not result.get("success"):
-        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} - {plan.get('notes', '')}".strip(
-        )
+        task_summary = f"[{plan.get('intent') or plan.get('action')}] {plan.get('filename', '')} - {plan.get('notes', '')}".strip()
         add_failure_pattern(memory, {"task": task_summary, "result": result})
 
         # Auto-generate follow-up task
@@ -241,8 +246,8 @@ def run_agent(input_data):
         with open(log_path, "w") as f:
             json.dump(
                 {
-                    "timestamp": timestamp,
-                    "taskId": task_id,
+                    "timestamp": timestamp,   
+       "taskId": task_id,
                     "log_filename": log_filename,
                     "input": input_data,
                     "execution": plan,
@@ -251,7 +256,7 @@ def run_agent(input_data):
                 },
                 f,
                 indent=2)
-        print(f"✅ Log file written: {log_filename}")
+            print(f"✅ Log file written: {log_filename}")
     except Exception as e:
         print(f"❌ Failed to write log file: {e}")
         print("📁 Verifying file presence at:", log_path)
@@ -289,8 +294,7 @@ def run_and_log_task(memory, task):
     record_last_result(memory, task, result)
 
     if not result.get("success"):
-        summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip(
-        )
+        summary = f"[{task.get('intent') or task.get('action')}] {task.get('filename', '')} – {task.get('notes', '')}".strip()
         add_failure_pattern(memory, {"task": summary, "result": result})
 
     save_memory_context(memory)
@@ -340,12 +344,15 @@ def run_tests_from_file():
         return {"error": "No test_suite.json found."}
 
     with open(TEST_SUITE_FILE, "r") as f:
-        test_suite = json.load(f)
+        test_suite = json.load(f)  
+test_suite = json.load(f)
 
     test_results = []
+
     for i, test in enumerate(test_suite):
         result = execute_task(test)
         passed = result.get("success", False)
+
         test_results.append({
             "index": i,
             "test": test,
@@ -373,6 +380,7 @@ def run_tests_from_file():
 def finalize_task_execution(status, task_info=None):
     memory = load_memory()
     intent = None
+
     if task_info:
         intent = (task_info.get("execution", {}).get("action")
                   or task_info.get("execution", {}).get("intent")
@@ -384,6 +392,7 @@ def finalize_task_execution(status, task_info=None):
             stats = memory.setdefault("intent_stats",
                                       {}).setdefault(intent, {})
             stats["success"] = stats.get("success", 0) + 1
+
     elif status == "rejected":
         track_rejected(memory)
         if intent:
@@ -404,6 +413,7 @@ def finalize_task_execution(status, task_info=None):
 def modify_self(filename, updated_code):
     backup_name = f"{filename}.bak.{datetime.now(UTC).isoformat().replace(':', '_')}"
     shutil.copy(filename, backup_name)
+
     with open(filename, "w") as f:
         f.write(updated_code)
 
