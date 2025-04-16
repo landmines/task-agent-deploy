@@ -634,12 +634,17 @@ def execute_action(action_plan):
             "success": False,
             "error": f"Action execution failed: {str(e)}"
         })
+        result.setdefault("execution_metadata", {})
+        result["execution_metadata"].update({
+            "status": "completed" if result.get("success") else "failed",
+            "start_time": result["timestamp"]
+        })
         return result
 
 valid_intents = {
     "create_app", "deploy", "modify_file", "run_tests", "create_file",
     "append_to_file", "delete_file", "execute", "execute_code", "modify_self",
-    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test",
+    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "run_shell", "run_python",
     "fix_failure"
 }
 def patch_code(plan):
