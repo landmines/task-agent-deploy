@@ -37,37 +37,23 @@ def restore_from_backup(backup_path):
         return {"success": False, "error": "Backup file not found"}
 
     try:
-        original_path = backup_path.replace("_BACKUP_", "").split(".")[0]
-        original_path = os.path.join(PROJECT_ROOT,
-                                     os.path.basename(original_path))
+        filename = os.path.basename(backup_path).split("_BACKUP_")[0]
+        original_path = os.path.join(PROJECT_ROOT, filename)
 
-        with open(backup_path, "r") as backup_file:
+        with open(backup_path, "r", encoding="utf-8") as backup_file:
             content = backup_file.read()
 
-        with open(original_path, "w") as original_file:
+        with open(original_path, "w", encoding="utf-8") as original_file:
             original_file.write(content)
 
         return {
             "success": True,
-            "message": f"Ã¢Å“â€¦ Restored from backup: {backup_path}",
+            "message": f"✅ Restored from backup: {backup_path}",
             "restored_file": original_path
         }
+
     except Exception as e:
         return {"success": False, "error": f"Failed to restore: {str(e)}"}
-
-    if result["success"]:
-        return {
-            "success": True,
-            "message": "Code executed successfully",
-            "output": result["output"]
-        }
-    else:
-        return {
-            "success": False,
-            "error": f"Code execution failed: {result['error']}",
-            "output": result["output"]
-        }
-
 
 def modify_file(plan):
     """Modify existing file content"""
@@ -556,6 +542,7 @@ def simulate_push():
     }
 
 
+from context_manager import load_memory
 
 
 def write_diagnostic(plan):
@@ -616,15 +603,65 @@ def execute_action(action_plan):
                 result.update(execute_code(action_plan))
             case "patch_code":
                 result.update(patch_code(action_plan))
-                
+
+            case "run_shell":
+                command = action_plan.get("command")
+                if not command:
+                    result["message"] = "Missing shell command"
+                else:
+                    try:
+                        import subprocess
+                        output = subprocess.check_output(
+                            command,
+                            shell=True,
+                            stderr=subprocess.STDOUT,
+                            timeout=10,
+                            text=True
+                        )
+                        result.update({
+                            "success": True,
+                            "message": "Shell command executed",
+                            "output": output
+                        })
+                    except subprocess.CalledProcessError as e:
+                        result.update({
+                            "success": False,
+                            "message": "Shell command failed",
+                            "error": e.output
+                        })
+                    except Exception as e:
+                        result.update({
+                            "success": False,
+                            "message": f"Exception during shell execution: {str(e)}"
+                        })
+
+            case "run_python":
+                code = action_plan.get("code")
+                if not code:
+                    result["message"] = "Missing Python code"
+                else:
+                    try:
+                        local_vars = {}
+                        exec(code, {}, local_vars)
+                        result.update({
+                            "success": True,
+                            "message": "Python code executed",
+                            "output": str(local_vars)
+                        })
+                    except Exception as e:
+                        result.update({
+                            "success": False,
+                            "message": f"Python execution failed: {str(e)}"
+                        })
+
             case _:
                 result["message"] = "Unsupported action"
+
         return result
 
     except Exception as e:
         result["message"] = f"An error occurred: {str(e)}"
         return result
-
 
 valid_intents = {
     "create_app", "deploy", "modify_file", "run_tests", "create_file",
