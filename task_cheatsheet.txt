@@ -1,0 +1,5 @@
+- Create file: python agent_runner.py '{"intent": "create_file", "filename": "file.txt", "content": "Hello"}'
+- Append to file: python agent_runner.py '{"intent": "append_to_file", "filename": "file.txt", "content": "\nAnother line"}'
+- Delete file: python agent_runner.py '{"intent": "delete_file", "filename": "file.txt"}'
+- Run shell command: python agent_runner.py '{"intent": "run_shell", "command": "ls -la > out.txt"}'
+- Run Python code: python agent_runner.py '{"intent": "run_python", "code": "print(123)"}'

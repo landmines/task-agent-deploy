@@ -186,7 +186,7 @@ def run_agent(input_data):
         except Exception as e:
             print(f"❌ Failed to write confirmable task log: {e}")
 
-        upload_log_to_drive(log_path, subfolder)
+        #upload_log_to_drive(log_path, subfolder)
         record_last_result(memory, plan, result)
         save_memory_context(memory)
 
@@ -250,7 +250,7 @@ def run_agent(input_data):
         print("📁 Verifying file presence at:", log_path)
         print("📂 Logs directory contains:", os.listdir(LOG_DIR))
 
-    upload_log_to_drive(log_path, subfolder)
+   # upload_log_to_drive(log_path, subfolder)
 
     return {
         "result": result,
@@ -305,7 +305,7 @@ def run_and_log_task(memory, task):
     except Exception as e:
         print(f"❌ Error saving task log: {e}")
 
-    upload_log_to_drive(log_path, subfolder)
+   # upload_log_to_drive(log_path, subfolder)
 
     return result
 
