@@ -633,6 +633,55 @@ def execute_action(action_plan):
                 result.update(execute_code(action_plan))
             case "patch_code":
                 result.update(patch_code(action_plan))
+            case "run_shell":
+                command = action_plan.get("command")
+                if not command:
+                    result["message"] = "Missing shell command"
+                else:
+                    try:
+                        import subprocess
+                        output = subprocess.check_output(
+                            command,
+                            shell=True,
+                            stderr=subprocess.STDOUT,
+                            timeout=10,
+                            text=True
+                        )
+                        result.update({
+                            "success": True,
+                            "message": "Shell command executed",
+                            "output": output
+                        })
+                    except subprocess.CalledProcessError as e:
+                        result.update({
+                            "success": False,
+                            "message": "Shell command failed",
+                            "error": e.output
+                        })
+                    except Exception as e:
+                        result.update({
+                            "success": False,
+                            "message": f"Exception during shell execution: {str(e)}"
+                        })
+
+            case "run_python":
+                code = action_plan.get("code")
+                if not code:
+                    result["message"] = "Missing Python code"
+                else:
+                    try:
+                        local_vars = {}
+                        exec(code, {}, local_vars)
+                        result.update({
+                            "success": True,
+                            "message": "Python code executed",
+                            "output": str(local_vars)
+                        })
+                    except Exception as e:
+                        result.update({
+                            "success": False,
+                            "message": f"Python execution failed: {str(e)}"
+                        })
             case _:
                 result.update({
                     "success": False,
