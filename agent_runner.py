@@ -169,23 +169,22 @@ def run_agent(input_data):
         }
 
         try:
-            print(f"🧪 Writing confirmable log to path: {log_path}")
-            with open(log_path, "w") as f:
-                json.dump(
-                    {
-                        "timestamp": timestamp,
-                        "taskId": task_id,
-                        "log_filename": log_filename,
-                        "input": input_data,
-                        "execution": plan,
-                        "result": result,
-                        "memory": memory
-                    },
-                    f,
-                    indent=2)
-            print(f"✅ Confirmable task log written locally: {log_filename}")
-        except Exception as e:
-            print(f"❌ Failed to write confirmable task log: {e}")
+    print(f"🧪 Writing confirmable log to path: {log_path}")
+    with open(log_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "timestamp": timestamp,
+            "taskId": task_id,
+            "log_filename": log_filename,
+            "input": input_data,
+            "execution": plan,
+            "result": result,
+            "memory": memory
+        }, f, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+    print(f"✅ Confirmable task log written locally: {log_filename}")
+except Exception as e:
+    print(f"❌ Failed to write confirmable task log: {e}")
 
         upload_log_to_drive(log_path, subfolder)
         record_last_result(memory, plan, result)
