@@ -157,10 +157,6 @@ def run_agent(input_data):
                 "error": f"Dependency mapper failed: {str(e)}"
             }
 
-    try:
-            "error": f"Dependency mapper failed: {str(e)}"
-        }
-
     # ✅ Unified timestamp for taskId and log
     timestamp = datetime.now(UTC).isoformat()
     task_id = timestamp.replace(":", "_").replace(".", "_")
