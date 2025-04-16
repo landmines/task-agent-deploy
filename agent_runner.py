@@ -147,9 +147,15 @@ def run_agent(input_data):
             from agent_tools.dependency_mapper import run_dependency_mapper
             graph_result = run_dependency_mapper()
             return {
-            "success": True,
-            "message": "✅ Dependency graph generated.",
-            "result": graph_result
+                "success": True,
+                "message": "✅ Dependency graph generated.",
+                "result": graph_result
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Dependency mapper failed: {str(e)}"
+            }
         }
     except Exception as e:
         return {
