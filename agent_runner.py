@@ -419,3 +419,17 @@ def modify_self(filename, updated_code):
         "success": True,
         "message": f"✅ Modified {filename}, backup saved as {backup_name}"
     }
+
+if __name__ == "__main__":
+    import sys
+    import json
+
+    task_file = sys.argv[1] if len(sys.argv) > 1 else "task.json"
+
+    try:
+        with open(task_file, "r", encoding="utf-8") as f:
+            task_data = json.load(f)
+        print(f"▶️ Running task from {task_file}...")
+        run_agent(task_data)
+    except Exception as e:
+        print(f"❌ Failed to load or run task from {task_file}: {e}")
