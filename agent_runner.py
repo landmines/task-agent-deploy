@@ -332,37 +332,40 @@ def run_tests_from_file():
     if not os.path.exists(TEST_SUITE_FILE):
         return {"error": "No test_suite.json found."}
 
-    with open(TEST_SUITE_FILE, "r") as f:
-        test_suite = json.load(f)
+    try:
+        with open(TEST_SUITE_FILE, "r") as f:
+            test_suite = json.load(f)
 
-    test_results = []
+        test_results = []
 
-    for i, test in enumerate(test_suite):
-        result = execute_task(test)
-        passed = result.get("success", False)
+        for i, test in enumerate(test_suite):
+            result = execute_task(test)
+            passed = result.get("success", False)
 
-        test_results.append({
-            "index": i,
-            "test": test,
-            "passed": passed,
-            "result": result
-        })
-
-        record_last_result(memory, test, result)
-
-        if not passed:
-            add_failure_pattern(memory, {
-                "test_index": i,
+            test_results.append({
+                "index": i,
                 "test": test,
+                "passed": passed,
                 "result": result
             })
 
-    save_memory_context(memory)
+            record_last_result(memory, test, result)
 
-    return {
-        "message": f"✅ Ran {len(test_results)} tests.",
-        "results": test_results
-    }
+            if not passed:
+                add_failure_pattern(memory, {
+                    "test_index": i,
+                    "test": test,
+                    "result": result
+                })
+
+        save_memory_context(memory)
+
+        return {
+            "message": f"✅ Ran {len(test_results)} tests.",
+            "results": test_results
+        }
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return {"error": f"Error running tests: {e}"}
 
 
 def finalize_task_execution(status, task_info=None):
