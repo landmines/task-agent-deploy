@@ -109,20 +109,12 @@ def run_agent(input_data):
             input_data["confirmationNeeded"] = True
 
         # Record decision metrics
-        memory["confirmation_decisions"] = memory.get("confirmation_decisions",
-                                                      [])
+        memory["confirmation_decisions"] = memory.get("confirmation_decisions", [])
         memory["confirmation_decisions"].append({
-            "intent":
-            intent,
-            "trust_score":
-            trust_score,
-            "confirmation_required":
-            input_data["confirmationNeeded"]
+            "intent": intent,
+            "trust_score": trust_score,
+            "confirmation_required": input_data["confirmationNeeded"]
         })
-
-    # Handle planning requests
-    if input_data.get("intent") == "plan_tasks" or input_data.get("goal"):
-        from planner import plan_tasks, validate_plan
 
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
@@ -427,4 +419,3 @@ def modify_self(filename, updated_code):
         "success": True,
         "message": f"✅ Modified {filename}, backup saved as {backup_name}"
     }
-    
