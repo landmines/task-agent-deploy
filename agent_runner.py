@@ -156,7 +156,6 @@ def run_agent(input_data):
                 "success": False,
                 "error": f"Dependency mapper failed: {str(e)}"
             }
-        }
     except Exception as e:
         return {
             "success": False,
