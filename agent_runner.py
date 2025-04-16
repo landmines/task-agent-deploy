@@ -126,8 +126,21 @@ def run_agent(input_data):
 
     if input_data.get("intent") == "queue_task":
     task = input_data.get("task")
-    ...
-    return {...}
+    if task:
+        memory["next_steps"].append({
+            "step": task,
+            "timestamp": datetime.now(UTC).isoformat()
+        })
+        save_memory_context(memory)
+        return {
+            "success": True,
+            "message": "Task queued successfully",
+            "task": task
+        }
+    return {
+        "success": False,
+        "error": "No task provided"
+    }
 
 if input_data.get("intent") == "map_dependencies":
     try:
