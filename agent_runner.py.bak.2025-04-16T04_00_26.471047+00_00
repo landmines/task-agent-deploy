@@ -125,23 +125,19 @@ def run_agent(input_data):
         from planner import plan_tasks, validate_plan
 
     if input_data.get("intent") == "queue_task":
-    task = input_data.get("task")
-    ...
-    return {...}
-
-if input_data.get("intent") == "map_dependencies":
-    try:
-        from agent_tools.dependency_mapper import run_dependency_mapper
-        graph_result = run_dependency_mapper()
+        task = input_data.get("task")
+        if not task:
+            return {
+                "success": False,
+                "error": "Missing 'task' for queue_task intent."
+            }
+        add_next_step(memory, task)
+        save_memory_context(memory)
         return {
             "success": True,
-            "message": "✅ Dependency graph generated.",
-            "result": graph_result
-        }
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Dependency mapper failed: {str(e)}"
+            "message": "✅ Task added to queue.",
+            "queued_task": task,
+            "memory_snapshot": memory.get("next_steps", [])
         }
 
     # ✅ Unified timestamp for taskId and log
@@ -414,4 +410,20 @@ def modify_self(filename, updated_code):
         "success": True,
         "message": f"✅ Modified {filename}, backup saved as {backup_name}"
     }
-    
+
+    # ✅ Handle "map_dependencies" intent
+    if input_data.get("intent") == "map_dependencies":
+        try:
+            from agent_tools.dependency_mapper import run_dependency_mapper
+            graph_result = run_dependency_mapper()
+            return {
+                "success": True,
+                "message": "✅ Dependency graph generated.",
+                "result": graph_result
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Dependency mapper failed: {str(e)}"
+            }
+

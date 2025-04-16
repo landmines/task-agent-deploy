@@ -556,7 +556,6 @@ def simulate_push():
     }
 
 
-from context_manager import load_memory
 
 
 def write_diagnostic(plan):
@@ -614,9 +613,10 @@ def execute_action(action_plan):
             case "delete_file":
                 result.update(delete_file(action_plan))
             case "execute_code":
+                result.update(execute_code(action_plan))
             case "patch_code":
                 result.update(patch_code(action_plan))
-                result.update(execute_code(action_plan))
+                
             case _:
                 result["message"] = "Unsupported action"
         return result
