@@ -148,11 +148,6 @@ def run_agent(input_data):
                 "success": False,
                 "error": f"Dependency mapper failed: {str(e)}"
             }
-        except Exception as e:
-            return {
-                "success": False,
-                "error": f"Dependency mapper failed: {str(e)}"
-            }
 
     # ✅ Unified timestamp for taskId and log
     timestamp = datetime.now(UTC).isoformat()
@@ -247,7 +242,7 @@ def run_agent(input_data):
             json.dump(
                 {
                     "timestamp": timestamp,   
-       "taskId": task_id,
+                    "taskId": task_id,
                     "log_filename": log_filename,
                     "input": input_data,
                     "execution": plan,
@@ -345,7 +340,7 @@ def run_tests_from_file():
 
     with open(TEST_SUITE_FILE, "r") as f:
         test_suite = json.load(f)  
-test_suite = json.load(f)
+    #test_suite = json.load(f) #removed duplicate line
 
     test_results = []
 
