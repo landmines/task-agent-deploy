@@ -144,9 +144,9 @@ def run_agent(input_data):
 
     if input_data.get("intent") == "map_dependencies":
         try:
-        from agent_tools.dependency_mapper import run_dependency_mapper
-        graph_result = run_dependency_mapper()
-        return {
+            from agent_tools.dependency_mapper import run_dependency_mapper
+            graph_result = run_dependency_mapper()
+            return {
             "success": True,
             "message": "✅ Dependency graph generated.",
             "result": graph_result
