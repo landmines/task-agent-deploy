@@ -112,7 +112,22 @@ def run_agent(input_data):
             "confirmation_required": input_data["confirmationNeeded"]
         })
 
-    # Handle queue task requests
+    # Handle special intents
+    if input_data.get("intent") == "map_dependencies":
+        try:
+            from agent_tools.dependency_mapper import run_dependency_mapper
+            graph_result = run_dependency_mapper()
+            return {
+                "success": True,
+                "message": "✅ Dependency graph generated.",
+                "result": graph_result
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Dependency mapper failed: {str(e)}"
+            }
+
     if input_data.get("intent") == "queue_task":
         task = input_data.get("task")
         if task:
