@@ -72,23 +72,35 @@ def upload_log_to_drive(log_file_path, subfolder_name):
             return None, None
 
 def find_or_create_subfolder(service, subfolder_name):
+    try: 
     query = (
-        f"'{ROOT_FOLDER_ID}' in parents and "
-        f"name = '{subfolder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-    )
-    results = service.files().list(q=query, fields="files(id, name)").execute()
-    folders = results.get('files', [])
 
-    if folders:
-        return folders[0]['id']
+def find_or_create_subfolder(service, subfolder_name):
+    try:
+        query = (
+            f"'{ROOT_FOLDER_ID}' in parents and "
+            f"name = '{subfolder_name}' and "
+            "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        )
 
-    folder_metadata = {
-        'name': subfolder_name,
-        'mimeType': 'application/vnd.google-apps.folder',
-        'parents': [ROOT_FOLDER_ID]
-    }
-    folder = service.files().create(body=folder_metadata, fields='id').execute()
-    return folder.get('id')
+        results = service.files().list(q=query, fields="files(id, name)").execute()
+        folders = results.get('files', [])
+
+        if folders:
+            return folders[0]['id']
+
+        folder_metadata = {
+            'name': subfolder_name,
+            'mimeType': 'application/vnd.google-apps.folder',
+            'parents': [ROOT_FOLDER_ID]
+        }
+
+        folder = service.files().create(body=folder_metadata, fields='id').execute()
+        return folder.get('id')
+
+    except Exception as e:
+        print(f"❌ Error in find_or_create_subfolder: {e}")
+        return None
 
 def list_recent_drive_logs(limit=5):
     service = get_drive_service()
