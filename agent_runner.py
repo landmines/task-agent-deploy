@@ -424,12 +424,19 @@ if __name__ == "__main__":
     import sys
     import json
 
-    task_file = sys.argv[1] if len(sys.argv) > 1 else "task.json"
-
-    try:
-        with open(task_file, "r", encoding="utf-8") as f:
-            task_data = json.load(f)
-        print(f"▶️ Running task from {task_file}...")
-        run_agent(task_data)
-    except Exception as e:
-        print(f"❌ Failed to load or run task from {task_file}: {e}")
+    if len(sys.argv) > 1:
+        arg = sys.argv[1]
+        try:
+            if arg.endswith(".json") and os.path.exists(arg):
+                with open(arg, "r", encoding="utf-8") as f:
+                    task_data = json.load(f)
+                print(f"▶️ Loaded task from file: {arg}")
+            else:
+                # Assume it's raw JSON string input
+                task_data = json.loads(arg)
+                print(f"▶️ Loaded task from CLI input: {arg[:50]}...")
+            run_agent(task_data)
+        except Exception as e:
+            print(f"❌ Failed to load or run task: {e}")
+    else:
+        print("⚠️ No task provided. Pass JSON string or filename.")
