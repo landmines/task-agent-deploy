@@ -142,7 +142,7 @@ def validate_execution_plan(plan):
         return False, "Missing required fields in plan"
 
     valid_actions = {
-        "patch_code",
+        "patch_code", "modify_file",
         "create_file", "append_to_file", "edit_file", "delete_file",
         "execute_code", "push_changes", "create_app", "deploy", "modify_self"
     }
@@ -230,14 +230,26 @@ def execute_task(plan):
         estimated_cost += deployment_costs.get("total_cost", 0.0)
 
     # Update cost tracking in memory
-    memory = load_memory()
-
-    # Ensure cost_tracking is initialized
-    if "cost_tracking" not in memory:
-        memory["cost_tracking"] = {
-            "total_estimated": 0.0,
-            "api_usage_costs": [],
-            "last_updated": None
+    try:
+        memory = load_memory()
+        if not isinstance(memory, dict):
+            memory = {}
+        
+        # Ensure cost_tracking is initialized
+        if "cost_tracking" not in memory:
+            memory["cost_tracking"] = {
+                "total_estimated": 0.0,
+                "api_usage_costs": [],
+                "last_updated": None
+            }
+    except Exception as e:
+        print(f"Warning: Memory initialization failed: {str(e)}")
+        memory = {
+            "cost_tracking": {
+                "total_estimated": 0.0,
+                "api_usage_costs": [],
+                "last_updated": None
+            }
         }
 
     memory["cost_tracking"]["total_estimated"] += estimated_cost
@@ -650,10 +662,13 @@ valid_intents = {
 def patch_code(plan):
     """Patch code with improved validation"""
     try:
-        if not all(plan.get(key) for key in ["filename", "function", "after_line", "new_code"]):
+        required_fields = ["filename", "function", "after_line", "new_code"]
+        missing_fields = [field for field in required_fields if not plan.get(field)]
+        
+        if missing_fields:
             return {
                 "success": False,
-                "error": "Missing required fields for patch_code"
+                "error": f"Missing required fields for patch_code: {', '.join(missing_fields)}"
             }
 
         filename = plan["filename"]
