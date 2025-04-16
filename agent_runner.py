@@ -142,8 +142,8 @@ def run_agent(input_data):
             "error": "No task provided"
         }
 
-if input_data.get("intent") == "map_dependencies":
-    try:
+    if input_data.get("intent") == "map_dependencies":
+        try:
         from agent_tools.dependency_mapper import run_dependency_mapper
         graph_result = run_dependency_mapper()
         return {
