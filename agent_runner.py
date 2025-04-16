@@ -18,7 +18,7 @@ from context_manager import (
 
 def get_trust_score(memory: dict, intent: str) -> float:
     """Calculate trust score based on past performance"""
-    if not memory or not intent:
+    if not intent:
         return 0.5  # Default moderate trust
 
     stats = memory.get("intent_stats", {}).get(intent, {})
