@@ -243,6 +243,8 @@ def debug_create():
             f.write("This is a debug write test from /debug_create")
         return jsonify({"success": True, "message": "✅ File written directly to disk."})
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    except Exception as e:
         stacktrace = traceback.format_exc()
         logging.error(f"/debug_create failed:\n{stacktrace}")
         return jsonify({
