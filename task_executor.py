@@ -187,6 +187,45 @@ def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
             }
         }
 
+def handle_replace_line(plan: Dict[str, Any]) -> Dict[str, Any]:
+    filename = plan.get("filename")
+    target = plan.get("target")
+    replacement = plan.get("replacement")
+
+    if not filename or not target or not replacement:
+        return {"success": False, "error": "Missing required fields for replace_line"}
+
+    if not validate_filepath(filename):
+        return {"success": False, "error": "Invalid filename path"}
+
+    try:
+        backup_path = backup_file(filename)
+        result = replace_line(filename, target, replacement)
+        result["backup"] = backup_path
+        return result
+    except Exception as e:
+        return {"success": False, "error": f"replace_line failed: {str(e)}"}
+
+
+def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
+    filename = plan.get("filename")
+    target = plan.get("target")
+    new_line = plan.get("content")
+
+    if not filename or not target or not new_line:
+        return {"success": False, "error": "Missing required fields for insert_below"}
+
+    if not validate_filepath(filename):
+        return {"success": False, "error": "Invalid filename path"}
+
+    try:
+        backup_path = backup_file(filename)
+        result = insert_below(filename, target, new_line)
+        result["backup"] = backup_path
+        return result
+    except Exception as e:
+        return {"success": False, "error": f"insert_below failed: {str(e)}"}
+
 def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
     risk_levels = {
@@ -728,8 +767,8 @@ def execute_action(plan: dict) -> dict:
             "delete_file": delete_file,
             "execute_code": execute_code,
             "patch_code": patch_code,
-            "insert_below": insert_below, 
-            "replace_line": replace_line
+            "handle_insert_below": insert_below, 
+            "handle_replace_line": replace_line
         }
 
         if action in action_handlers:
@@ -802,4 +841,22 @@ def execute_action(plan: dict) -> dict:
             "error": f"Action execution failed: {str(e)}",
             "error_type": "execution_error"
         })
+
+        elif intent == "replace_line":
+            filename = plan.get("filename")
+            target = plan.get("target")
+            replacement = plan.get("replacement")
+            if not all([filename, target, replacement]):
+                return {"success": False, "error": "Missing parameters for replace_line"}
+            result = replace_line(filename, target, replacement)
+            return result
+
+        elif intent == "insert_below":
+            filename = plan.get("filename")
+            target = plan.get("target")
+            new_line = plan.get("content")
+            if not all([filename, target, new_line]):
+                return {"success": False, "error": "Missing parameters for insert_below"}
+            result = insert_below(filename, target, new_line)
+            return result
         return result
