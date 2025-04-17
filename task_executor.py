@@ -34,7 +34,7 @@ def restore_from_backup(backup_path):
 
     import logging  # <-- Put this import at the top of your file (if not already present)
 
-try:
+    try:
     filename = os.path.basename(backup_path).split("_BACKUP_")[0]
     original_path = os.path.join(PROJECT_ROOT, filename)
 
