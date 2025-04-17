@@ -4,6 +4,7 @@ import os
 import json
 from pathlib import Path
 import traceback
+import logging
 from datetime import datetime, timezone as tz
 
 UTC = tz.utc
@@ -242,7 +243,13 @@ def debug_create():
             f.write("This is a debug write test from /debug_create")
         return jsonify({"success": True, "message": "✅ File written directly to disk."})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        stacktrace = traceback.format_exc()
+        logging.error(f"/debug_create failed:\n{stacktrace}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "detail": stacktrace
+        }), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
@@ -271,7 +278,12 @@ def rollback_task(task_id):
         return jsonify(result)
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        stacktrace = traceback.format_exc()
+        logging.error(f"/rollback/{task_id} failed:\n{stacktrace}")
+        return jsonify({
+            "error": str(e),
+            "detail": stacktrace
+        }), 500
 
 @app.route('/rollback_last', methods=["POST"])
 def rollback_last():
@@ -297,7 +309,12 @@ def rollback_last():
 
         return jsonify(rollback_result)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        stacktrace = traceback.format_exc()
+        logging.error(f"/rollback_last failed:\n{stacktrace}")
+        return jsonify({
+            "error": str(e),
+            "detail": stacktrace
+        }), 500
 
 @app.route("/memory", methods=["GET"])
 def memory():
