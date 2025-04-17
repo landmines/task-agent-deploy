@@ -1,4 +1,3 @@
-
 import os
 import re
 import json
@@ -281,7 +280,7 @@ def execute_task(plan):
 
     # Execute the action
     result = execute_action(plan)
-    
+
     # Add execution metadata
     result["execution_metadata"] = {
         "start_time": execution_start.isoformat(),
@@ -289,7 +288,7 @@ def execute_task(plan):
         "status": "completed" if result.get("success") else "failed",
         "task_type": plan.get("action") or plan.get("intent")
     }
-    
+
     return result
 
 def create_file(plan):
@@ -520,23 +519,31 @@ def execute_action(plan):
             result.update(modify_file(plan))
         elif action == "create_file":
             result.update(create_file(plan))
+        elif action == "append_to_file":
+            result.update(append_to_file(plan))
+        elif action == "delete_file":
+            result.update(delete_file(plan))
+        elif action == "execute_code":
+            result.update(execute_code(plan))
+        elif action == "patch_code":
+            result.update(patch_code(plan))
         elif action == "create_and_run":
             try:
                 from base64 import b64decode
                 import subprocess
-                
+
                 if "code" not in plan or "filename" not in plan:
                     raise ValueError("Missing required fields: code and filename")
-                
+
                 code = b64decode(plan["code"]).decode("utf-8")
                 filename = plan["filename"]
-                
+
                 if "/" in filename or "\\" in filename or ".." in filename:
                     raise ValueError("Invalid filename path")
-                
+
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(code)
-                
+
                 if plan.get("run_after", False):
                     run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
                     result.update({
@@ -554,14 +561,6 @@ def execute_action(plan):
                     "success": False,
                     "error": f"create_and_run failed: {str(e)}"
                 })
-        elif action == "append_to_file":
-            result.update(append_to_file(plan))
-        elif action == "delete_file":
-            result.update(delete_file(plan))
-        elif action == "execute_code":
-            result.update(execute_code(plan))
-        elif action == "patch_code":
-            result.update(patch_code(plan))
         else:
             result.update({
                 "success": False,
