@@ -456,78 +456,40 @@ def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
     try:
         with open(full_path, "r") as f:
-            original = f.read()
-        new_content = original
-        change_made = False
+            content = f.read()
 
-        match = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
-        if match:
-            target, repl = match.groups()
-            if target in original:
-                new_content = original.replace(target, repl)
-                change_made = True
-            else:
-                return {
-                    "success": False,
-                    "error": f"⚠️ Text '{target}' not found for replacement."
-                }
-
-        match = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
-        if match:
-            keyword = match.group(1)
-            lines = new_content.splitlines()
-            filtered = [line for line in lines if keyword not in line]
-            if len(lines) != len(filtered):
-                new_content = "\n".join(filtered) + "\n"
-                change_made = True
-            else:
-                return {
-                    "success": False,
-                    "error": f"⚠️ No lines found containing '{keyword}'"
-                }
-
-        match = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
-        if match:
-            old_line, new_line = match.groups()
-            lines = new_content.splitlines()
-            updated = []
-            replaced = False
-            for line in lines:
-                if line.strip() == old_line.strip():
-                    updated.append(new_line)
-                    replaced = True
-                else:
-                    updated.append(line)
-            if replaced:
-                new_content = "\n".join(updated) + "\n"
-                change_made = True
-            else:
-                return {
-                    "success": False,
-                    "error": f"⚠️ Exact line '{old_line}' not found."
-                }
-
-        if not change_made:
-            return {
-                "success": False,
-                "error": "⚠️ Could not understand or apply edit instructions."
-            }
+        if old_content not in content:
+            return {"success": False, "error": "Old content not found in file"}
 
         backup_path = backup_file(full_path)
+        if not backup_path:
+            return {"success": False, "error": "Failed to create backup"}
+
+        new_content_full = content.replace(old_content, new_content)
         with open(full_path, "w") as f:
-            f.write(new_content)
+            f.write(new_content_full)
 
         return {
             "success": True,
-            "message": f"✅ File '{filename}' edited.",
-            "backup": backup_path,
-            "original_file": filename,
-            "instructions": instructions,
-            "timestamp": datetime.now(UTC).isoformat()
+            "message": f"File modified: {filename}",
+            "backup": backup_path
         }
 
+    except FileNotFoundError:
+        logging.error(f"File not found: {full_path}")
+        return {"success": False, "error": f"File not found: {filename}"}
+
+    except PermissionError:
+        logging.error(f"Permission denied modifying file: {full_path}")
+        return {"success": False, "error": f"Permission denied for {filename}"}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error modifying file {filename}: {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error modifying file: {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
