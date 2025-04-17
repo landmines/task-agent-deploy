@@ -134,11 +134,36 @@ def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
             inputs=inputs
         )
         return result
-    except Exception as e:
+
+    except ModuleNotFoundError:
+        logging.error("Sandbox runner module 'sandbox_runner' is not found.")
         return {
             "success": False,
-            "error": f"Code execution failed: {str(e)}",
+            "error": "Sandbox execution module not found. Ensure it's correctly installed.",
             "details": {
+                "timeout": timeout,
+                "memory_limit": memory_limit
+            }
+        }
+
+    except RuntimeError as e:
+        logging.error(f"Runtime error during sandbox code execution: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Runtime error during code execution: {str(e)}",
+            "details": {
+                "timeout": timeout,
+                "memory_limit": memory_limit
+            }
+        }
+
+    except Exception as e:
+        logging.error(f"Unexpected error during sandbox execution: {str(e)}")
+        return {
+            "success": False,
+            "error": "Unexpected error during sandbox execution.",
+            "details": {
+                "error_message": str(e),
                 "timeout": timeout,
                 "memory_limit": memory_limit
             }
