@@ -89,6 +89,9 @@ def modify_file(plan):
     if not isinstance(filename, str) or not isinstance(old_content, str) or not isinstance(new_content, str):
         return {"success": False, "error": "Invalid data types provided"}
 
+    if not validate_filepath(filename):
+        return {"success": False, "error": "Invalid filename path"}
+
     full_path = os.path.join(PROJECT_ROOT, filename)
     if not os.path.exists(full_path):
         return {"success": False, "error": f"File {filename} not found"}
@@ -129,6 +132,8 @@ def modify_file(plan):
         logging.error(f"Unexpected error modifying file '{filename}': {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
+from sandbox_runner import run_code_in_sandbox
+
 def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
@@ -140,7 +145,6 @@ def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
         return {"success": False, "error": "No code provided"}
 
     try:
-        from sandbox_runner import run_code_in_sandbox
         result = run_code_in_sandbox(
             code,
             timeout=timeout,
