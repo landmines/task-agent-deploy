@@ -250,6 +250,14 @@ def debug_create():
             "error": str(e),
             "detail": stacktrace
         }), 500
+    except Exception as e:
+        stacktrace = traceback.format_exc()
+        logging.error(f"/debug_create failed:\n{stacktrace}")
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "detail": stacktrace
+        }), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
