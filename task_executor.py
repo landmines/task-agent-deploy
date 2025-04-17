@@ -536,7 +536,8 @@ def execute_action(plan):
                     raise ValueError("Missing required fields: code and filename")
 
                 code = b64decode(plan["code"]).decode("utf-8")
-                filename = plan["filename"]
+                from os.path import join
+filename = join("./", plan["filename"])
 
                 if "/" in filename or "\\" in filename or ".." in filename:
                     raise ValueError("Invalid filename path")
