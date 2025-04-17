@@ -586,6 +586,6 @@ def patch_code(plan):
 valid_intents = {
     "create_app", "deploy", "modify_file", "run_tests", "create_file",
     "append_to_file", "delete_file", "execute", "execute_code", "modify_self",
-    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "run_shell", "run_python",
+    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "create_and_run", "run_shell", "run_python",
     "fix_failure"
 }
