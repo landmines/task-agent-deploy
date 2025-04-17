@@ -35,22 +35,22 @@ def restore_from_backup(backup_path):
     import logging  # <-- Put this import at the top of your file (if not already present)
 
     try:
-    filename = os.path.basename(backup_path).split("_BACKUP_")[0]
-    original_path = os.path.join(PROJECT_ROOT, filename)
+        filename = os.path.basename(backup_path).split("_BACKUP_")[0]
+        original_path = os.path.join(PROJECT_ROOT, filename)
 
-    # Reading from the backup file
-    with open(backup_path, "r", encoding="utf-8") as backup_file:
-        content = backup_file.read()
+        # Reading from the backup file
+        with open(backup_path, "r", encoding="utf-8") as backup_file:
+            content = backup_file.read()
 
-    # Writing to the original file
-    with open(original_path, "w", encoding="utf-8") as original_file:
-        original_file.write(content)
+        # Writing to the original file
+        with open(original_path, "w", encoding="utf-8") as original_file:
+            original_file.write(content)
 
-    return {
-        "success": True,
-        "message": f"✅ Restored from backup: {backup_path}",
-        "restored_file": original_path
-    }
+        return {
+            "success": True,
+            "message": f"✅ Restored from backup: {backup_path}",
+            "restored_file": original_path
+        }
 
 # If backup file doesn't exist
 except FileNotFoundError:
