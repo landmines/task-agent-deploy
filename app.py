@@ -246,7 +246,7 @@ def debug_create():
         stacktrace = traceback.format_exc()
         logging.error(f"/debug_create failed:\n{stacktrace}")
         return jsonify({
-            "success": False,
+            "success": False, 
             "error": str(e),
             "detail": stacktrace
         }), 500
