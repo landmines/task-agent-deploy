@@ -112,8 +112,21 @@ def modify_file(plan):
             "message": f"File modified: {filename}",
             "backup": backup_path
         }
+    except FileNotFoundError:
+        logging.error(f"File not found: {full_path}")
+        return {"success": False, "error": f"File '{filename}' not found."}
+
+    except PermissionError:
+        logging.error(f"Permission denied modifying file: {full_path}")
+        return {"success": False, "error": f"Permission denied for file '{filename}'."}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error modifying file '{filename}': {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error modifying file '{filename}': {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
@@ -524,10 +537,6 @@ def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         logging.error(f"Unexpected error deleting file '{filename}': {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
-    except Exception as e:
-        logging.error(f"Unexpected error editing file '{filename}': {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
-
 def simulate_push():
     return {
         "success": True,
@@ -556,8 +565,17 @@ def write_diagnostic(plan: Dict[str, Any]) -> Dict[str, Any]:
             "success": True,
             "message": f"✅ Diagnostic log saved to {filepath}"
         }
+    except PermissionError:
+        logging.error(f"Permission denied writing diagnostic log: {filepath}")
+        return {"success": False, "error": "Permission denied writing diagnostic file."}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error writing diagnostic file '{filepath}': {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error writing diagnostic file '{filepath}': {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def generate_app_template(template_type):
     # Placeholder for app template generation
@@ -593,10 +611,32 @@ def deploy_to_replit(project_name, config=None):
             "message": f"Deployment configured for {project_name}",
             "config": deploy_config
         }
-    except Exception as e:
+    except FileNotFoundError:
+        logging.error(".replit file or directory not found during deployment.")
         return {
             "success": False,
-            "error": f"Deployment configuration failed: {str(e)}"
+            "error": "Required file or directory not found for deployment."
+        }
+
+    except PermissionError:
+        logging.error("Permission denied while configuring deployment.")
+        return {
+            "success": False,
+            "error": "Permission denied while writing deployment config."
+        }
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error during deployment config: {str(e)}")
+        return {
+            "success": False,
+            "error": f"I/O error during deployment: {str(e)}"
+        }
+
+    except Exception as e:
+        logging.error(f"Unexpected error during deployment: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Unexpected error during deployment: {str(e)}"
         }
 
 def validate_filepath(filename: str) -> bool:
@@ -645,8 +685,21 @@ def patch_code(plan: dict) -> dict:
             "message": f"Code patched in {filename}",
             "backup": backup_path
         }
+    except FileNotFoundError:
+        logging.error(f"File to patch not found: {filename}")
+        return {"success": False, "error": f"File '{filename}' not found."}
+
+    except PermissionError:
+        logging.error(f"Permission denied when patching: {filename}")
+        return {"success": False, "error": f"Permission denied for file '{filename}'."}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error while patching file '{filename}': {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error patching file '{filename}': {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def execute_action(plan: dict) -> dict:
     """Execute actions with consistent status handling"""
