@@ -507,8 +507,26 @@ def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             "success": True,
             "message": f"🗑️ File deleted: {full_path}"
         }
+
+    except FileNotFoundError:
+        logging.warning(f"File to delete not found: {full_path}")
+        return {"success": False, "error": f"File '{filename}' not found."}
+
+    except PermissionError:
+        logging.error(f"Permission denied deleting: {full_path}")
+        return {"success": False, "error": f"Permission denied for file '{filename}'."}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error deleting file '{filename}': {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error deleting file '{filename}': {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
+
+    except Exception as e:
+        logging.error(f"Unexpected error editing file '{filename}': {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def simulate_push():
     return {
