@@ -287,8 +287,6 @@ def execute_task(plan):
             }
         }
 
-    action = plan.get("action") or plan.get("intent")
-    result = execute_action(plan)
     return result
 
 def create_file(plan):
@@ -523,27 +521,34 @@ def execute_action(plan):
             case "create_file":
                 result.update(create_file(plan))
             case "create_and_run":
-                try:
-                    from base64 import b64decode
-                    code = b64decode(plan["code"]).decode("utf-8")
-                    filename = plan["filename"]
+            try:
+                from base64 import b64decode
+                import subprocess
 
-                    with open(filename, "w", encoding="utf-8") as f:
-                        f.write(code)
+                code = b64decode(plan["code"]).decode("utf-8")
+                filename = plan["filename"]
 
-                    if plan.get("run_after", False):
-                        result = execute_code(filename)
-                        return result
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(code)
 
+                if plan.get("run_after", False):
+                    run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
                     return {
                         "success": True,
-                        "message": f"File '{filename}' created successfully (run_after=False)."
+                        "message": f"✅ File '{filename}' created and executed.",
+                        "output": run_output
                     }
-                except Exception as e:
-                    return {
-                        "success": False,
-                        "error": f"create_and_run failed: {str(e)}"
-                    }
+
+                return {
+                    "success": True,
+                    "message": f"✅ File '{filename}' created successfully (run_after=False)."
+                }
+
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"create_and_run failed: {str(e)}"
+                }
             case "append_to_file":
                 result.update(append_to_file(plan))
             case "delete_file":
