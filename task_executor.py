@@ -556,34 +556,6 @@ def execute_action(plan):
             result.update(execute_code(plan))
         elif action == "patch_code":
             result.update(patch_code(plan))
-        elif action == "create_and_run":
-            try:
-                from base64 import b64decode
-                import subprocess
-
-                code = b64decode(plan["code"]).decode("utf-8")
-                filename = plan["filename"]
-
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(code)
-
-                if plan.get("run_after", False):
-                    run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
-                    result.update({
-                        "success": True,
-                        "message": f"✅ File '{filename}' created and executed.",
-                        "output": run_output
-                    })
-                else:
-                    result.update({
-                        "success": True,
-                        "message": f"✅ File '{filename}' created successfully."
-                    })
-            except Exception as e:
-                result.update({
-                    "success": False,
-                    "error": f"create_and_run failed: {str(e)}"
-                })
         else:
             result.update({
                 "success": False,
