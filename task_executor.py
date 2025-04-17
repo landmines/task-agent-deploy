@@ -842,7 +842,8 @@ def execute_action(plan: dict) -> dict:
             "error_type": "execution_error"
         })
 
-        elif intent == "replace_line":
+        action = plan.get("action") or plan.get("intent")
+        if action == "replace_line":
             filename = plan.get("filename")
             target = plan.get("target")
             replacement = plan.get("replacement")
@@ -850,8 +851,7 @@ def execute_action(plan: dict) -> dict:
                 return {"success": False, "error": "Missing parameters for replace_line"}
             result = replace_line(filename, target, replacement)
             return result
-
-        elif intent == "insert_below":
+        elif action == "insert_below":
             filename = plan.get("filename")
             target = plan.get("target")
             new_line = plan.get("content")
