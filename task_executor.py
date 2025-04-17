@@ -504,7 +504,56 @@ def deploy_to_replit(project_name, config=None):
             "error": f"Deployment configuration failed: {str(e)}"
         }
 
-def execute_action(plan):
+def validate_filepath(filename: str) -> bool:
+    """Validate if a filepath is safe"""
+    import os.path
+    if not filename or not isinstance(filename, str):
+        return False
+    norm_path = os.path.normpath(filename)
+    return not (
+        ".." in norm_path or
+        norm_path.startswith("/") or
+        norm_path.startswith("\\") or
+        any(c in norm_path for c in ["<", ">", "|", "*", "?"])
+    )
+
+def patch_code(plan: dict) -> dict:
+    """Patch existing code with new implementation"""
+    filename = plan.get("filename")
+    if not validate_filepath(filename):
+        return {"success": False, "error": "Invalid filename"}
+    
+    function_name = plan.get("function")
+    new_code = plan.get("new_code")
+    after_line = plan.get("after_line")
+    
+    if not all([function_name, new_code, after_line]):
+        return {"success": False, "error": "Missing required fields"}
+        
+    try:
+        backup_path = backup_file(filename)
+        with open(filename, "r") as f:
+            content = f.readlines()
+            
+        for i, line in enumerate(content):
+            if after_line in line:
+                content.insert(i + 1, new_code + "\n")
+                break
+        else:
+            return {"success": False, "error": "Target line not found"}
+            
+        with open(filename, "w") as f:
+            f.writelines(content)
+            
+        return {
+            "success": True,
+            "message": f"Code patched in {filename}",
+            "backup": backup_path
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def execute_action(plan: dict) -> dict:
     """Execute actions with consistent status handling"""
     result = {
         "success": False,
@@ -515,18 +564,20 @@ def execute_action(plan):
 
     try:
         action = plan.get("action") or plan.get("intent")
-        if action == "modify_file":
-            result.update(modify_file(plan))
-        elif action == "create_file":
-            result.update(create_file(plan))
-        elif action == "append_to_file":
-            result.update(append_to_file(plan))
-        elif action == "delete_file":
-            result.update(delete_file(plan))
-        elif action == "execute_code":
-            result.update(execute_code(plan))
-        elif action == "patch_code":
-            result.update(patch_code(plan))
+        if not isinstance(action, str):
+            return {"success": False, "error": "Invalid action type"}
+
+        action_handlers = {
+            "modify_file": modify_file,
+            "create_file": create_file,
+            "append_to_file": append_to_file,
+            "delete_file": delete_file,
+            "execute_code": execute_code,
+            "patch_code": patch_code
+        }
+
+        if action in action_handlers:
+            result.update(action_handlers[action](plan))
         elif action == "create_and_run":
             try:
                 from base64 import b64decode
@@ -535,18 +586,25 @@ def execute_action(plan):
                 if "code" not in plan or "filename" not in plan:
                     raise ValueError("Missing required fields: code and filename")
 
-                code = b64decode(plan["code"]).decode("utf-8")
-                from os.path import join
-filename = join("./", plan["filename"])
+                try:
+                    code = b64decode(plan["code"]).decode("utf-8")
+                except Exception:
+                    raise ValueError("Invalid base64 encoding")
 
-                if "/" in filename or "\\" in filename or ".." in filename:
+                filename = os.path.join(PROJECT_ROOT, plan["filename"])
+                if not validate_filepath(plan["filename"]):
                     raise ValueError("Invalid filename path")
 
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(code)
 
                 if plan.get("run_after", False):
-                    run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
+                    run_output = subprocess.check_output(
+                        ["python", filename],
+                        stderr=subprocess.STDOUT,
+                        text=True,
+                        timeout=30  # Add timeout
+                    )
                     result.update({
                         "success": True,
                         "message": f"✅ File '{filename}' created and executed successfully",
@@ -557,6 +615,11 @@ filename = join("./", plan["filename"])
                         "success": True,
                         "message": f"✅ File '{filename}' created successfully"
                     })
+            except subprocess.TimeoutExpired:
+                result.update({
+                    "success": False,
+                    "error": "Execution timed out after 30 seconds"
+                })
             except Exception as e:
                 result.update({
                     "success": False,
