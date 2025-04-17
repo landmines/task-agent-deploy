@@ -253,6 +253,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
         estimated_cost += gpt_cost
 
     # Update cost tracking in memory
+    
     try:
         memory = load_memory()
         if not isinstance(memory, dict):
@@ -265,8 +266,9 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
                 "api_usage_costs": [],
                 "last_updated": None
             }
-    except Exception as e:
-        print(f"Warning: Memory initialization failed: {str(e)}")
+
+    except FileNotFoundError:
+        logging.warning("Memory file not found. Initializing new memory.")
         memory = {
             "cost_tracking": {
                 "total_estimated": 0.0,
@@ -275,6 +277,36 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
             }
         }
 
+    except json.JSONDecodeError:
+        logging.warning("Memory file is not valid JSON. Initializing new memory.")
+        memory = {
+            "cost_tracking": {
+                "total_estimated": 0.0,
+                "api_usage_costs": [],
+                "last_updated": None
+            }
+        }
+
+    except TypeError:
+        logging.warning("Loaded memory is not a dictionary. Resetting.")
+        memory = {
+            "cost_tracking": {
+                "total_estimated": 0.0,
+                "api_usage_costs": [],
+                "last_updated": None
+            }
+        }
+
+    except Exception as e:
+        logging.error(f"Unexpected error loading memory: {str(e)}")
+        memory = {
+            "cost_tracking": {
+                "total_estimated": 0.0,
+                "api_usage_costs": [],
+                "last_updated": None
+            }
+        }
+    
     memory["cost_tracking"]["total_estimated"] += estimated_cost
     memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
 
