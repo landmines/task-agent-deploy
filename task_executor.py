@@ -515,7 +515,7 @@ def execute_action(plan):
     }
 
     try:
-        action = plan.get("action")
+        action = plan.get("action") or plan.get("intent")
         if action == "modify_file":
             result.update(modify_file(plan))
         elif action == "create_file":
