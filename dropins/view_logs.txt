@@ -1,0 +1,16 @@
+import os import json
+
+LOG_DIR = os.path.join(os.getcwd(), "logs")
+
+def list_logs(limit=5): try: files = [f for f in os.listdir(LOG_DIR) if f.startswith("log-") and f.endswith(".json")] sorted_files = sorted(files, reverse=True) return sorted_files[:limit] except Exception as e: print(f"❌ Failed to list logs: {e}") return []
+
+def load_log(filename): try: with open(os.path.join(LOG_DIR, filename), "r", encoding="utf-8") as f: return json.load(f) except Exception as e: print(f"❌ Failed to load log {filename}: {e}") return None
+
+def summarize_log(log): intent = log.get("input", {}).get("intent") success = log.get("result", {}).get("success") filename = log.get("input", {}).get("filename") error = log.get("result", {}).get("error") message = log.get("result", {}).get("message") return f"Intent: {intent or 'unknown'} | File: {filename or '-'} | Result: {'✅' if success else '❌'} | Message: {message or error or 'No message'}"
+
+def generate_chatgpt_reminder(log): intent = log.get("input", {}).get("intent") filename = log.get("input", {}).get("filename") success = log.get("result", {}).get("success") status = "success" if success else "failure" return f"#AgentStatus Last task: intent='{intent}', file='{filename}', status='{status}'"
+
+def main(): print("\nRecent Task Logs:\n") logs = list_logs() for i, fname in enumerate(logs): log = load_log(fname) if log: print(f"[{i}] {summarize_log(log)}") try: choice = int(input("\nEnter log number to view full content (or -1 to exit): ")) if 0 <= choice < len(logs): log = load_log(logs[choice]) print("\n--- Log Details ---") print(json.dumps(log, indent=2)) print("\n--- Copyable ChatGPT Summary ---") print(generate_chatgpt_reminder(log)) else: print("Exiting.") except Exception as e: print(f"⚠️ Invalid input: {e}")
+
+if name == "main": main()
+

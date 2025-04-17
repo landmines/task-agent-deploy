@@ -682,6 +682,50 @@ def execute_action(action_plan):
                             "success": False,
                             "message": f"Python execution failed: {str(e)}"
                         })
+            case "create_and_run":
+            filename = action_plan.get("filename")
+            content = action_plan.get("code")
+            encoding = action_plan.get("encoding", "plain")
+            run_after = action_plan.get("run_after", False)
+
+            if not filename or not content:
+                result["message"] = "Missing filename or code"
+            else:
+                try:
+                    if encoding == "base64":
+                        import base64
+                        content = base64.b64decode(content).decode("utf-8")
+
+                    with open(filename, "w", encoding="utf-8") as f:
+                        f.write(content)
+
+                    result.update({
+                        "success": True,
+                        "message": f"File created at: {filename}"
+                    })
+
+                    if run_after and filename.endswith(".py"):
+                        try:
+                            import subprocess
+                            output = subprocess.check_output(
+                                ["python", filename],
+                                stderr=subprocess.STDOUT,
+                                timeout=10,
+                                text=True
+                            )
+                            result["run_output"] = output
+                            result["message"] += " and executed successfully"
+                        except Exception as e:
+                            result.update({
+                                "success": False,
+                                "message": f"File created, but execution failed: {str(e)}"
+                            })
+
+                except Exception as e:
+                    result.update({
+                        "success": False,
+                        "message": f"Failed to create or execute file: {str(e)}"
+                    })                
             case _:
                 result.update({
                     "success": False,
