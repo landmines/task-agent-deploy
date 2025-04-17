@@ -52,29 +52,29 @@ def restore_from_backup(backup_path):
             "restored_file": original_path
         }
 
-# If backup file doesn't exist
-except FileNotFoundError:
-    logging.error(f"Backup file not found: {backup_path}")
-    return {
-        "success": False,
-        "error": f"Backup file not found: {backup_path}"
-    }
+    # If backup file doesn't exist
+    except FileNotFoundError:
+        logging.error(f"Backup file not found: {backup_path}")
+        return {
+            "success": False,
+            "error": f"Backup file not found: {backup_path}"
+        }
 
-# Permission issue reading or writing file
-except PermissionError:
-    logging.error(f"Permission denied accessing files: {backup_path} or {original_path}")
-    return {
-        "success": False,
-        "error": "Permission denied accessing backup or original file."
-    }
+    # Permission issue reading or writing file
+    except PermissionError:
+        logging.error(f"Permission denied accessing files: {backup_path} or {original_path}")
+        return {
+            "success": False,
+            "error": "Permission denied accessing backup or original file."
+        }
 
-# General I/O problems (disk errors, corrupted file)
-except (IOError, OSError) as e:
-    logging.error(f"I/O error restoring backup: {str(e)}")
-    return {
-        "success": False,
-        "error": f"I/O error occurred: {str(e)}"
-    }
+    # General I/O problems (disk errors, corrupted file)
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error restoring backup: {str(e)}")
+        return {
+            "success": False,
+            "error": f"I/O error occurred: {str(e)}"
+        }
 
 def modify_file(plan):
     """Modify existing file content with proper validation"""
