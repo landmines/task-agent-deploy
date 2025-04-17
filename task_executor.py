@@ -524,24 +524,30 @@ def execute_action(plan):
             try:
                 from base64 import b64decode
                 import subprocess
-
+                
+                if "code" not in plan or "filename" not in plan:
+                    raise ValueError("Missing required fields: code and filename")
+                
                 code = b64decode(plan["code"]).decode("utf-8")
                 filename = plan["filename"]
-
+                
+                if "/" in filename or "\\" in filename or ".." in filename:
+                    raise ValueError("Invalid filename path")
+                
                 with open(filename, "w", encoding="utf-8") as f:
                     f.write(code)
-
+                
                 if plan.get("run_after", False):
                     run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
                     result.update({
                         "success": True,
-                        "message": f"✅ File '{filename}' created and executed.",
+                        "message": f"✅ File '{filename}' created and executed successfully",
                         "output": run_output
                     })
                 else:
                     result.update({
                         "success": True,
-                        "message": f"✅ File '{filename}' created successfully (run_after=False)."
+                        "message": f"✅ File '{filename}' created successfully"
                     })
             except Exception as e:
                 result.update({
