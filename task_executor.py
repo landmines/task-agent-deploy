@@ -767,8 +767,8 @@ def execute_action(plan: dict) -> dict:
             "delete_file": delete_file,
             "execute_code": execute_code,
             "patch_code": patch_code,
-            "handle_insert_below": insert_below, 
-            "handle_replace_line": replace_line
+            "insert_below": handle_insert_below, 
+            "replace_line": handle_replace_line
         }
 
         if action in action_handlers:

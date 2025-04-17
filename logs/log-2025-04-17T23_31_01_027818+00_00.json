@@ -1,0 +1,708 @@
+{
+  "timestamp": "2025-04-17T23:31:01.027818+00:00",
+  "taskId": "2025-04-17T23_31_01_027818+00_00",
+  "log_filename": "log-2025-04-17T23_31_01_027818+00_00.json",
+  "input": {
+    "task": {
+      "intent": "insert_below",
+      "filename": "dummy_target.py",
+      "target": "return \"Original code line\"",
+      "content": "    print(\"Agent inserted this line!\")"
+    }
+  },
+  "execution": {
+    "intent": "insert_below",
+    "filename": "dummy_target.py",
+    "target": "return \"Original code line\"",
+    "content": "    print(\"Agent inserted this line!\")"
+  },
+  "result": {
+    "success": false,
+    "action": null,
+    "message": "",
+    "timestamp": "2025-04-17T23:31:01.028035+00:00",
+    "error": "Unsupported action: insert_below",
+    "execution_metadata": {
+      "start_time": "2025-04-17T23:31:01.027832+00:00",
+      "end_time": "2025-04-17T23:31:01.028043+00:00",
+      "status": "failed",
+      "task_type": "insert_below"
+    }
+  },
+  "memory": {
+    "confirmed_count": 3,
+    "rejected_count": 0,
+    "created": "2025-04-10T13:17:16.307875",
+    "last_updated": "2025-04-17T23:31:01.032999+00:00",
+    "last_result": {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "content": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-17T23:31:01.028055+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-17T23:31:01.028035+00:00",
+        "error": "Unsupported action: insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-17T23:31:01.027832+00:00",
+          "end_time": "2025-04-17T23:31:01.028043+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    "recent_tasks": [
+      {
+        "task": {
+          "intent": "create_and_run",
+          "filename": "hello.py",
+          "encoding": "base64",
+          "code": "cHJpbnQoIkhlbGxvLCBXb3JsZCIp",
+          "run_after": true,
+          "confirmationNeeded": true,
+          "action": "create_and_run"
+        },
+        "intent": "create_and_run",
+        "status": "success",
+        "timestamp": "2025-04-17T04:37:15.345208+00:00",
+        "result": {
+          "success": true,
+          "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
+          "pending": true,
+          "confirmationNeeded": true,
+          "taskId": "2025-04-17T04_37_15_318269+00_00"
+        }
+      },
+      {
+        "task": {
+          "intent": "confirm_latest",
+          "confirmationNeeded": true,
+          "action": "confirm_latest"
+        },
+        "intent": "confirm_latest",
+        "status": "success",
+        "timestamp": "2025-04-17T04:37:28.517706+00:00",
+        "result": {
+          "success": true,
+          "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
+          "pending": true,
+          "confirmationNeeded": true,
+          "taskId": "2025-04-17T04_37_28_402108+00_00"
+        }
+      },
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "test_module.py",
+          "content": "def greet():\n    return \"Hello from the agent!\""
+        },
+        "intent": "create_file",
+        "status": "success",
+        "timestamp": "2025-04-17T21:43:08.236412+00:00",
+        "result": {
+          "success": true,
+          "action": null,
+          "message": "\u2705 File created at: /home/runner/workspace/test_module.py",
+          "timestamp": "2025-04-17T21:43:08.233582+00:00",
+          "execution_metadata": {
+            "start_time": "2025-04-17T21:43:08.233439+00:00",
+            "end_time": "2025-04-17T21:43:08.236388+00:00",
+            "status": "completed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "file_editor.py",
+          "content": "def append_to_file(filename, content):\n    with open(filename, \"a\") as f:\n        f.write(\"\\n\" + content)\n    return {\"success\": True, \"message\": f\"Appended to {filename}\"}"
+        },
+        "intent": "create_file",
+        "status": "success",
+        "timestamp": "2025-04-17T22:17:28.528421+00:00",
+        "result": {
+          "success": true,
+          "action": null,
+          "message": "\u2705 File created at: /home/runner/workspace/file_editor.py",
+          "timestamp": "2025-04-17T22:17:28.528173+00:00",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:17:28.526976+00:00",
+            "end_time": "2025-04-17T22:17:28.528398+00:00",
+            "status": "completed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "dummy_target.py",
+          "content": "def agent_test():\n    return \"Original code line\""
+        },
+        "intent": "create_file",
+        "status": "success",
+        "timestamp": "2025-04-17T22:48:40.164731+00:00",
+        "result": {
+          "success": true,
+          "action": null,
+          "message": "\u2705 File created at: /home/runner/workspace/dummy_target.py",
+          "timestamp": "2025-04-17T22:48:40.162921+00:00",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:48:40.162633+00:00",
+            "end_time": "2025-04-17T22:48:40.164709+00:00",
+            "status": "completed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "replace_line",
+          "filename": "dummy_target.py",
+          "target": "return \"Original code line\"",
+          "content": "    return \"Edited by the agent\""
+        },
+        "intent": "replace_line",
+        "status": "failure",
+        "timestamp": "2025-04-17T22:49:23.054124+00:00",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T22:49:23.054078+00:00",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:49:23.053934+00:00",
+            "end_time": "2025-04-17T22:49:23.054106+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "replace_line",
+          "filename": "dummy_target.py",
+          "target": "return \"Original code line\"",
+          "replacement": "return \"Edited by the agent\""
+        },
+        "intent": "replace_line",
+        "status": "failure",
+        "timestamp": "2025-04-17T22:57:48.628401+00:00",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T22:57:48.628363+00:00",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:57:48.628066+00:00",
+            "end_time": "2025-04-17T22:57:48.628384+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "dummy_target.py",
+          "target": "return \"Original code line\"",
+          "content": "    print(\"Agent inserted this line!\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-17T23:16:38.565791+00:00",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:16:38.565764+00:00",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:16:38.565567+00:00",
+            "end_time": "2025-04-17T23:16:38.565777+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "dummy_target.py",
+          "target": "return \"Original code line\"",
+          "content": "    print(\"Agent inserted this line!\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-17T23:17:47.823935+00:00",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:17:47.823908+00:00",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:17:47.823640+00:00",
+            "end_time": "2025-04-17T23:17:47.823922+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "dummy_target.py",
+          "target": "return \"Original code line\"",
+          "content": "    print(\"Agent inserted this line!\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-17T23:31:01.028055+00:00",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:31:01.028035+00:00",
+          "error": "Unsupported action: insert_below",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:31:01.027832+00:00",
+            "end_time": "2025-04-17T23:31:01.028043+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      }
+    ],
+    "failure_patterns": [
+      {
+        "task": "[create_file_from_dropin]  -",
+        "result": {
+          "success": false,
+          "error": "Invalid action: create_file_from_dropin",
+          "execution_metadata": {
+            "start_time": "2025-04-16T22:42:08.845270+00:00",
+            "status": "validation_failed"
+          }
+        },
+        "timestamp": "2025-04-16T22:42:08.846009+00:00"
+      },
+      {
+        "task": "[create_and_run] hello.py -",
+        "result": {
+          "success": false,
+          "error": "Invalid action: create_and_run",
+          "execution_metadata": {
+            "start_time": "2025-04-17T03:24:30.770619+00:00",
+            "status": "validation_failed"
+          }
+        },
+        "timestamp": "2025-04-17T03:24:30.772453+00:00"
+      },
+      {
+        "task": "[confirm_latest]  -",
+        "result": {
+          "success": false,
+          "error": "Invalid action: confirm_latest",
+          "execution_metadata": {
+            "start_time": "2025-04-17T03:25:22.947541+00:00",
+            "status": "validation_failed"
+          }
+        },
+        "timestamp": "2025-04-17T03:25:22.948706+00:00"
+      },
+      {
+        "task": "[replace_line] dummy_target.py -",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T22:49:23.054078+00:00",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:49:23.053934+00:00",
+            "end_time": "2025-04-17T22:49:23.054106+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        },
+        "timestamp": "2025-04-17T22:49:23.054895+00:00"
+      },
+      {
+        "task": "[replace_line] dummy_target.py -",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T22:57:48.628363+00:00",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T22:57:48.628066+00:00",
+            "end_time": "2025-04-17T22:57:48.628384+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        },
+        "timestamp": "2025-04-17T22:57:48.629708+00:00"
+      },
+      {
+        "task": "[insert_below] dummy_target.py -",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:16:38.565764+00:00",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:16:38.565567+00:00",
+            "end_time": "2025-04-17T23:16:38.565777+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-17T23:16:38.566835+00:00"
+      },
+      {
+        "task": "[insert_below] dummy_target.py -",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:17:47.823908+00:00",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "error_type": "validation_error",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:17:47.823640+00:00",
+            "end_time": "2025-04-17T23:17:47.823922+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-17T23:17:47.824962+00:00"
+      },
+      {
+        "task": "[insert_below] dummy_target.py -",
+        "result": {
+          "success": false,
+          "action": null,
+          "message": "",
+          "timestamp": "2025-04-17T23:31:01.028035+00:00",
+          "error": "Unsupported action: insert_below",
+          "execution_metadata": {
+            "start_time": "2025-04-17T23:31:01.027832+00:00",
+            "end_time": "2025-04-17T23:31:01.028043+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-17T23:31:01.029197+00:00"
+      }
+    ],
+    "intent_stats": {
+      "create_file": {
+        "success": 5,
+        "failure": 0
+      },
+      "patch_code": {
+        "success": 6,
+        "failure": 2
+      },
+      "create_file_from_dropin": {
+        "success": 1,
+        "failure": 1
+      },
+      "create_and_run": {
+        "success": 8,
+        "failure": 1
+      },
+      "confirm_latest": {
+        "success": 8,
+        "failure": 1
+      },
+      "replace_line": {
+        "success": 0,
+        "failure": 2
+      },
+      "insert_below": {
+        "success": 0,
+        "failure": 3
+      }
+    },
+    "self_notes": [],
+    "task_links": [],
+    "self_edits": [],
+    "deployment_events": [],
+    "project_name": "Task Agent",
+    "purpose": "Build and manage projects via user or ChatGPT instructions.",
+    "next_steps": [
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 This file was queued and executed by /run_next"
+        },
+        "timestamp": "2025-04-10T13:17:16.307882"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 This file was queued and executed by /run_next"
+        },
+        "timestamp": "2025-04-10T13:19:59.050876"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 This file was queued and executed by /run_next"
+        },
+        "timestamp": "2025-04-10T13:20:39.855103"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T13:21:51.438957"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T15:19:50.652334"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T15:22:15.200386"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file_from_dropin]  -",
+          "error": "Invalid action: create_file_from_dropin",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file_from_dropin]  -"
+        },
+        "timestamp": "2025-04-16T22:42:08.846023+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_and_run] hello.py -",
+          "error": "Invalid action: create_and_run",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_and_run] hello.py -"
+        },
+        "timestamp": "2025-04-17T03:24:30.772467+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[confirm_latest]  -",
+          "error": "Invalid action: confirm_latest",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [confirm_latest]  -"
+        },
+        "timestamp": "2025-04-17T03:25:22.948720+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[replace_line] dummy_target.py -",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [replace_line] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T22:49:23.054908+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[replace_line] dummy_target.py -",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [replace_line] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T22:57:48.629721+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:16:38.566846+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:17:47.824975+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Unsupported action: insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:31:01.029209+00:00"
+      }
+    ],
+    "current_execution": "20250417_233101",
+    "confirmation_decisions": [
+      {
+        "intent": "create_file",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "patch_code",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "patch_code",
+        "trust_score": 0.6,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_file",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_file_from_dropin",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_file_from_dropin",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.6666666666666666,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.6666666666666666,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.75,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.75,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8333333333333334,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8333333333333334,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8571428571428571,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8571428571428571,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.875,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.875,
+        "confirmation_required": true
+      }
+    ]
+  }
+}

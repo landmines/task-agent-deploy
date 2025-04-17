@@ -2,7 +2,7 @@
   "confirmed_count": 3,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-17T23:17:47.839824+00:00",
+  "last_updated": "2025-04-17T23:38:28.934688+00:00",
   "last_result": {
     "task": {
       "intent": "insert_below",
@@ -12,61 +12,22 @@
     },
     "intent": "insert_below",
     "status": "failure",
-    "timestamp": "2025-04-17T23:17:47.823935+00:00",
+    "timestamp": "2025-04-17T23:38:28.915708+00:00",
     "result": {
       "success": false,
       "action": null,
       "message": "",
-      "timestamp": "2025-04-17T23:17:47.823908+00:00",
-      "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
-      "error_type": "validation_error",
+      "timestamp": "2025-04-17T23:38:28.915687+00:00",
+      "error": "Unsupported action: insert_below",
       "execution_metadata": {
-        "start_time": "2025-04-17T23:17:47.823640+00:00",
-        "end_time": "2025-04-17T23:17:47.823922+00:00",
+        "start_time": "2025-04-17T23:38:28.915532+00:00",
+        "end_time": "2025-04-17T23:38:28.915695+00:00",
         "status": "failed",
         "task_type": "insert_below"
       }
     }
   },
   "recent_tasks": [
-    {
-      "task": {
-        "intent": "confirm_latest",
-        "confirmationNeeded": true,
-        "action": "confirm_latest"
-      },
-      "intent": "confirm_latest",
-      "status": "success",
-      "timestamp": "2025-04-17T04:25:35.931854+00:00",
-      "result": {
-        "success": true,
-        "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
-        "pending": true,
-        "confirmationNeeded": true,
-        "taskId": "2025-04-17T04_25_35_888687+00_00"
-      }
-    },
-    {
-      "task": {
-        "intent": "create_and_run",
-        "filename": "hello.py",
-        "encoding": "base64",
-        "code": "cHJpbnQoIkhlbGxvLCBXb3JsZCIp",
-        "run_after": true,
-        "confirmationNeeded": true,
-        "action": "create_and_run"
-      },
-      "intent": "create_and_run",
-      "status": "success",
-      "timestamp": "2025-04-17T04:37:15.345208+00:00",
-      "result": {
-        "success": true,
-        "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
-        "pending": true,
-        "confirmationNeeded": true,
-        "taskId": "2025-04-17T04_37_15_318269+00_00"
-      }
-    },
     {
       "task": {
         "intent": "confirm_latest",
@@ -249,6 +210,54 @@
           "task_type": "insert_below"
         }
       }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "content": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-17T23:31:01.028055+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-17T23:31:01.028035+00:00",
+        "error": "Unsupported action: insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-17T23:31:01.027832+00:00",
+          "end_time": "2025-04-17T23:31:01.028043+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "content": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-17T23:38:28.915708+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-17T23:38:28.915687+00:00",
+        "error": "Unsupported action: insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-17T23:38:28.915532+00:00",
+          "end_time": "2025-04-17T23:38:28.915695+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
     }
   ],
   "failure_patterns": [
@@ -359,6 +368,40 @@
         }
       },
       "timestamp": "2025-04-17T23:17:47.824962+00:00"
+    },
+    {
+      "task": "[insert_below] dummy_target.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-17T23:31:01.028035+00:00",
+        "error": "Unsupported action: insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-17T23:31:01.027832+00:00",
+          "end_time": "2025-04-17T23:31:01.028043+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-17T23:31:01.029197+00:00"
+    },
+    {
+      "task": "[insert_below] dummy_target.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-17T23:38:28.915687+00:00",
+        "error": "Unsupported action: insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-17T23:38:28.915532+00:00",
+          "end_time": "2025-04-17T23:38:28.915695+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-17T23:38:28.916809+00:00"
     }
   ],
   "intent_stats": {
@@ -388,7 +431,7 @@
     },
     "insert_below": {
       "success": 0,
-      "failure": 2
+      "failure": 4
     }
   },
   "self_notes": [],
@@ -515,9 +558,29 @@
         "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
       },
       "timestamp": "2025-04-17T23:17:47.824975+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] dummy_target.py -",
+        "error": "Unsupported action: insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+      },
+      "timestamp": "2025-04-17T23:31:01.029209+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] dummy_target.py -",
+        "error": "Unsupported action: insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+      },
+      "timestamp": "2025-04-17T23:38:28.916830+00:00"
     }
   ],
-  "current_execution": "20250417_231747",
+  "current_execution": "20250417_233828",
   "confirmation_decisions": [
     {
       "intent": "create_file",
