@@ -2,67 +2,26 @@
   "confirmed_count": 3,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-17T03:10:56.601900+00:00",
+  "last_updated": "2025-04-17T03:25:22.985964+00:00",
   "last_result": {
     "task": {
       "intent": "confirm_latest",
-      "confirmationNeeded": true,
+      "confirmationNeeded": false,
       "action": "confirm_latest"
     },
     "intent": "confirm_latest",
-    "status": "success",
-    "timestamp": "2025-04-17T03:10:56.601100+00:00",
+    "status": "failure",
+    "timestamp": "2025-04-17T03:25:22.947763+00:00",
     "result": {
-      "success": true,
-      "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
-      "pending": true,
-      "confirmationNeeded": true,
-      "taskId": "2025-04-17T03_10_56_562131+00_00"
+      "success": false,
+      "error": "Invalid action: confirm_latest",
+      "execution_metadata": {
+        "start_time": "2025-04-17T03:25:22.947541+00:00",
+        "status": "validation_failed"
+      }
     }
   },
   "recent_tasks": [
-    {
-      "task": {
-        "intent": "patch_code",
-        "filename": "agent_runner.py",
-        "function": "run_agent",
-        "after_line": "if input_data.get(\"intent\") == \"queue_task\":",
-        "new_code": "if input_data.get(\"intent\") == \"map_dependencies\":\n    try:\n        from agent_tools.dependency_mapper import run_dependency_mapper\n        graph_result = run_dependency_mapper()\n        return {\"success\": true, \"message\": \"\u2705 Dependency graph generated.\", \"result\": graph_result }\n    except Exception as e:\n        return {\"success\": false, \"error\": f\"Dependency mapper failed: {str(e)}\" }",
-        "confirmationNeeded": true,
-        "action": "patch_code"
-      },
-      "intent": "patch_code",
-      "status": "success",
-      "timestamp": "2025-04-16T03:45:06.972852+00:00",
-      "result": {
-        "success": true,
-        "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
-        "pending": true,
-        "confirmationNeeded": true,
-        "taskId": "2025-04-16T03_45_06_972256+00_00"
-      }
-    },
-    {
-      "task": {
-        "intent": "patch_code",
-        "filename": "agent_runner.py",
-        "function": "run_agent",
-        "after_line": "if input_data.get(\"intent\") == \"queue_task\":",
-        "new_code": "if input_data.get(\"intent\") == \"map_dependencies\":\n    try:\n        from agent_tools.dependency_mapper import run_dependency_mapper\n        graph_result = run_dependency_mapper()\n        return {\"success\": true, \"message\": \"\u2705 Dependency graph generated.\", \"result\": graph_result }\n    except Exception as e:\n        return {\"success\": false, \"error\": f\"Dependency mapper failed: {str(e)}\" }",
-        "action": "patch_code"
-      },
-      "intent": "patch_code",
-      "status": "failure",
-      "timestamp": "2025-04-16T03:47:48.374784+00:00",
-      "result": {
-        "success": false,
-        "error": "Invalid action: patch_code",
-        "execution_metadata": {
-          "start_time": "2025-04-16T03:47:48.362547+00:00",
-          "status": "validation_failed"
-        }
-      }
-    },
     {
       "task": {
         "intent": "patch_code",
@@ -220,6 +179,46 @@
         "confirmationNeeded": true,
         "taskId": "2025-04-17T03_10_56_562131+00_00"
       }
+    },
+    {
+      "task": {
+        "intent": "create_and_run",
+        "filename": "hello.py",
+        "encoding": "base64",
+        "code": "cHJpbnQoIkhlbGxvLCBXb3JsZCIp",
+        "run_after": true,
+        "confirmationNeeded": false,
+        "action": "create_and_run"
+      },
+      "intent": "create_and_run",
+      "status": "failure",
+      "timestamp": "2025-04-17T03:24:30.770874+00:00",
+      "result": {
+        "success": false,
+        "error": "Invalid action: create_and_run",
+        "execution_metadata": {
+          "start_time": "2025-04-17T03:24:30.770619+00:00",
+          "status": "validation_failed"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "confirm_latest",
+        "confirmationNeeded": false,
+        "action": "confirm_latest"
+      },
+      "intent": "confirm_latest",
+      "status": "failure",
+      "timestamp": "2025-04-17T03:25:22.947763+00:00",
+      "result": {
+        "success": false,
+        "error": "Invalid action: confirm_latest",
+        "execution_metadata": {
+          "start_time": "2025-04-17T03:25:22.947541+00:00",
+          "status": "validation_failed"
+        }
+      }
     }
   ],
   "failure_patterns": [
@@ -234,6 +233,30 @@
         }
       },
       "timestamp": "2025-04-16T22:42:08.846009+00:00"
+    },
+    {
+      "task": "[create_and_run] hello.py -",
+      "result": {
+        "success": false,
+        "error": "Invalid action: create_and_run",
+        "execution_metadata": {
+          "start_time": "2025-04-17T03:24:30.770619+00:00",
+          "status": "validation_failed"
+        }
+      },
+      "timestamp": "2025-04-17T03:24:30.772453+00:00"
+    },
+    {
+      "task": "[confirm_latest]  -",
+      "result": {
+        "success": false,
+        "error": "Invalid action: confirm_latest",
+        "execution_metadata": {
+          "start_time": "2025-04-17T03:25:22.947541+00:00",
+          "status": "validation_failed"
+        }
+      },
+      "timestamp": "2025-04-17T03:25:22.948706+00:00"
     }
   ],
   "intent_stats": {
@@ -251,11 +274,11 @@
     },
     "create_and_run": {
       "success": 1,
-      "failure": 0
+      "failure": 1
     },
     "confirm_latest": {
       "success": 1,
-      "failure": 0
+      "failure": 1
     }
   },
   "self_notes": [],
@@ -322,9 +345,29 @@
         "notes": "Auto-generated fix attempt for failed task: [create_file_from_dropin]  -"
       },
       "timestamp": "2025-04-16T22:42:08.846023+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[create_and_run] hello.py -",
+        "error": "Invalid action: create_and_run",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [create_and_run] hello.py -"
+      },
+      "timestamp": "2025-04-17T03:24:30.772467+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[confirm_latest]  -",
+        "error": "Invalid action: confirm_latest",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [confirm_latest]  -"
+      },
+      "timestamp": "2025-04-17T03:25:22.948720+00:00"
     }
   ],
-  "current_execution": "20250417_031056",
+  "current_execution": "20250417_032522",
   "confirmation_decisions": [
     {
       "intent": "create_file",
@@ -365,6 +408,16 @@
       "intent": "confirm_latest",
       "trust_score": 0.5,
       "confirmation_required": true
+    },
+    {
+      "intent": "create_and_run",
+      "trust_score": 1.0,
+      "confirmation_required": false
+    },
+    {
+      "intent": "confirm_latest",
+      "trust_score": 1.0,
+      "confirmation_required": false
     }
   ]
 }
