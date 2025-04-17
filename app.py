@@ -250,10 +250,6 @@ def debug_create():
             "error": str(e),
             "detail": stacktrace
         }), 500
-            "success": False,
-            "error": str(e),
-            "detail": stacktrace
-        }), 500
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
