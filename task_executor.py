@@ -18,7 +18,7 @@ def backup_file(filepath: str) -> Optional[str]:
     timestamp = datetime.now(UTC).strftime("%Y-%m-%d_%H-%M-%S")
     backup_name = f"{filename}_BACKUP_{timestamp}"
     backup_path = os.path.join(BACKUP_DIR, backup_name)
-    with open(filepath, "r") as f_in, open(backup_path, "w") as f_out:
+    with open(filepath, "r", encoding="utf-8") as f_in, open(backup_path, "w", encoding="utf-8") as f_out:
         f_out.write(f_in.read())
     return backup_path
 
@@ -266,7 +266,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
         estimated_cost += gpt_cost
 
     # Update cost tracking in memory
-    
+
     try:
         memory = load_memory()
         if not isinstance(memory, dict):
@@ -319,7 +319,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
                 "last_updated": None
             }
         }
-    
+
     memory["cost_tracking"]["total_estimated"] += estimated_cost
     memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
 
@@ -458,7 +458,8 @@ def append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
 
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
-    instructions = plan.get("instructions", "")
+    old_content = plan.get("old_content")
+    new_content = plan.get("new_content")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
     full_path = os.path.join(PROJECT_ROOT, filename)
@@ -468,7 +469,7 @@ def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             "error": f"File '{full_path}' does not exist. Cannot edit."
         }
     try:
-        with open(full_path, "r") as f:
+        with open(full_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         if old_content not in content:
@@ -479,7 +480,7 @@ def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             return {"success": False, "error": "Failed to create backup"}
 
         new_content_full = content.replace(old_content, new_content)
-        with open(full_path, "w") as f:
+        with open(full_path, "w", encoding="utf-8") as f:
             f.write(new_content_full)
 
         return {
@@ -667,7 +668,7 @@ def patch_code(plan: dict) -> dict:
 
     try:
         backup_path = backup_file(filename)
-        with open(filename, "r") as f:
+        with open(filename, "r", encoding="utf-8") as f:
             content = f.readlines()
 
         for i, line in enumerate(content):
@@ -677,7 +678,7 @@ def patch_code(plan: dict) -> dict:
         else:
             return {"success": False, "error": "Target line not found"}
 
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.writelines(content)
 
         return {
