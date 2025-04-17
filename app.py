@@ -225,22 +225,15 @@ def confirm():
             })
 
         except Exception as e:
-            error_msg = f"Execution failed: {str(e)}"
-            result = {"success": False, "error": error_msg}
-            log_data["executionResult"] = result
-            write_render_log(f"Task confirmed: {task_id} | success: {result.get('success')}")
-            log_data.setdefault("logs", []).append({"executionError": result})
-            finalize_task_execution("failed", log_data)
-            return jsonify({"error": error_msg}), 500
+            error_msg = f"Confirm handler failed: {str(e)}"
+            stacktrace = traceback.format_exc()
+            logging.error(f"/confirm route failed:\n{stacktrace}")
 
-    except Exception as e:
-        error_msg = f"Confirm handler failed: {str(e)}"
-        print("Error: /confirm handler error:", traceback.format_exc())
-        return jsonify({
-            "error": error_msg,
-            "success": False,
-            "details": traceback.format_exc()
-        }), 500
+            return jsonify({
+                "error": error_msg,
+                "success": False,
+                "details": stacktrace
+            }), 500
 
 @app.route("/debug_create", methods=["POST"])
 def debug_create():
