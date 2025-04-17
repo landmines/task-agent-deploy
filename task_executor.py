@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+from file_editor import append_to_file, replace_line, insert_below
 from typing import Dict, Any, Optional
 from datetime import datetime, UTC
 from context_manager import load_memory
@@ -208,7 +209,7 @@ def validate_execution_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
     valid_actions = {
         "patch_code", "modify_file",
         "create_file", "append_to_file", "edit_file", "delete_file",
-        "execute_code", "push_changes", "create_app", "deploy", "modify_self",
+        "execute_code", "push_changes", "create_app", "deploy", "modify_self", "replace_line", "insert_below",
         "create_and_run", "confirm_latest"
     }
 
@@ -722,7 +723,9 @@ def execute_action(plan: dict) -> dict:
             "append_to_file": append_to_file,
             "delete_file": delete_file,
             "execute_code": execute_code,
-            "patch_code": patch_code
+            "patch_code": patch_code,
+            "insert_below": insert_below, 
+            "replace_line": replace_line
         }
 
         if action in action_handlers:
