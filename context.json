@@ -2,7 +2,7 @@
   "confirmed_count": 3,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-17T04:20:05.522948+00:00",
+  "last_updated": "2025-04-17T04:22:01.050228+00:00",
   "last_result": {
     "task": {
       "intent": "confirm_latest",
@@ -11,56 +11,16 @@
     },
     "intent": "confirm_latest",
     "status": "success",
-    "timestamp": "2025-04-17T04:20:05.522191+00:00",
+    "timestamp": "2025-04-17T04:22:01.049031+00:00",
     "result": {
       "success": true,
       "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
       "pending": true,
       "confirmationNeeded": true,
-      "taskId": "2025-04-17T04_20_05_492586+00_00"
+      "taskId": "2025-04-17T04_22_01_018874+00_00"
     }
   },
   "recent_tasks": [
-    {
-      "task": {
-        "intent": "create_and_run",
-        "filename": "hello.py",
-        "encoding": "base64",
-        "code": "cHJpbnQoIkhlbGxvLCBXb3JsZCIp",
-        "run_after": true,
-        "confirmationNeeded": false,
-        "action": "create_and_run"
-      },
-      "intent": "create_and_run",
-      "status": "failure",
-      "timestamp": "2025-04-17T03:24:30.770874+00:00",
-      "result": {
-        "success": false,
-        "error": "Invalid action: create_and_run",
-        "execution_metadata": {
-          "start_time": "2025-04-17T03:24:30.770619+00:00",
-          "status": "validation_failed"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "confirm_latest",
-        "confirmationNeeded": false,
-        "action": "confirm_latest"
-      },
-      "intent": "confirm_latest",
-      "status": "failure",
-      "timestamp": "2025-04-17T03:25:22.947763+00:00",
-      "result": {
-        "success": false,
-        "error": "Invalid action: confirm_latest",
-        "execution_metadata": {
-          "start_time": "2025-04-17T03:25:22.947541+00:00",
-          "status": "validation_failed"
-        }
-      }
-    },
     {
       "task": {
         "intent": "create_and_run",
@@ -212,6 +172,44 @@
         "confirmationNeeded": true,
         "taskId": "2025-04-17T04_20_05_492586+00_00"
       }
+    },
+    {
+      "task": {
+        "intent": "create_and_run",
+        "filename": "hello.py",
+        "encoding": "base64",
+        "code": "cHJpbnQoIkhlbGxvLCBXb3JsZCIp",
+        "run_after": true,
+        "confirmationNeeded": true,
+        "action": "create_and_run"
+      },
+      "intent": "create_and_run",
+      "status": "success",
+      "timestamp": "2025-04-17T04:21:52.266677+00:00",
+      "result": {
+        "success": true,
+        "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
+        "pending": true,
+        "confirmationNeeded": true,
+        "taskId": "2025-04-17T04_21_52_237777+00_00"
+      }
+    },
+    {
+      "task": {
+        "intent": "confirm_latest",
+        "confirmationNeeded": true,
+        "action": "confirm_latest"
+      },
+      "intent": "confirm_latest",
+      "status": "success",
+      "timestamp": "2025-04-17T04:22:01.049031+00:00",
+      "result": {
+        "success": true,
+        "message": "\u23f8\ufe0f Task logged but awaiting user confirmation.",
+        "pending": true,
+        "confirmationNeeded": true,
+        "taskId": "2025-04-17T04_22_01_018874+00_00"
+      }
     }
   ],
   "failure_patterns": [
@@ -266,11 +264,11 @@
       "failure": 1
     },
     "create_and_run": {
-      "success": 5,
+      "success": 6,
       "failure": 1
     },
     "confirm_latest": {
-      "success": 5,
+      "success": 6,
       "failure": 1
     }
   },
@@ -360,7 +358,7 @@
       "timestamp": "2025-04-17T03:25:22.948720+00:00"
     }
   ],
-  "current_execution": "20250417_042005",
+  "current_execution": "20250417_042201",
   "confirmation_decisions": [
     {
       "intent": "create_file",
@@ -450,6 +448,16 @@
     {
       "intent": "confirm_latest",
       "trust_score": 0.8,
+      "confirmation_required": true
+    },
+    {
+      "intent": "create_and_run",
+      "trust_score": 0.8333333333333334,
+      "confirmation_required": true
+    },
+    {
+      "intent": "confirm_latest",
+      "trust_score": 0.8333333333333334,
       "confirmation_required": true
     }
   ]
