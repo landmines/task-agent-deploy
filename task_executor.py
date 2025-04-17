@@ -115,7 +115,7 @@ def modify_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def execute_code(plan):
+def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
     inputs = plan.get("inputs", {})
@@ -144,7 +144,7 @@ def execute_code(plan):
             }
         }
 
-def estimate_risk(plan):
+def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
     risk_levels = {
         "create_file": 1,
@@ -158,7 +158,7 @@ def estimate_risk(plan):
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
 
-def validate_execution_plan(plan):
+def validate_execution_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
     """Validate execution plan before running"""
     if not isinstance(plan, dict):
         return False, "Plan must be a dictionary"
@@ -198,7 +198,7 @@ def validate_execution_plan(plan):
 
     return True, None
 
-def execute_task(plan):
+def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
     task_id = plan.get("task_id")
@@ -316,7 +316,7 @@ def execute_task(plan):
 
     return result
 
-def create_file(plan):
+def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     content = plan.get("content", "")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
@@ -332,7 +332,7 @@ def create_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def append_to_file(plan):
+def append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     content = plan.get("content", "")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
@@ -354,7 +354,7 @@ def append_to_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def edit_file(plan):
+def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     instructions = plan.get("instructions", "")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
@@ -440,7 +440,7 @@ def edit_file(plan):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def delete_file(plan):
+def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     if not filename or "/" in filename or "\\" in filename or ".." in filename:
         return {"success": False, "error": "Invalid filename."}
