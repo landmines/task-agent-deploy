@@ -189,52 +189,23 @@ def execute_task(plan):
             }
 
         # Update retry count
-        plan["validation"][
-            "retry_count"] = retry_count + 1  # Added to access task_id
+        plan["validation"]["retry_count"] = retry_count + 1
 
     # Cost estimation for various operations
     estimated_cost = 0.0
     if plan.get("uses_gpt"):
         # Calculate GPT costs based on token usage
-        input_tokens = len(str(plan.get("prompt",
-                                        ""))) / 4  # Approximate tokens
+        input_tokens = len(str(plan.get("prompt", ""))) / 4  # Approximate tokens
         output_tokens = len(str(plan.get("response", ""))) / 4
-        gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006
-                                               )  # Current GPT-4 pricing
+        gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006)  # Current GPT-4 pricing
         estimated_cost += gpt_cost
-
-        # Log GPT usage costs
-        memory["cost_tracking"]["api_usage_costs"].append({
-            "type":
-            "gpt",
-            "input_tokens":
-            input_tokens,
-            "output_tokens":
-            output_tokens,
-            "cost":
-            gpt_cost,
-            "timestamp":
-            datetime.now(UTC).isoformat()
-        })
-    if plan.get("deployment"):
-        from deployment_manager import DeploymentManager
-        dm = DeploymentManager()
-        deployment_costs = dm.estimate_deployment_cost({
-            "compute_hours":
-            24,
-            "storage_mb":
-            plan.get("storage_mb", 100),
-            "bandwidth_mb":
-            plan.get("bandwidth_mb", 1000)
-        })
-        estimated_cost += deployment_costs.get("total_cost", 0.0)
 
     # Update cost tracking in memory
     try:
         memory = load_memory()
         if not isinstance(memory, dict):
             memory = {}
-        
+
         # Ensure cost_tracking is initialized
         if "cost_tracking" not in memory:
             memory["cost_tracking"] = {
@@ -257,9 +228,7 @@ def execute_task(plan):
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
-        print(
-            f"Ã¢Å¡ Ã¯Â¸Â Warning: This action may incur costs: ${estimated_cost:.2f}"
-        )
+        print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
 
         # Hard threshold - block actions over $10
         if estimated_cost > 10.0:
@@ -281,37 +250,6 @@ def execute_task(plan):
                 "warning": f"This action will cost ${estimated_cost:.2f}"
             }
 
-    # Add cost estimation for deployments
-    if plan.get("action") == "deploy" or plan.get("intent") == "deploy":
-        from deployment_manager import DeploymentManager
-        dm = DeploymentManager()
-
-        # Estimate resource usage based on project size
-        project_path = plan.get("project_path", ".")
-        storage_mb = sum(
-            os.path.getsize(os.path.join(root, file))
-            for root, _, files in os.walk(project_path)
-            for file in files) / (1024 * 1024)
-
-        estimated_costs = dm.estimate_deployment_cost({
-            "compute_hours":
-            24,  # Initial 24-hour estimate
-            "storage_mb":
-            max(100, storage_mb * 1.5),  # Add 50% buffer
-            "bandwidth_mb":
-            plan.get("bandwidth_mb", 1000)
-        })
-
-        if not estimated_costs["within_free_tier"]:
-            return {
-                "success": False,
-                "error": "Deployment may incur costs",
-                "estimated_costs": estimated_costs,
-                "message":
-                f"Estimated monthly cost: ${estimated_costs['estimated_monthly']:.2f}",
-                "requires_approval": True
-            }
-
     # Validate plan before execution
     is_valid, error = validate_execution_plan(plan)
     if not is_valid:
@@ -330,21 +268,16 @@ def execute_task(plan):
         code = plan.get("code", "")
         result = run_code_in_sandbox(code)
         return {
-            "success":
-            result["success"],
-            "message":
-            "Code executed in sandbox"
-            if result["success"] else result["error"],
-            "output":
-            result["output"]
+            "success": result["success"],
+            "message": "Code executed in sandbox" if result["success"] else result["error"],
+            "output": result["output"]
         }
 
     # Require confirmation for high-risk actions
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
             "success": True,
-            "message":
-            "Ã¢ÂÂ¸Ã¯Â¸Â Task logged but awaiting user confirmation.",
+            "message": "⏸️ Task logged but awaiting user confirmation.",
             "pending": True,
             "confirmationNeeded": True,
             "execution_metadata": {
@@ -356,36 +289,6 @@ def execute_task(plan):
 
     action = plan.get("action") or plan.get("intent")
     result = execute_action(plan)
-    task_summary = f"{action} - {plan.get('filename', 'N/A')}"
-    if not result["success"]:
-        # Auto-generate follow-up task with validation
-        follow_up_task = {
-            "intent": "fix_failure",
-            "original_task": task_summary,
-            "error": result.get("error", "Unknown error"),
-            "requires_confirmation": True,
-            "notes":
-            f"Auto-generated fix attempt for failed task: {task_summary}",
-            "validation": {
-                "original_task_id":
-                task_id,
-                "retry_count":
-                0,
-                "max_retries":
-                3,
-                "success_criteria":
-                result.get("success_criteria", ["task_completes"])
-            }
-        }
-        add_next_step(memory, follow_up_task)
-
-        # Record retry attempt in memory
-        memory.setdefault("retry_tracking", {})
-        memory["retry_tracking"][task_id] = {
-            "original_error": result.get("error"),
-            "retry_task": follow_up_task,
-            "timestamp": datetime.now(UTC).isoformat()
-        }
     return result
 
 def create_file(plan):
@@ -399,7 +302,7 @@ def create_file(plan):
             f.write(content)
         return {
             "success": True,
-            "message": f"Ã¢Å“â€¦ File created at: {full_path}"
+            "message": f"✅ File created at: {full_path}"
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -419,7 +322,7 @@ def append_to_file(plan):
             was_created = False
         with open(full_path, "a") as f:
             f.write("\n" + content)
-        msg = f"Ã¢Å“â€¦ Appended to file: {full_path}"
+        msg = f"✅ Appended to file: {full_path}"
         if was_created:
             msg += " (file was auto-created)"
         return {"success": True, "message": msg}
@@ -443,8 +346,7 @@ def edit_file(plan):
         new_content = original
         change_made = False
 
-        match = re.match(r"replace all '(.*)' with '(.*)'", instructions,
-                         re.IGNORECASE)
+        match = re.match(r"replace all '(.*)' with '(.*)'", instructions, re.IGNORECASE)
         if match:
             target, repl = match.groups()
             if target in original:
@@ -453,12 +355,10 @@ def edit_file(plan):
             else:
                 return {
                     "success": False,
-                    "error":
-                    f"Ã¢ÂÅ’ Text '{target}' not found for replacement."
+                    "error": f"⚠️ Text '{target}' not found for replacement."
                 }
 
-        match = re.match(r"delete line containing '(.*)'", instructions,
-                         re.IGNORECASE)
+        match = re.match(r"delete line containing '(.*)'", instructions, re.IGNORECASE)
         if match:
             keyword = match.group(1)
             lines = new_content.splitlines()
@@ -469,11 +369,10 @@ def edit_file(plan):
             else:
                 return {
                     "success": False,
-                    "error": f"Ã¢ÂÅ’ No lines found containing '{keyword}'"
+                    "error": f"⚠️ No lines found containing '{keyword}'"
                 }
 
-        match = re.match(r"replace line '(.*)' with '(.*)'", instructions,
-                         re.IGNORECASE)
+        match = re.match(r"replace line '(.*)' with '(.*)'", instructions, re.IGNORECASE)
         if match:
             old_line, new_line = match.groups()
             lines = new_content.splitlines()
@@ -491,14 +390,13 @@ def edit_file(plan):
             else:
                 return {
                     "success": False,
-                    "error": f"Ã¢ÂÅ’ Exact line '{old_line}' not found."
+                    "error": f"⚠️ Exact line '{old_line}' not found."
                 }
 
         if not change_made:
             return {
                 "success": False,
-                "error":
-                "Ã¢ÂÅ’ Could not understand or apply edit instructions."
+                "error": "⚠️ Could not understand or apply edit instructions."
             }
 
         backup_path = backup_file(full_path)
@@ -507,7 +405,7 @@ def edit_file(plan):
 
         return {
             "success": True,
-            "message": f"Ã¢Å“â€¦ File '{filename}' edited.",
+            "message": f"✅ File '{filename}' edited.",
             "backup": backup_path,
             "original_file": filename,
             "instructions": instructions,
@@ -531,7 +429,7 @@ def delete_file(plan):
         os.remove(full_path)
         return {
             "success": True,
-            "message": f"Ã°Å¸â€”â€˜Ã¯Â¸Â File deleted: {full_path}"
+            "message": f"🗑️ File deleted: {full_path}"
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -539,8 +437,7 @@ def delete_file(plan):
 def simulate_push():
     return {
         "success": True,
-        "message":
-        "Ã°Å¸Â§Âª Simulated push: Git command not run (unsupported in current environment).",
+        "message": "🚀 Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
@@ -565,7 +462,7 @@ def write_diagnostic(plan):
             json.dump(content, f, indent=2)
         return {
             "success": True,
-            "message": f"Ã°Å¸Â©Âº Diagnostic log saved to {filepath}"
+            "message": f"✅ Diagnostic log saved to {filepath}"
         }
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -610,126 +507,33 @@ def deploy_to_replit(project_name, config=None):
             "error": f"Deployment configuration failed: {str(e)}"
         }
 
-def execute_action(action_plan):
+def execute_action(plan):
     """Execute actions with consistent status handling"""
     result = {
         "success": False,
-        "action": action_plan.get("action"),
+        "action": plan.get("action"),
         "message": "",
         "timestamp": datetime.now(UTC).isoformat()
     }
 
     try:
-        match action_plan.get("action"):
+        match plan.get("action"):
             case "modify_file":
-                result.update(modify_file(action_plan))
+                result.update(modify_file(plan))
             case "create_file":
-                result.update(create_file(action_plan))
+                result.update(create_file(plan))
             case "append_to_file":
-                result.update(append_to_file(action_plan))
+                result.update(append_to_file(plan))
             case "delete_file":
-                result.update(delete_file(action_plan))
+                result.update(delete_file(plan))
             case "execute_code":
-                result.update(execute_code(action_plan))
+                result.update(execute_code(plan))
             case "patch_code":
-                result.update(patch_code(action_plan))
-            case "run_shell":
-                command = action_plan.get("command")
-                if not command:
-                    result["message"] = "Missing shell command"
-                else:
-                    try:
-                        import subprocess
-                        output = subprocess.check_output(
-                            command,
-                            shell=True,
-                            stderr=subprocess.STDOUT,
-                            timeout=10,
-                            text=True
-                        )
-                        result.update({
-                            "success": True,
-                            "message": "Shell command executed",
-                            "output": output
-                        })
-                    except subprocess.CalledProcessError as e:
-                        result.update({
-                            "success": False,
-                            "message": "Shell command failed",
-                            "error": e.output
-                        })
-                    except Exception as e:
-                        result.update({
-                            "success": False,
-                            "message": f"Exception during shell execution: {str(e)}"
-                        })
-
-            case "run_python":
-                code = action_plan.get("code")
-                if not code:
-                    result["message"] = "Missing Python code"
-                else:
-                    try:
-                        local_vars = {}
-                        exec(code, {}, local_vars)
-                        result.update({
-                            "success": True,
-                            "message": "Python code executed",
-                            "output": str(local_vars)
-                        })
-                    except Exception as e:
-                        result.update({
-                            "success": False,
-                            "message": f"Python execution failed: {str(e)}"
-                        })
-            case "create_and_run":
-            filename = action_plan.get("filename")
-            content = action_plan.get("code")
-            encoding = action_plan.get("encoding", "plain")
-            run_after = action_plan.get("run_after", False)
-
-            if not filename or not content:
-                result["message"] = "Missing filename or code"
-            else:
-                try:
-                    if encoding == "base64":
-                        import base64
-                        content = base64.b64decode(content).decode("utf-8")
-
-                    with open(filename, "w", encoding="utf-8") as f:
-                        f.write(content)
-
-                    result.update({
-                        "success": True,
-                        "message": f"File created at: {filename}"
-                    })
-
-                    if run_after and filename.endswith(".py"):
-                        try:
-                            import subprocess
-                            output = subprocess.check_output(
-                                ["python", filename],
-                                stderr=subprocess.STDOUT,
-                                timeout=10,
-                                text=True
-                            )
-                            result["run_output"] = output
-                            result["message"] += " and executed successfully"
-                        except Exception as e:
-                            result.update({
-                                "success": False,
-                                "message": f"File created, but execution failed: {str(e)}"
-                            })
-
-                except Exception as e:
-                    result.update({
-                        "success": False,
-                        "message": f"Failed to create or execute file: {str(e)}"
-                    })                
+                result.update(patch_code(plan))
             case _:
                 result.update({
                     "success": False,
-                    "error": f"Unsupported action: {action_plan.get('action')}"
+                    "error": f"Unsupported action: {plan.get('action')}"
                 })
 
         return result
@@ -739,25 +543,14 @@ def execute_action(action_plan):
             "success": False,
             "error": f"Action execution failed: {str(e)}"
         })
-        result.setdefault("execution_metadata", {})
-        result["execution_metadata"].update({
-            "status": "completed" if result.get("success") else "failed",
-            "start_time": result["timestamp"]
-        })
         return result
 
-valid_intents = {
-    "create_app", "deploy", "modify_file", "run_tests", "create_file",
-    "append_to_file", "delete_file", "execute", "execute_code", "modify_self",
-    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "run_shell", "run_python",
-    "fix_failure"
-}
 def patch_code(plan):
     """Patch code with improved validation"""
     try:
         required_fields = ["filename", "function", "after_line", "new_code"]
         missing_fields = [field for field in required_fields if not plan.get(field)]
-        
+
         if missing_fields:
             return {
                 "success": False,
@@ -789,3 +582,10 @@ def patch_code(plan):
             "success": False,
             "error": f"Patch code failed: {str(e)}"
         }
+
+valid_intents = {
+    "create_app", "deploy", "modify_file", "run_tests", "create_file",
+    "append_to_file", "delete_file", "execute", "execute_code", "modify_self",
+    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "run_shell", "run_python",
+    "fix_failure"
+}
