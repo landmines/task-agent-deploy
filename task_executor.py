@@ -147,7 +147,7 @@ def validate_execution_plan(plan):
         "patch_code", "modify_file",
         "create_file", "append_to_file", "edit_file", "delete_file",
         "execute_code", "push_changes", "create_app", "deploy", "modify_self",
-        "create_and_run"
+        "create_and_run", "confirm_latest"
     }
 
     action = plan.get("action") or plan.get("intent")
