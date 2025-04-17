@@ -235,6 +235,8 @@ def confirm():
                 "success": False,
                 "details": stacktrace
             }), 500
+    except Exception as e:
+        return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
 
 @app.route("/debug_create", methods=["POST"])
 def debug_create():
