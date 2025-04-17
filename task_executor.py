@@ -1,3 +1,4 @@
+
 import os
 import re
 import json
@@ -128,7 +129,8 @@ def estimate_risk(plan):
         "delete_file": 3,
         "deploy": 2,
         "execute": 2,
-        "execute_code": 2
+        "execute_code": 2,
+        "patch_code": 2
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
 
@@ -144,7 +146,8 @@ def validate_execution_plan(plan):
     valid_actions = {
         "patch_code", "modify_file",
         "create_file", "append_to_file", "edit_file", "delete_file",
-        "execute_code", "push_changes", "create_app", "deploy", "modify_self"
+        "execute_code", "push_changes", "create_app", "deploy", "modify_self",
+        "create_and_run"
     }
 
     action = plan.get("action") or plan.get("intent")
@@ -262,17 +265,6 @@ def execute_task(plan):
             }
         }
 
-    # Handle code execution in sandbox
-    if plan.get("action") == "execute_code":
-        from sandbox_runner import run_code_in_sandbox
-        code = plan.get("code", "")
-        result = run_code_in_sandbox(code)
-        return {
-            "success": result["success"],
-            "message": "Code executed in sandbox" if result["success"] else result["error"],
-            "output": result["output"]
-        }
-
     # Require confirmation for high-risk actions
     if risk_level > 2 or plan.get("confirmationNeeded") is True:
         return {
@@ -287,6 +279,17 @@ def execute_task(plan):
             }
         }
 
+    # Execute the action
+    result = execute_action(plan)
+    
+    # Add execution metadata
+    result["execution_metadata"] = {
+        "start_time": execution_start.isoformat(),
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "completed" if result.get("success") else "failed",
+        "task_type": plan.get("action") or plan.get("intent")
+    }
+    
     return result
 
 def create_file(plan):
@@ -439,9 +442,6 @@ def simulate_push():
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
-
-from context_manager import load_memory
-
 def write_diagnostic(plan):
     execution_complete = datetime.now(UTC)
     log_id = plan.get("filename") or f"log_{execution_complete.isoformat()}"
@@ -515,12 +515,12 @@ def execute_action(plan):
     }
 
     try:
-        match plan.get("action"):
-            case "modify_file":
-                result.update(modify_file(plan))
-            case "create_file":
-                result.update(create_file(plan))
-            case "create_and_run":
+        action = plan.get("action")
+        if action == "modify_file":
+            result.update(modify_file(plan))
+        elif action == "create_file":
+            result.update(create_file(plan))
+        elif action == "create_and_run":
             try:
                 from base64 import b64decode
                 import subprocess
@@ -533,35 +533,34 @@ def execute_action(plan):
 
                 if plan.get("run_after", False):
                     run_output = subprocess.check_output(["python", filename], stderr=subprocess.STDOUT, text=True)
-                    return {
+                    result.update({
                         "success": True,
                         "message": f"✅ File '{filename}' created and executed.",
                         "output": run_output
-                    }
-
-                return {
-                    "success": True,
-                    "message": f"✅ File '{filename}' created successfully (run_after=False)."
-                }
-
+                    })
+                else:
+                    result.update({
+                        "success": True,
+                        "message": f"✅ File '{filename}' created successfully (run_after=False)."
+                    })
             except Exception as e:
-                return {
-                    "success": False,
-                    "error": f"create_and_run failed: {str(e)}"
-                }
-            case "append_to_file":
-                result.update(append_to_file(plan))
-            case "delete_file":
-                result.update(delete_file(plan))
-            case "execute_code":
-                result.update(execute_code(plan))
-            case "patch_code":
-                result.update(patch_code(plan))
-            case _:
                 result.update({
                     "success": False,
-                    "error": f"Unsupported action: {plan.get('action')}"
+                    "error": f"create_and_run failed: {str(e)}"
                 })
+        elif action == "append_to_file":
+            result.update(append_to_file(plan))
+        elif action == "delete_file":
+            result.update(delete_file(plan))
+        elif action == "execute_code":
+            result.update(execute_code(plan))
+        elif action == "patch_code":
+            result.update(patch_code(plan))
+        else:
+            result.update({
+                "success": False,
+                "error": f"Unsupported action: {action}"
+            })
 
         return result
 
@@ -571,48 +570,3 @@ def execute_action(plan):
             "error": f"Action execution failed: {str(e)}"
         })
         return result
-
-def patch_code(plan):
-    """Patch code with improved validation"""
-    try:
-        required_fields = ["filename", "function", "after_line", "new_code"]
-        missing_fields = [field for field in required_fields if not plan.get(field)]
-
-        if missing_fields:
-            return {
-                "success": False,
-                "error": f"Missing required fields for patch_code: {', '.join(missing_fields)}"
-            }
-
-        filename = plan["filename"]
-        function = plan["function"]
-        anchor_line = plan["after_line"]
-        new_code = plan["new_code"]
-
-        if not os.path.exists(filename):
-            return {
-                "success": False,
-                "error": f"File not found: {filename}"
-            }
-
-        from agent_tools.code_editor import insert_code_after_line_in_function
-        result = insert_code_after_line_in_function(filename, function, anchor_line, new_code)
-
-        if result["success"]:
-            backup_path = backup_file(filename)
-            result["backup"] = backup_path
-
-        return result
-
-    except Exception as e:
-        return {
-            "success": False,
-            "error": f"Patch code failed: {str(e)}"
-        }
-
-valid_intents = {
-    "create_app", "deploy", "modify_file", "run_tests", "create_file",
-    "append_to_file", "delete_file", "execute", "execute_code", "modify_self",
-    "plan_tasks", "queue_task", "verify_deployment", "run_sandbox_test", "create_and_run", "run_shell", "run_python",
-    "fix_failure"
-}
