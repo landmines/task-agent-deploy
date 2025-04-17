@@ -1,6 +1,8 @@
 import os
 import re
 import json
+import logging
+from typing import Dict, Any, Optional
 from datetime import datetime, UTC
 from context_manager import load_memory
 
@@ -8,7 +10,7 @@ PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
-def backup_file(filepath):
+def backup_file(filepath: str) -> Optional[str]:
     if not os.path.exists(filepath):
         return None
     os.makedirs(BACKUP_DIR, exist_ok=True)
@@ -27,12 +29,10 @@ def unsupported_action(action):
         "hint": "Check your task type or add implementation for this action."
     }
 
-def restore_from_backup(backup_path):
+def restore_from_backup(backup_path: str) -> Dict[str, Any]:
     """Restore a file from its backup"""
     if not backup_path or not os.path.exists(backup_path):
         return {"success": False, "error": "Backup file not found"}
-
-    import logging  # <-- Put this import at the top of your file (if not already present)
 
     try:
         filename = os.path.basename(backup_path).split("_BACKUP_")[0]
