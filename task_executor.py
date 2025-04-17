@@ -386,8 +386,27 @@ def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             "success": True,
             "message": f"✅ File created at: {full_path}"
         }
+
+    except PermissionError:
+        logging.error(f"Permission denied when trying to write to: {full_path}")
+        return {
+            "success": False,
+            "error": f"Permission denied: {full_path}"
+        }
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error while writing to {full_path}: {str(e)}")
+        return {
+            "success": False,
+            "error": f"I/O error: {str(e)}"
+        }
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error during file creation: {str(e)}")
+        return {
+            "success": False,
+            "error": f"Unexpected error: {str(e)}"
+        }
 
 def append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
@@ -402,14 +421,27 @@ def append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             was_created = True
         else:
             was_created = False
+
         with open(full_path, "a") as f:
             f.write("\n" + content)
+
         msg = f"✅ Appended to file: {full_path}"
         if was_created:
             msg += " (file was auto-created)"
+
         return {"success": True, "message": msg}
+
+    except PermissionError:
+        logging.error(f"Permission denied writing to: {full_path}")
+        return {"success": False, "error": f"Permission denied: {full_path}"}
+
+    except (IOError, OSError) as e:
+        logging.error(f"I/O error while appending to {full_path}: {str(e)}")
+        return {"success": False, "error": f"I/O error: {str(e)}"}
+
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        logging.error(f"Unexpected error appending to file: {str(e)}")
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
