@@ -522,6 +522,39 @@ def execute_action(plan):
                 result.update(modify_file(plan))
             case "create_file":
                 result.update(create_file(plan))
+            case "create_and_run":
+                try:
+                    filename = plan.get("filename")
+                    encoded_code = plan.get("code")
+                    run_after = plan.get("run_after", False)
+
+                    if not filename or not encoded_code:
+                        result.update({
+                            "success": False,
+                            "error": "Missing filename or code for create_and_run"
+                        })
+                        return result
+
+                    import base64
+                    decoded_code = base64.b64decode(encoded_code).decode("utf-8")
+
+                    with open(filename, "w") as f:
+                        f.write(decoded_code)
+
+                    result.update({
+                        "success": True,
+                        "message": f"✅ Created file: {filename}"
+                    })
+
+                    if run_after:
+                        run_result = os.system(f"python {filename}")
+                        result["message"] += f" | Executed with exit code {run_result}"
+
+                except Exception as e:
+                    result.update({
+                        "success": False,
+                        "error": f"create_and_run failed: {str(e)}"
+                    })
             case "append_to_file":
                 result.update(append_to_file(plan))
             case "delete_file":
