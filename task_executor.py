@@ -466,7 +466,8 @@ def simulate_push():
         "note": "Try again after migrating to Vercel or enabling Git"
     }
 
-def write_diagnostic(plan):
+def write_diagnostic(plan: Dict[str, Any]) -> Dict[str, Any]:
+    """Write diagnostic information to a log file"""
     execution_complete = datetime.now(UTC)
     log_id = plan.get("filename") or f"log_{execution_complete.isoformat()}"
     content = {
@@ -658,9 +659,17 @@ def execute_action(plan: dict) -> dict:
 
         return result
 
+    except (ValueError, TypeError) as e:
+        result.update({
+            "success": False,
+            "error": f"Invalid input parameters: {str(e)}",
+            "error_type": "validation_error"
+        })
+        return result
     except Exception as e:
         result.update({
             "success": False,
-            "error": f"Action execution failed: {str(e)}"
+            "error": f"Action execution failed: {str(e)}",
+            "error_type": "execution_error"
         })
         return result
