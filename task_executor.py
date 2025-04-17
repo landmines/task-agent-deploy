@@ -548,29 +548,29 @@ def patch_code(plan: dict) -> dict:
     filename = plan.get("filename")
     if not validate_filepath(filename):
         return {"success": False, "error": "Invalid filename"}
-    
+
     function_name = plan.get("function")
     new_code = plan.get("new_code")
     after_line = plan.get("after_line")
-    
+
     if not all([function_name, new_code, after_line]):
         return {"success": False, "error": "Missing required fields"}
-        
+
     try:
         backup_path = backup_file(filename)
         with open(filename, "r") as f:
             content = f.readlines()
-            
+
         for i, line in enumerate(content):
             if after_line in line:
                 content.insert(i + 1, new_code + "\n")
                 break
         else:
             return {"success": False, "error": "Target line not found"}
-            
+
         with open(filename, "w") as f:
             f.writelines(content)
-            
+
         return {
             "success": True,
             "message": f"Code patched in {filename}",
@@ -614,8 +614,8 @@ def execute_action(plan: dict) -> dict:
 
                 try:
                     code = b64decode(plan["code"]).decode("utf-8")
-                except Exception:
-                    raise ValueError("Invalid base64 encoding")
+                except Exception as e:
+                    raise ValueError(f"Invalid base64 encoding: {str(e)}")
 
                 filename = os.path.join(PROJECT_ROOT, plan["filename"])
                 if not validate_filepath(plan["filename"]):
