@@ -239,6 +239,13 @@ def handle_execute_code(plan: dict) -> dict:
     else:
         memory_limit_mb = plan.get("memory_limit_mb", 100)
 
+# actually run the sandbox and return its dict result
+    return run_code_in_sandbox(
+        code,
+        timeout=timeout,
+        memory_limit_mb=memory_limit_mb
+    )
+
 def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
     risk_levels = {
