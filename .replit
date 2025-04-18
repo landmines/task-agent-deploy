@@ -23,23 +23,3 @@ externalPort = 80
 localPort = 5000
 externalPort = 5000
 
-[workflows]
-runButton = "Run Flask App"
-
-[[workflows.workflow]]
-name = "Run Flask App"
-author = 41100971
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "flask run --host=0.0.0.0 --port=5000"
-
-[[workflows.workflow]]
-name = "Run Tests"
-author = 41100971
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python -m unittest test_runner.py -v"
