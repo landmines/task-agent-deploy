@@ -3,6 +3,7 @@ import re
 import json
 import logging
 from file_editor import append_to_file, replace_line, insert_below
+from sandbox_runner import run_code_in_sandbox
 from typing import Dict, Any, Optional
 from datetime import datetime, UTC
 from context_manager import load_memory
@@ -132,8 +133,6 @@ def modify_file(plan):
         logging.error(f"Unexpected error modifying file '{filename}': {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
-from sandbox_runner import run_code_in_sandbox
-
 def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
@@ -225,6 +224,13 @@ def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
         return result
     except Exception as e:
         return {"success": False, "error": f"insert_below failed: {str(e)}"}
+
+def handle_execute_code(plan: dict) -> dict:
+    """
+    Runs the given Python code string inside the sandbox and returns its output.
+    """
+    code = plan.get("code", "")
+    return run_code_in_sandbox(code)
 
 def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
@@ -765,6 +771,7 @@ def execute_action(plan: dict) -> dict:
             "create_file": create_file,
             "append_to_file": append_to_file,
             "delete_file": delete_file,
+            "execute_code": handle_execute_code,
             "execute_code": execute_code,
             "patch_code": patch_code,
             "insert_below": handle_insert_below, 
@@ -842,21 +849,4 @@ def execute_action(plan: dict) -> dict:
             "error_type": "execution_error"
         })
 
-        action = plan.get("action") or plan.get("intent")
-        if action == "replace_line":
-            filename = plan.get("filename")
-            target = plan.get("target")
-            replacement = plan.get("replacement")
-            if not all([filename, target, replacement]):
-                return {"success": False, "error": "Missing parameters for replace_line"}
-            result = replace_line(filename, target, replacement)
-            return result
-        elif action == "insert_below":
-            filename = plan.get("filename")
-            target = plan.get("target")
-            new_line = plan.get("content")
-            if not all([filename, target, new_line]):
-                return {"success": False, "error": "Missing parameters for insert_below"}
-            result = insert_below(filename, target, new_line)
-            return result
         return result

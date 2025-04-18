@@ -1,2 +1,2 @@
 def agent_test():
-    return "Original code line"
+    return "Original code line"    print("Agent inserted this line!")
