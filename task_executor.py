@@ -779,7 +779,6 @@ def execute_action(plan: dict) -> dict:
             "append_to_file": append_to_file,
             "delete_file": delete_file,
             "execute_code": handle_execute_code,
-            "execute_code": execute_code,
             "patch_code": patch_code,
             "insert_below": handle_insert_below, 
             "replace_line": handle_replace_line
