@@ -39,7 +39,7 @@ AGENT_CORE_FILES = [
     "agent_runner.py", "context_manager.py", "task_executor.py", "app.py"
 ]
 
-#def requires_confirmation(intent: str, memory: dict) -> bool:
+def requires_confirmation(intent: str, memory: dict) -> bool:
     """Determine if an action needs confirmation based on trust"""
     # Always confirm high-risk actions
     high_risk = ["delete_file", "deploy", "modify_self"]
