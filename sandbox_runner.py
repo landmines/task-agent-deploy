@@ -51,10 +51,14 @@ def resource_limits(max_cpu_time: int = 5, max_memory_mb: int = 100):
         resource.setrlimit(resource.RLIMIT_AS,
                            (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
 
-
 @contextmanager
 def timeout_handler(seconds: int):
-    if platform.system() != 'Windows':
+    """
+    Raises TimeoutError if the block runs longer than `seconds`.
+    Uses signal.alarm in main threads, and silently skips if unsupported.
+    """
+    # Try to install a SIGALRM-based timeout; skip if not in main thread
+    try:
         import signal
 
         def timeout_error(signum, frame):
@@ -62,13 +66,19 @@ def timeout_handler(seconds: int):
 
         signal.signal(signal.SIGALRM, timeout_error)
         signal.alarm(seconds)
-        try:
-            yield
-        finally:
-            signal.alarm(0)
-    else:
-        yield
+    except (ValueError, OSError):
+        # signal only works in main thread or may be unavailable—skip alarm
+        pass
 
+    try:
+        yield
+    finally:
+        # Clear the alarm if it was set
+        try:
+            import signal
+            signal.alarm(0)
+        except:
+            pass
 
 def run_code_in_sandbox(code: str,
                         inputs: Optional[Dict[str, Any]] = None,
