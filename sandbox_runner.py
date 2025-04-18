@@ -40,16 +40,31 @@ class ResourceMonitor:
 
 @contextmanager
 def resource_limits(max_cpu_time: int = 5, max_memory_mb: int = 100):
-    resource.setrlimit(resource.RLIMIT_CPU, (max_cpu_time, max_cpu_time))
-    memory_bytes = max_memory_mb * 1024 * 1024
-    resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+    """
+    Temporarily restrict CPU time and address space (memory) for code execution.
+    Silently skips if the OS forbids setting those limits.
+    """
+    # Try to set the CPU & memory limits
+    try:
+        resource.setrlimit(resource.RLIMIT_CPU, (max_cpu_time, max_cpu_time))
+        memory_bytes = max_memory_mb * 1024 * 1024
+        resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+    except Exception:
+        # Could not impose limits—skip entirely
+        yield
+        return
+
     try:
         yield
     finally:
-        resource.setrlimit(resource.RLIMIT_CPU,
-                           (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
-        resource.setrlimit(resource.RLIMIT_AS,
-                           (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+        # Attempt to clear/reset limits, ignore errors if not permitted
+        try:
+            resource.setrlimit(resource.RLIMIT_CPU,
+                               (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+            resource.setrlimit(resource.RLIMIT_AS,
+                               (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+        except Exception:
+            pass
 
 @contextmanager
 def timeout_handler(seconds: int):
