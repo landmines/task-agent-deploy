@@ -40,26 +40,6 @@ AGENT_CORE_FILES = [
 ]
 
 def requires_confirmation(intent: str, memory: dict) -> bool:
-    """Determine if an action needs confirmation based on trust"""
-    # Always confirm high-risk actions
-    high_risk = ["delete_file", "deploy", "modify_self"]
-    if intent in high_risk:
-        trust = get_trust_score(memory, intent)
-        return trust < 0.9  # Very high trust needed for risky actions
-
-    # Check general trust level
-    if memory.get("always_confirm", False):
-        return True
-
-    trust = get_trust_score(memory, intent)
-    trust_threshold = 0.8
-
-    if intent in ["create_file", "append_to_file"]:
-        trust_threshold = 0.7  # Lower threshold for safe actions
-
-    return trust < trust_threshold
-
-def requires_confirmation(intent: str, memory: dict) -> bool:
     """
     Temporarily bypass confirmation for safe file operations.
     """
