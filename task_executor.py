@@ -230,7 +230,14 @@ def handle_execute_code(plan: dict) -> dict:
     Runs the given Python code string inside the sandbox and returns its output.
     """
     code = plan.get("code", "")
-    return run_code_in_sandbox(code)
+    # use defaults, or pull custom timeout if you ever want to
+    timeout = plan.get("timeout", 5)
+    # if you ever pass memory_limit in bytes, convert to MB:
+    mem_bytes = plan.get("memory_limit", None)
+    if mem_bytes is not None:
+        memory_limit_mb = mem_bytes // (1024 * 1024)
+    else:
+        memory_limit_mb = plan.get("memory_limit_mb", 100)
 
 def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
