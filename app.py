@@ -42,22 +42,22 @@ def run():
         print("Info: run_agent result:", result)
         write_render_log(f"Task received: {data}")
 
-        # Preserve existing taskId/timestamp logic
+        # Preserve taskId + timestamp
         task_id = result.get("taskId") or result.get("result", {}).get("taskId")
         result["taskId"] = task_id
         if "timestamp" not in result:
             result["timestamp"] = datetime.now(UTC).isoformat()
 
-        # ── BEGIN add file‑readback into response ──
-        if data.get("task", {}).get("intent") == "create_file" \
-           and (result.get("success") or result.get("result", {}).get("success")):
+        # ── READ‑BACK LOGIC ──
+        intent = data.get("task", {}).get("intent")
+        success = result.get("success") or result.get("result", {}).get("success")
+        if intent == "create_file" and success:
             filename = data["task"].get("filename")
             try:
                 with open(filename, "r") as f:
                     result["file_content"] = f.read()
             except Exception as e:
                 result["file_content_error"] = str(e)
-        # ── END add file‑readback ──
 
         return jsonify(result)
 
