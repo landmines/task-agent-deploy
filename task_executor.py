@@ -209,7 +209,7 @@ def handle_replace_line(plan: Dict[str, Any]) -> Dict[str, Any]:
 def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     target = plan.get("target")
-    new_line = plan.get("content")
+    new_line = plan.get("new_line")
 
     if not filename or not target or not new_line:
         return {"success": False, "error": "Missing required fields for insert_below"}

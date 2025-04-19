@@ -2,56 +2,32 @@
   "confirmed_count": 3,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-19T22:35:27.321097+00:00",
+  "last_updated": "2025-04-19T22:49:26.719663+00:00",
   "last_result": {
     "task": {
       "intent": "insert_below",
       "filename": "demo_code.py",
-      "pattern": "    def multiply(self, a, b):",
+      "target": "    def multiply(self, a, b):",
       "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
     },
     "intent": "insert_below",
-    "status": "failure",
-    "timestamp": "2025-04-19T22:35:27.295359+00:00",
+    "status": "success",
+    "timestamp": "2025-04-19T22:49:26.718448+00:00",
     "result": {
-      "success": false,
+      "success": true,
       "action": null,
-      "message": "",
-      "timestamp": "2025-04-19T22:35:27.295330+00:00",
-      "error": "Missing required fields for insert_below",
+      "message": "Inserted line below target in demo_code.py",
+      "timestamp": "2025-04-19T22:49:26.717936+00:00",
+      "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_22-49-26",
       "execution_metadata": {
-        "start_time": "2025-04-19T22:35:27.295118+00:00",
-        "end_time": "2025-04-19T22:35:27.295340+00:00",
-        "status": "failed",
+        "start_time": "2025-04-19T22:49:26.717719+00:00",
+        "end_time": "2025-04-19T22:49:26.718416+00:00",
+        "status": "completed",
         "task_type": "insert_below"
       }
     }
   },
   "recent_tasks": [
-    {
-      "task": {
-        "intent": "replace_line",
-        "filename": "demo_code.py",
-        "target": "CONSTANT_VALUE = 42",
-        "replacement": "CONSTANT_VALUE = 100"
-      },
-      "intent": "replace_line",
-      "status": "success",
-      "timestamp": "2025-04-19T19:21:47.990599+00:00",
-      "result": {
-        "success": true,
-        "action": null,
-        "message": "Replaced line in demo_code.py",
-        "timestamp": "2025-04-19T19:21:47.990007+00:00",
-        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_19-21-47",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:21:47.989793+00:00",
-          "end_time": "2025-04-19T19:21:47.990561+00:00",
-          "status": "completed",
-          "task_type": "replace_line"
-        }
-      }
-    },
     {
       "task": {
         "intent": "patch_code",
@@ -267,6 +243,30 @@
           "task_type": "insert_below"
         }
       }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "target": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
+      },
+      "intent": "insert_below",
+      "status": "success",
+      "timestamp": "2025-04-19T22:49:26.718448+00:00",
+      "result": {
+        "success": true,
+        "action": null,
+        "message": "Inserted line below target in demo_code.py",
+        "timestamp": "2025-04-19T22:49:26.717936+00:00",
+        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_22-49-26",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:49:26.717719+00:00",
+          "end_time": "2025-04-19T22:49:26.718416+00:00",
+          "status": "completed",
+          "task_type": "insert_below"
+        }
+      }
     }
   ],
   "failure_patterns": [
@@ -470,7 +470,7 @@
       "failure": 2
     },
     "insert_below": {
-      "success": 1,
+      "success": 2,
       "failure": 13
     },
     "execute_code": {
@@ -764,7 +764,7 @@
       "timestamp": "2025-04-19T22:35:27.297137+00:00"
     }
   ],
-  "current_execution": "20250419_223527",
+  "current_execution": "20250419_224926",
   "confirmation_decisions": [
     {
       "intent": "create_file",
