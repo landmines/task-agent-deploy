@@ -18,6 +18,7 @@ from drive_uploader import download_log_by_task_id
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
+
 def write_render_log(message):
     try:
         log_path = os.path.join(os.getcwd(), "logs", "render.log")
@@ -27,9 +28,11 @@ def write_render_log(message):
     except Exception as e:
         print(f"Error: Failed to write to render.log: {e}")
 
+
 @app.route("/")
 def index():
     return "Agent is running."
+
 
 @app.route("/run", methods=["POST"])
 def run():
@@ -40,15 +43,34 @@ def run():
         print("Info: run_agent result:", result)
         write_render_log(f"Task received: {data}")
 
-        task_id = result.get("taskId") or result.get("result", {}).get("taskId")
+        # Preserve existing taskId/timestamp logic
+        task_id = result.get("taskId") or result.get("result",
+                                                     {}).get("taskId")
         result["taskId"] = task_id
         if "timestamp" not in result:
             result["timestamp"] = datetime.now(UTC).isoformat()
 
+        # ── BEGIN add file‑readback into response ──
+        if data.get(
+                "task",
+            {}).get("intent") == "create_file" and result.get("success"):
+            filename = data["task"].get("filename")
+            try:
+                with open(filename, "r") as f:
+                    result["file_content"] = f.read()
+            except Exception as e:
+                result["file_content_error"] = str(e)
+        # ── END add file‑readback ──
+
         return jsonify(result)
+
     except Exception as e:
         print("Error: /run error:", traceback.format_exc())
-        return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
+        return jsonify({
+            "error": str(e),
+            "detail": traceback.format_exc()
+        }), 500
+
 
 @app.route("/run_next", methods=["POST"])
 def run_next_endpoint():
@@ -59,7 +81,11 @@ def run_next_endpoint():
         write_render_log("Task executed via /run_next")
         return jsonify(result)
     except Exception as e:
-        return jsonify({"error": f"run_next failed: {str(e)}", "detail": traceback.format_exc()}), 500
+        return jsonify({
+            "error": f"run_next failed: {str(e)}",
+            "detail": traceback.format_exc()
+        }), 500
+
 
 @app.route("/latest", methods=["GET"])
 def latest():
@@ -86,6 +112,7 @@ def latest():
     except Exception as e:
         return jsonify({"error": f"Failed to load latest log: {e}"}), 500
 
+
 @app.route("/logs_from_drive", methods=["GET"])
 def logs_from_drive():
     try:
@@ -94,6 +121,7 @@ def logs_from_drive():
         return jsonify(logs)
     except Exception as e:
         return jsonify({"error": f"Drive fetch failed: {e}"}), 500
+
 
 @app.route("/logs_snapshot", methods=["GET"])
 def logs_snapshot():
@@ -114,6 +142,7 @@ def logs_snapshot():
         return jsonify({"success": True, "logs": lines})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route("/confirm", methods=["POST", "OPTIONS"])
 def confirm():
@@ -144,10 +173,8 @@ def confirm():
 
         clean_id = task_id.replace('log-', '')
         timestamp_formats = [f"log-{v}.json" for v in task_id_variations]
-        timestamp_formats.extend([
-            f"log-*{clean_id}*.json",
-            f"log-*{clean_id.split('T')[0]}*.json"
-        ])
+        timestamp_formats.extend(
+            [f"log-*{clean_id}*.json", f"log-*{clean_id.split('T')[0]}*.json"])
         print("Info: Trying timestamp formats:", timestamp_formats)
 
         log_file = os.path.join(logs_dir, f"log-{task_id}.json")
@@ -159,12 +186,16 @@ def confirm():
             for pattern in timestamp_formats:
                 matches = list(Path(logs_dir).glob(pattern))
                 if matches:
-                    print(f"Info: Found logs matching {pattern}:", [f.name for f in matches])
+                    print(f"Info: Found logs matching {pattern}:",
+                          [f.name for f in matches])
                     matching_files.extend(matches)
 
             if len(matching_files) > 1:
-                matching_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-                print(f"Info: Multiple matches found, using most recent: {matching_files[0].name}")
+                matching_files.sort(key=lambda x: x.stat().st_mtime,
+                                    reverse=True)
+                print(
+                    f"Info: Multiple matches found, using most recent: {matching_files[0].name}"
+                )
 
         log_data = None
         if matching_files:
@@ -172,14 +203,19 @@ def confirm():
             with open(matching_files[0], "r") as f:
                 log_data = json.load(f)
         else:
-            print(f"Info: No local log found for {task_id}, searching on Drive...")
+            print(
+                f"Info: No local log found for {task_id}, searching on Drive..."
+            )
             try:
                 log_data = download_log_by_task_id(task_id)
                 if log_data is None:
                     return jsonify({
-                        "error": "Failed to retrieve log data",
-                        "task_id": task_id,
-                        "suggestion": "Check if the task ID is correct"
+                        "error":
+                        "Failed to retrieve log data",
+                        "task_id":
+                        task_id,
+                        "suggestion":
+                        "Check if the task ID is correct"
                     }), 404
             except TimeoutError:
                 return jsonify({
@@ -202,7 +238,8 @@ def confirm():
                 return jsonify({"message": "Task rejected and logged."})
 
             log_data["confirmationNeeded"] = False
-            plan_to_execute = log_data.get("executionPlanned") or log_data.get("execution")
+            plan_to_execute = log_data.get("executionPlanned") or log_data.get(
+                "execution")
 
             if not plan_to_execute:
                 return jsonify({"error": "No execution plan found"}), 400
@@ -212,11 +249,15 @@ def confirm():
 
             result = execute_task(plan_to_execute)
             log_data["executionResult"] = result
-            write_render_log(f"Task confirmed: {task_id} | success: {result.get('success')}")
+            write_render_log(
+                f"Task confirmed: {task_id} | success: {result.get('success')}"
+            )
             log_data.setdefault("logs", []).append({"execution": result})
             finalize_task_execution("confirmed", log_data)
 
-            updated_path = matching_files[0] if matching_files else os.path.join(logs_dir, f"log-{task_id}.json")
+            updated_path = matching_files[
+                0] if matching_files else os.path.join(logs_dir,
+                                                       f"log-{task_id}.json")
             with open(updated_path, "w") as f:
                 json.dump(log_data, f, indent=2)
 
@@ -239,22 +280,30 @@ def confirm():
                 "details": stacktrace
             }), 500
     except Exception as e:
-        return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
+        return jsonify({
+            "error": str(e),
+            "detail": traceback.format_exc()
+        }), 500
+
 
 @app.route("/debug_create", methods=["POST"])
 def debug_create():
     try:
         with open("debug_test.txt", "w", encoding="utf-8") as f:
             f.write("This is a debug write test from /debug_create")
-        return jsonify({"success": True, "message": "✅ File written directly to disk."})
+        return jsonify({
+            "success": True,
+            "message": "✅ File written directly to disk."
+        })
     except Exception as e:
         stacktrace = traceback.format_exc()
         logging.error(f"/debug_create failed:\n{stacktrace}")
         return jsonify({
-            "success": False, 
+            "success": False,
             "error": str(e),
             "detail": stacktrace
         }), 500
+
 
 @app.route("/rollback/<task_id>", methods=["POST"])
 def rollback_task(task_id):
@@ -285,10 +334,8 @@ def rollback_task(task_id):
     except Exception as e:
         stacktrace = traceback.format_exc()
         logging.error(f"/rollback/{task_id} failed:\n{stacktrace}")
-        return jsonify({
-            "error": str(e),
-            "detail": stacktrace
-        }), 500
+        return jsonify({"error": str(e), "detail": stacktrace}), 500
+
 
 @app.route('/rollback_last', methods=["POST"])
 def rollback_last():
@@ -316,10 +363,8 @@ def rollback_last():
     except Exception as e:
         stacktrace = traceback.format_exc()
         logging.error(f"/rollback_last failed:\n{stacktrace}")
-        return jsonify({
-            "error": str(e),
-            "detail": stacktrace
-        }), 500
+        return jsonify({"error": str(e), "detail": stacktrace}), 500
+
 
 @app.route("/memory", methods=["GET"])
 def memory():
@@ -328,6 +373,7 @@ def memory():
         return jsonify(memory)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 import os
 
