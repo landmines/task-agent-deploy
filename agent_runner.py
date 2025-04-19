@@ -41,21 +41,22 @@ AGENT_CORE_FILES = [
 
 def requires_confirmation(intent: str, memory: dict) -> bool:
     """
-    Temporarily bypass confirmation for safe file operations.
+    Determine whether the given intent needs user confirmation.
     """
-    # No confirmation for create/append file ops
+    # No confirmation for safe file operations
     if intent in ["create_file", "append_to_file", "replace_line", "insert_below"]:
         return False
 
-    # Fallback to original logic for everything else:
-    from task_executor import get_trust_score  # if not already in scope
+    # High‑risk actions: only skip confirmation if our trust is very high
     high_risk = ["delete_file", "deploy", "modify_self"]
     if intent in high_risk:
         return get_trust_score(memory, intent) < 0.9
 
+    # If the user has globally requested always‑confirm, obey
     if memory.get("always_confirm", False):
         return True
 
+    # Default threshold for everything else
     return get_trust_score(memory, intent) < 0.8
 
 def run_agent(input_data):

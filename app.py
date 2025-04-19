@@ -51,9 +51,11 @@ def run():
         return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
 
 @app.route("/run_next", methods=["POST"])
-def run_next():
+def run_next_endpoint():
     try:
-        result = run_agent({"intent": "run_next"})
+        # invoke the real run_next helper to pull the next queued task
+        from agent_runner import run_next as _run_next_task
+        result = _run_next_task()
         write_render_log("Task executed via /run_next")
         return jsonify(result)
     except Exception as e:
