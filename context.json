@@ -2,49 +2,98 @@
   "confirmed_count": 3,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-19T18:25:42.721321+00:00",
+  "last_updated": "2025-04-19T22:35:27.321097+00:00",
   "last_result": {
     "task": {
-      "intent": "create_file",
-      "filename": "local_debug3.txt",
-      "content": "Hello from LOCAL Builder Agent on port 5000!"
+      "intent": "insert_below",
+      "filename": "demo_code.py",
+      "pattern": "    def multiply(self, a, b):",
+      "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
     },
-    "intent": "create_file",
-    "status": "success",
-    "timestamp": "2025-04-19T18:25:42.719182+00:00",
+    "intent": "insert_below",
+    "status": "failure",
+    "timestamp": "2025-04-19T22:35:27.295359+00:00",
     "result": {
-      "success": true,
+      "success": false,
       "action": null,
-      "message": "\u2705 File created at: /home/runner/workspace/local_debug3.txt",
-      "timestamp": "2025-04-19T18:25:42.716544+00:00",
+      "message": "",
+      "timestamp": "2025-04-19T22:35:27.295330+00:00",
+      "error": "Missing required fields for insert_below",
       "execution_metadata": {
-        "start_time": "2025-04-19T18:25:42.716213+00:00",
-        "end_time": "2025-04-19T18:25:42.719147+00:00",
-        "status": "completed",
-        "task_type": "create_file"
+        "start_time": "2025-04-19T22:35:27.295118+00:00",
+        "end_time": "2025-04-19T22:35:27.295340+00:00",
+        "status": "failed",
+        "task_type": "insert_below"
       }
     }
   },
   "recent_tasks": [
     {
       "task": {
-        "intent": "insert_below",
-        "filename": "dummy_target.py",
-        "target": "return \"Original code line\"",
-        "content": "    print(\"Agent inserted this line!\")"
+        "intent": "replace_line",
+        "filename": "demo_code.py",
+        "target": "CONSTANT_VALUE = 42",
+        "replacement": "CONSTANT_VALUE = 100"
       },
-      "intent": "insert_below",
+      "intent": "replace_line",
+      "status": "success",
+      "timestamp": "2025-04-19T19:21:47.990599+00:00",
+      "result": {
+        "success": true,
+        "action": null,
+        "message": "Replaced line in demo_code.py",
+        "timestamp": "2025-04-19T19:21:47.990007+00:00",
+        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_19-21-47",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:21:47.989793+00:00",
+          "end_time": "2025-04-19T19:21:47.990561+00:00",
+          "status": "completed",
+          "task_type": "replace_line"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "patch_code",
+        "filename": "demo_code.py",
+        "patch": "@@ def greet(name):\n-def greet(name):\n-    return f\"Hello, {name}!\"\n+def greet(name):\n+    return f\"Hey there, {name}!\""
+      },
+      "intent": "patch_code",
       "status": "failure",
-      "timestamp": "2025-04-18T00:19:15.981573+00:00",
+      "timestamp": "2025-04-19T19:22:24.387998+00:00",
       "result": {
         "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T00:19:15.981549+00:00",
-        "error": "Unsupported action: insert_below",
+        "timestamp": "2025-04-19T19:22:24.387946+00:00",
+        "error": "Missing required fields",
         "execution_metadata": {
-          "start_time": "2025-04-18T00:19:15.981355+00:00",
-          "end_time": "2025-04-18T00:19:15.981557+00:00",
+          "start_time": "2025-04-19T19:22:24.387633+00:00",
+          "end_time": "2025-04-19T19:22:24.387969+00:00",
+          "status": "failed",
+          "task_type": "patch_code"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "target": "def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-19T19:23:15.894036+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T19:23:15.894011+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:23:15.893710+00:00",
+          "end_time": "2025-04-19T19:23:15.894020+00:00",
           "status": "failed",
           "task_type": "insert_below"
         }
@@ -53,408 +102,174 @@
     {
       "task": {
         "intent": "insert_below",
-        "filename": "dummy_target.py",
-        "target": "return \"Original code line\"",
-        "content": "    print(\"Agent inserted this line!\")"
+        "filename": "demo_code.py",
+        "target": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
       },
       "intent": "insert_below",
-      "status": "success",
-      "timestamp": "2025-04-18T12:30:22.725595+00:00",
+      "status": "failure",
+      "timestamp": "2025-04-19T19:27:20.192138+00:00",
       "result": {
-        "success": true,
+        "success": false,
         "action": null,
-        "message": "Inserted line below target in dummy_target.py",
-        "timestamp": "2025-04-18T12:30:22.721726+00:00",
-        "backup": "/home/runner/workspace/backups/dummy_target.py_BACKUP_2025-04-18_12-30-22",
+        "message": "",
+        "timestamp": "2025-04-19T19:27:20.192066+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T12:30:22.721397+00:00",
-          "end_time": "2025-04-18T12:30:22.725564+00:00",
-          "status": "completed",
+          "start_time": "2025-04-19T19:27:20.191871+00:00",
+          "end_time": "2025-04-19T19:27:20.192119+00:00",
+          "status": "failed",
           "task_type": "insert_below"
         }
       }
     },
     {
       "task": {
-        "intent": "execute_code",
-        "code": "print(\"\ud83d\udee0\ufe0f Sandbox is alive and well!\")"
+        "intent": "patch_code",
+        "filename": "demo_code.py",
+        "function": "main",
+        "after_line": "def main():",
+        "new_code": "    print(\"[DEBUG] Entering main()\")"
       },
-      "intent": "execute_code",
+      "intent": "patch_code",
+      "status": "success",
+      "timestamp": "2025-04-19T19:28:08.643210+00:00",
+      "result": {
+        "success": true,
+        "action": null,
+        "message": "Code patched in demo_code.py",
+        "timestamp": "2025-04-19T19:28:08.642612+00:00",
+        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_19-28-08",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:28:08.642379+00:00",
+          "end_time": "2025-04-19T19:28:08.643164+00:00",
+          "status": "completed",
+          "task_type": "patch_code"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "after_line": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
+      },
+      "intent": "insert_below",
       "status": "failure",
-      "timestamp": "2025-04-18T13:24:21.069589+00:00",
+      "timestamp": "2025-04-19T22:16:38.311425+00:00",
       "result": {
         "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T13:24:21.069417+00:00",
-        "error": "Unexpected error during sandbox execution.",
-        "details": {
-          "error_message": "run_code_in_sandbox() got an unexpected keyword argument 'memory_limit'",
-          "timeout": 5,
-          "memory_limit": 104857600
-        },
+        "timestamp": "2025-04-19T22:16:38.311401+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T13:24:21.069185+00:00",
-          "end_time": "2025-04-18T13:24:21.069568+00:00",
+          "start_time": "2025-04-19T22:16:38.311148+00:00",
+          "end_time": "2025-04-19T22:16:38.311410+00:00",
           "status": "failed",
-          "task_type": "execute_code"
+          "task_type": "insert_below"
         }
       }
     },
     {
       "task": {
-        "intent": "execute_code",
-        "code": "print(\"\ud83d\udee0\ufe0f Sandbox is alive and well!\")"
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "target": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
       },
-      "intent": "execute_code",
+      "intent": "insert_below",
       "status": "failure",
-      "timestamp": "2025-04-18T13:30:50.180259+00:00",
+      "timestamp": "2025-04-19T22:19:23.066409+00:00",
       "result": {
         "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T13:30:50.180092+00:00",
-        "error": "Unexpected error during sandbox execution.",
-        "details": {
-          "error_message": "run_code_in_sandbox() got an unexpected keyword argument 'memory_limit'",
-          "timeout": 5,
-          "memory_limit": 104857600
-        },
+        "timestamp": "2025-04-19T22:19:23.066385+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T13:30:50.179769+00:00",
-          "end_time": "2025-04-18T13:30:50.180243+00:00",
+          "start_time": "2025-04-19T22:19:23.066189+00:00",
+          "end_time": "2025-04-19T22:19:23.066394+00:00",
           "status": "failed",
-          "task_type": "execute_code"
+          "task_type": "insert_below"
         }
       }
     },
     {
       "task": {
-        "intent": "execute_code",
-        "code": "print(\"\ud83d\udee0\ufe0f Sandbox is alive and well!\")"
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "target": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
       },
-      "intent": "execute_code",
+      "intent": "insert_below",
       "status": "failure",
-      "timestamp": "2025-04-18T13:42:33.685533+00:00",
+      "timestamp": "2025-04-19T22:23:52.498106+00:00",
       "result": {
         "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T13:42:33.685505+00:00",
-        "error": "Invalid input parameters: 'NoneType' object is not iterable",
-        "error_type": "validation_error",
+        "timestamp": "2025-04-19T22:23:52.498084+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T13:42:33.685197+00:00",
-          "end_time": "2025-04-18T13:42:33.685518+00:00",
+          "start_time": "2025-04-19T22:23:52.497889+00:00",
+          "end_time": "2025-04-19T22:23:52.498092+00:00",
           "status": "failed",
-          "task_type": "execute_code"
+          "task_type": "insert_below"
         }
       }
     },
     {
       "task": {
-        "intent": "execute_code",
-        "code": "print(\"\ud83d\udee0\ufe0f Sandbox is alive and well!\")"
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "pattern": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
       },
-      "intent": "execute_code",
+      "intent": "insert_below",
       "status": "failure",
-      "timestamp": "2025-04-18T13:47:24.574338+00:00",
+      "timestamp": "2025-04-19T22:29:33.779246+00:00",
       "result": {
         "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T13:47:24.574009+00:00",
-        "output": "",
-        "error": "\u274c Execution failed: signal only works in main thread of the main interpreter",
-        "return_value": null,
-        "resource_usage": {},
+        "timestamp": "2025-04-19T22:29:33.779215+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T13:47:24.573666+00:00",
-          "end_time": "2025-04-18T13:47:24.574302+00:00",
+          "start_time": "2025-04-19T22:29:33.778913+00:00",
+          "end_time": "2025-04-19T22:29:33.779226+00:00",
           "status": "failed",
-          "task_type": "execute_code"
+          "task_type": "insert_below"
         }
       }
     },
     {
       "task": {
-        "intent": "execute_code",
-        "code": "print(\"\ud83d\udee0\ufe0f Sandbox is alive and well!\")"
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "pattern": "    def multiply(self, a, b):",
+        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
       },
-      "intent": "execute_code",
-      "status": "success",
-      "timestamp": "2025-04-18T14:00:52.591648+00:00",
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-19T22:35:27.295359+00:00",
       "result": {
-        "success": true,
+        "success": false,
         "action": null,
         "message": "",
-        "timestamp": "2025-04-18T14:00:52.591076+00:00",
-        "output": "",
-        "error": "\u274c Execution failed: not allowed to raise maximum limit",
-        "return_value": null,
-        "resource_usage": {
-          "memory_mb": 45.01171875,
-          "cpu_time": 0.0,
-          "disk_usage_mb": 21532.796875,
-          "disk_io": [
-            199839689.5480059,
-            241076450.8833087
-          ]
-        },
+        "timestamp": "2025-04-19T22:35:27.295330+00:00",
+        "error": "Missing required fields for insert_below",
         "execution_metadata": {
-          "start_time": "2025-04-18T14:00:52.590876+00:00",
-          "end_time": "2025-04-18T14:00:52.591626+00:00",
-          "status": "completed",
-          "task_type": "execute_code"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "execute_code",
-        "code": "print(\"\u2705 Local test OK\")"
-      },
-      "intent": "execute_code",
-      "status": "success",
-      "timestamp": "2025-04-18T17:23:40.490609+00:00",
-      "result": {
-        "success": true,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T17:23:40.490105+00:00",
-        "output": "",
-        "error": null,
-        "return_value": null,
-        "resource_usage": {
-          "memory_mb": 44.953125,
-          "cpu_time": 0.0,
-          "disk_usage_mb": 20011.22265625,
-          "disk_io": [
-            36525993726.20979,
-            0.0
-          ]
-        },
-        "execution_metadata": {
-          "start_time": "2025-04-18T17:23:40.489907+00:00",
-          "end_time": "2025-04-18T17:23:40.490593+00:00",
-          "status": "completed",
-          "task_type": "execute_code"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "create_file",
-        "filename": "cloud_test.txt",
-        "content": "Hello from the cloud!"
-      },
-      "intent": "create_file",
-      "status": "success",
-      "timestamp": "2025-04-18T19:01:57.985576+00:00",
-      "result": {
-        "success": true,
-        "action": null,
-        "message": "\u2705 File created at: /home/runner/workspace/cloud_test.txt",
-        "timestamp": "2025-04-18T19:01:57.985341+00:00",
-        "execution_metadata": {
-          "start_time": "2025-04-18T19:01:57.985143+00:00",
-          "end_time": "2025-04-18T19:01:57.985540+00:00",
-          "status": "completed",
-          "task_type": "create_file"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "create_file",
-        "filename": "local_debug3.txt",
-        "content": "Hello from LOCAL Builder Agent on port 5000!"
-      },
-      "intent": "create_file",
-      "status": "success",
-      "timestamp": "2025-04-19T18:25:42.719182+00:00",
-      "result": {
-        "success": true,
-        "action": null,
-        "message": "\u2705 File created at: /home/runner/workspace/local_debug3.txt",
-        "timestamp": "2025-04-19T18:25:42.716544+00:00",
-        "execution_metadata": {
-          "start_time": "2025-04-19T18:25:42.716213+00:00",
-          "end_time": "2025-04-19T18:25:42.719147+00:00",
-          "status": "completed",
-          "task_type": "create_file"
+          "start_time": "2025-04-19T22:35:27.295118+00:00",
+          "end_time": "2025-04-19T22:35:27.295340+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
         }
       }
     }
   ],
   "failure_patterns": [
-    {
-      "task": "[replace_line] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-17T22:57:48.628363+00:00",
-        "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
-        "error_type": "validation_error",
-        "execution_metadata": {
-          "start_time": "2025-04-17T22:57:48.628066+00:00",
-          "end_time": "2025-04-17T22:57:48.628384+00:00",
-          "status": "failed",
-          "task_type": "replace_line"
-        }
-      },
-      "timestamp": "2025-04-17T22:57:48.629708+00:00"
-    },
-    {
-      "task": "[insert_below] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-17T23:16:38.565764+00:00",
-        "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
-        "error_type": "validation_error",
-        "execution_metadata": {
-          "start_time": "2025-04-17T23:16:38.565567+00:00",
-          "end_time": "2025-04-17T23:16:38.565777+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-17T23:16:38.566835+00:00"
-    },
-    {
-      "task": "[insert_below] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-17T23:17:47.823908+00:00",
-        "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
-        "error_type": "validation_error",
-        "execution_metadata": {
-          "start_time": "2025-04-17T23:17:47.823640+00:00",
-          "end_time": "2025-04-17T23:17:47.823922+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-17T23:17:47.824962+00:00"
-    },
-    {
-      "task": "[insert_below] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-17T23:31:01.028035+00:00",
-        "error": "Unsupported action: insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-17T23:31:01.027832+00:00",
-          "end_time": "2025-04-17T23:31:01.028043+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-17T23:31:01.029197+00:00"
-    },
-    {
-      "task": "[insert_below] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-17T23:38:28.915687+00:00",
-        "error": "Unsupported action: insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-17T23:38:28.915532+00:00",
-          "end_time": "2025-04-17T23:38:28.915695+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-17T23:38:28.916809+00:00"
-    },
-    {
-      "task": "[insert_below] dummy_target.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T00:19:15.981549+00:00",
-        "error": "Unsupported action: insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-18T00:19:15.981355+00:00",
-          "end_time": "2025-04-18T00:19:15.981557+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-18T00:19:15.982979+00:00"
-    },
-    {
-      "task": "[execute_code]  -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T13:24:21.069417+00:00",
-        "error": "Unexpected error during sandbox execution.",
-        "details": {
-          "error_message": "run_code_in_sandbox() got an unexpected keyword argument 'memory_limit'",
-          "timeout": 5,
-          "memory_limit": 104857600
-        },
-        "execution_metadata": {
-          "start_time": "2025-04-18T13:24:21.069185+00:00",
-          "end_time": "2025-04-18T13:24:21.069568+00:00",
-          "status": "failed",
-          "task_type": "execute_code"
-        }
-      },
-      "timestamp": "2025-04-18T13:24:21.079213+00:00"
-    },
-    {
-      "task": "[execute_code]  -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T13:30:50.180092+00:00",
-        "error": "Unexpected error during sandbox execution.",
-        "details": {
-          "error_message": "run_code_in_sandbox() got an unexpected keyword argument 'memory_limit'",
-          "timeout": 5,
-          "memory_limit": 104857600
-        },
-        "execution_metadata": {
-          "start_time": "2025-04-18T13:30:50.179769+00:00",
-          "end_time": "2025-04-18T13:30:50.180243+00:00",
-          "status": "failed",
-          "task_type": "execute_code"
-        }
-      },
-      "timestamp": "2025-04-18T13:30:50.181356+00:00"
-    },
-    {
-      "task": "[execute_code]  -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T13:42:33.685505+00:00",
-        "error": "Invalid input parameters: 'NoneType' object is not iterable",
-        "error_type": "validation_error",
-        "execution_metadata": {
-          "start_time": "2025-04-18T13:42:33.685197+00:00",
-          "end_time": "2025-04-18T13:42:33.685518+00:00",
-          "status": "failed",
-          "task_type": "execute_code"
-        }
-      },
-      "timestamp": "2025-04-18T13:42:33.686652+00:00"
-    },
     {
       "task": "[execute_code]  -",
       "result": {
@@ -474,16 +289,169 @@
         }
       },
       "timestamp": "2025-04-18T13:47:24.575491+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T19:19:42.141984+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:19:42.141749+00:00",
+          "end_time": "2025-04-19T19:19:42.141993+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T19:19:42.143452+00:00"
+    },
+    {
+      "task": "[patch_code] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T19:22:24.387946+00:00",
+        "error": "Missing required fields",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:22:24.387633+00:00",
+          "end_time": "2025-04-19T19:22:24.387969+00:00",
+          "status": "failed",
+          "task_type": "patch_code"
+        }
+      },
+      "timestamp": "2025-04-19T19:22:24.389767+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T19:23:15.894011+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:23:15.893710+00:00",
+          "end_time": "2025-04-19T19:23:15.894020+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T19:23:15.895806+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T19:27:20.192066+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T19:27:20.191871+00:00",
+          "end_time": "2025-04-19T19:27:20.192119+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T19:27:20.193737+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T22:16:38.311401+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:16:38.311148+00:00",
+          "end_time": "2025-04-19T22:16:38.311410+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T22:16:38.312670+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T22:19:23.066385+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:19:23.066189+00:00",
+          "end_time": "2025-04-19T22:19:23.066394+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T22:19:23.068041+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T22:23:52.498084+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:23:52.497889+00:00",
+          "end_time": "2025-04-19T22:23:52.498092+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T22:23:52.499291+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T22:29:33.779215+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:29:33.778913+00:00",
+          "end_time": "2025-04-19T22:29:33.779226+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T22:29:33.780801+00:00"
+    },
+    {
+      "task": "[insert_below] demo_code.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-19T22:35:27.295330+00:00",
+        "error": "Missing required fields for insert_below",
+        "execution_metadata": {
+          "start_time": "2025-04-19T22:35:27.295118+00:00",
+          "end_time": "2025-04-19T22:35:27.295340+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-19T22:35:27.297122+00:00"
     }
   ],
   "intent_stats": {
     "create_file": {
-      "success": 7,
+      "success": 8,
       "failure": 0
     },
     "patch_code": {
-      "success": 6,
-      "failure": 2
+      "success": 7,
+      "failure": 3
     },
     "create_file_from_dropin": {
       "success": 1,
@@ -498,12 +466,12 @@
       "failure": 1
     },
     "replace_line": {
-      "success": 0,
+      "success": 1,
       "failure": 2
     },
     "insert_below": {
       "success": 1,
-      "failure": 5
+      "failure": 13
     },
     "execute_code": {
       "success": 2,
@@ -704,9 +672,99 @@
         "notes": "Auto-generated fix attempt for failed task: [execute_code]  -"
       },
       "timestamp": "2025-04-18T13:47:24.575504+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T19:19:42.143466+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[patch_code] demo_code.py -",
+        "error": "Missing required fields",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [patch_code] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T19:22:24.389781+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T19:23:15.895819+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T19:27:20.193753+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T22:16:38.312681+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T22:19:23.068055+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T22:23:52.499305+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T22:29:33.780817+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] demo_code.py -",
+        "error": "Missing required fields for insert_below",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+      },
+      "timestamp": "2025-04-19T22:35:27.297137+00:00"
     }
   ],
-  "current_execution": "20250419_182542",
+  "current_execution": "20250419_223527",
   "confirmation_decisions": [
     {
       "intent": "create_file",
