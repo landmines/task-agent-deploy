@@ -28,32 +28,29 @@ def write_render_log(message):
     except Exception as e:
         print(f"Error: Failed to write to render.log: {e}")
 
-
 @app.route("/")
 def index():
     return "Agent is running."
-
 
 @app.route("/run", methods=["POST"])
 def run():
     try:
         data = request.get_json()
         print("Info: /run received:", data)
+
         result = run_agent(data)
         print("Info: run_agent result:", result)
         write_render_log(f"Task received: {data}")
 
         # Preserve existing taskId/timestamp logic
-        task_id = result.get("taskId") or result.get("result",
-                                                     {}).get("taskId")
+        task_id = result.get("taskId") or result.get("result", {}).get("taskId")
         result["taskId"] = task_id
         if "timestamp" not in result:
             result["timestamp"] = datetime.now(UTC).isoformat()
 
         # ── BEGIN add file‑readback into response ──
-        if data.get(
-                "task",
-            {}).get("intent") == "create_file" and result.get("success"):
+        if data.get("task", {}).get("intent") == "create_file" \
+           and (result.get("success") or result.get("result", {}).get("success")):
             filename = data["task"].get("filename")
             try:
                 with open(filename, "r") as f:
@@ -66,11 +63,7 @@ def run():
 
     except Exception as e:
         print("Error: /run error:", traceback.format_exc())
-        return jsonify({
-            "error": str(e),
-            "detail": traceback.format_exc()
-        }), 500
-
+        return jsonify({"error": str(e), "detail": traceback.format_exc()}), 500
 
 @app.route("/run_next", methods=["POST"])
 def run_next_endpoint():
