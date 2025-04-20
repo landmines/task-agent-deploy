@@ -60,7 +60,8 @@ class FileOps:
             return False
 
         # 2) Core-file protection
-        if filename in CORE_FILES and os.environ.get("SELF_MODIFY_MODE") != "1":
+        if filename in CORE_FILES and os.environ.get(
+                "SELF_MODIFY_MODE") != "1":
             return False
 
         return True
@@ -99,11 +100,11 @@ class FileOps:
                 with open(full, "r", encoding="utf-8") as f:
                     lines = f.readlines()
                 diff = ''.join(
-                    difflib.unified_diff(lines[:-len(content.splitlines(keepends=True))],
-                                         lines,
-                                         fromfile=filename,
-                                         tofile=filename)
-                )
+                    difflib.unified_diff(
+                        lines[:-len(content.splitlines(keepends=True))],
+                        lines,
+                        fromfile=filename,
+                        tofile=filename))
                 return {
                     "success": True,
                     "message": f"Appended to: {filename}",
@@ -123,7 +124,9 @@ class FileOps:
             try:
                 with open(full, "r", encoding="utf-8") as f:
                     lines = f.readlines()
-                new_lines = [line.replace(target, replacement) for line in lines]
+                new_lines = [
+                    line.replace(target, replacement) for line in lines
+                ]
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.writelines(new_lines)
@@ -131,8 +134,7 @@ class FileOps:
                     difflib.unified_diff(lines,
                                          new_lines,
                                          fromfile=filename,
-                                         tofile=filename)
-                )
+                                         tofile=filename))
                 return {
                     "success": True,
                     "message": f"Replaced line in {filename}",
@@ -168,8 +170,7 @@ class FileOps:
                     difflib.unified_diff(lines,
                                          new_lines,
                                          fromfile=filename,
-                                         tofile=filename)
-                )
+                                         tofile=filename))
                 return {
                     "success": True,
                     "message": f"Inserted below in {filename}",
@@ -191,7 +192,10 @@ class FileOps:
                     data = f.read()
                 new_data = data.replace(old_content, new_content)
                 if data == new_data:
-                    return {"success": False, "message": "No occurrences found."}
+                    return {
+                        "success": False,
+                        "message": "No occurrences found."
+                    }
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.write(new_data)
@@ -199,8 +203,7 @@ class FileOps:
                     difflib.unified_diff(data.splitlines(keepends=True),
                                          new_data.splitlines(keepends=True),
                                          fromfile=filename,
-                                         tofile=filename)
-                )
+                                         tofile=filename))
                 return {
                     "success": True,
                     "message": f"Modified file: {filename}",
@@ -246,7 +249,10 @@ class FileOps:
                         new_lines.extend(new_code.splitlines(keepends=True))
                         patched = True
                 if not patched:
-                    return {"success": False, "message": "After_line not found."}
+                    return {
+                        "success": False,
+                        "message": "After_line not found."
+                    }
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.writelines(new_lines)
@@ -254,8 +260,7 @@ class FileOps:
                     difflib.unified_diff(lines,
                                          new_lines,
                                          fromfile=filename,
-                                         tofile=filename)
-                )
+                                         tofile=filename))
                 return {
                     "success": True,
                     "message": f"Patched code in {filename}",
@@ -265,3 +270,14 @@ class FileOps:
             except Exception as e:
                 logging.error(f"patch error: {e}")
                 return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def patch(filename: str, after_line: str, new_code: str) -> dict:
+        # …existing implementation…
+        return {
+            "success": True,
+            "message": f"Patched code in {filename}",
+            "backup": backup,
+            "diff": diff
+        }
+        # …end of patch()…
