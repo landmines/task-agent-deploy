@@ -633,7 +633,7 @@ def simulate_push():
 
 def write_diagnostic(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Write diagnostic information to a log file"""
-    execution_complete = datetime.now(UTC)
+    execution_complete = datetime.now(timezone.utc)
     log_id = plan.get("filename") or f"log_{execution_complete.isoformat()}"
     content = {
         "execution_time": execution_complete.isoformat(),
@@ -748,7 +748,7 @@ def execute_action(plan: dict) -> dict:
         "success": False,
         "action": plan.get("action"),
         "message": "",
-        "timestamp": datetime.now(UTC).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
     try:
