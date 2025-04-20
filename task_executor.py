@@ -505,40 +505,46 @@ def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
             "error": f"Unexpected error: {str(e)}"
         }
 
-def append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
-    filename = plan.get("filename")
-    content = plan.get("content", "")
-    if not filename or "/" in filename or "\\" in filename or ".." in filename:
-        return {"success": False, "error": "Invalid filename."}
-    full_path = os.path.join(PROJECT_ROOT, filename)
+def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle the 'append_to_file' intent by delegating to FileOps.append_to_file,
+    which performs validation, locking, backup, diff generation, etc.
+    """
+    # 1) Ensure required field is present
+    if "filename" not in plan:
+        return {
+            "success": False,
+            "error": "Missing required field: 'filename'"
+        }
+
+    # 2) Extract and type‑check
+    filename = plan["filename"]
+    content  = plan.get("content", "")
+    if not isinstance(filename, str) or not isinstance(content, str):
+        return {
+            "success": False,
+            "error": "Fields 'filename' and 'content' must both be strings"
+        }
+
+    # 3) (Optional) re‑validate filepath here, or let FileOps do it
+    if not FileOps.validate_filepath(filename):
+        return {
+            "success": False,
+            "error": f"Invalid filename path: {filename}"
+        }
+
+    # 4) Delegate the real work
     try:
-        if not os.path.exists(full_path):
-            with open(full_path, "w") as f:
-                f.write("")  # Create an empty file
-            was_created = True
-        else:
-            was_created = False
-
-        with open(full_path, "a") as f:
-            f.write("\n" + content)
-
-        msg = f"✅ Appended to file: {full_path}"
-        if was_created:
-            msg += " (file was auto-created)"
-
-        return {"success": True, "message": msg}
-
-    except PermissionError:
-        logging.error(f"Permission denied writing to: {full_path}")
-        return {"success": False, "error": f"Permission denied: {full_path}"}
-
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error while appending to {full_path}: {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
-
+        return FileOps.append_to_file(
+            filename=filename,
+            content=content
+        )
     except Exception as e:
-        logging.error(f"Unexpected error appending to file: {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
+        # Catch any unexpected errors
+        return {
+            "success": False,
+            "error": f"append_to_file failed: {e}"
+        }
 
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
