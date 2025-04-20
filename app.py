@@ -30,6 +30,17 @@ def write_render_log(message):
     except Exception as e:
         print(f"Error: Failed to write to render.log: {e}")
 
+@app.before_request
+def check_self_modify():
+    """
+    Toggle SELF_MODIFY_MODE based on the X-Self-Modify header.
+    """
+    header_val = request.headers.get("X-Self-Modify", "")
+    if header_val == "1":
+        os.environ["SELF_MODIFY_MODE"] = "1"
+    else:
+        os.environ.pop("SELF_MODIFY_MODE", None)
+
 @app.route("/")
 def index():
     return "Agent is running."

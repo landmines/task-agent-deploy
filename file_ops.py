@@ -5,6 +5,15 @@ import shutil
 import difflib
 from datetime import datetime, timezone
 
+# ─── STEP 1: DEFINE CORE FILES ──────────────────────────────────────────────
+# These files can only be edited when SELF_MODIFY_MODE is enabled.
+CORE_FILES = {
+    "file_ops.py",
+    "task_executor.py",
+    # Add any other filenames here, relative to your project root.
+}
+# ───────────────────────────────────────────────────────────────────────────
+
 # Global lock to prevent race conditions
 _file_ops_lock = threading.Lock()
 
@@ -40,8 +49,26 @@ def _validate_filepath(filename: str) -> bool:
 class FileOps:
 
     @staticmethod
+    def validate_filepath(filename: str) -> bool:
+        """
+        Returns True if the filename is safe to operate on:
+        1) No traversal/absolute paths or unsafe characters.
+        2) Not a core file unless SELF_MODIFY_MODE is enabled.
+        """
+        # 1) Basic path validation
+        if not FileOps.validate_filepath(filename):
+            return False
+
+        # 2) Core‐file protection
+        #    Only allow edits to CORE_FILES if SELF_MODIFY_MODE == "1"
+        if filename in CORE_FILES and os.environ.get("SELF_MODIFY_MODE") != "1":
+            return False
+
+        return True
+
+    @staticmethod
     def create_file(filename: str, content: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
@@ -61,7 +88,7 @@ class FileOps:
 
     @staticmethod
     def append_to_file(filename: str, content: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
@@ -81,7 +108,7 @@ class FileOps:
 
     @staticmethod
     def replace_line(filename: str, target: str, replacement: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
@@ -118,7 +145,7 @@ class FileOps:
 
     @staticmethod
     def insert_below(filename: str, target: str, new_line: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
@@ -154,7 +181,7 @@ class FileOps:
 
     @staticmethod
     def modify_file(filename: str, old_content: str, new_content: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
@@ -187,7 +214,7 @@ class FileOps:
 
     @staticmethod
     def delete_file(filename: str) -> dict:
-        if not _validate_filepath(filename):
+        if not FileOps.validate_filepath(filename):
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:

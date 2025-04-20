@@ -12,23 +12,6 @@ PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
-
-def backup_file(filepath: str) -> Optional[str]:
-    if not os.path.exists(filepath):
-        return None
-    os.makedirs(BACKUP_DIR, exist_ok=True)
-    filename = os.path.basename(filepath)
-    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
-    backup_name = f"{filename}_BACKUP_{timestamp}"
-    backup_path = os.path.join(BACKUP_DIR, backup_name)
-    with open(filepath, "r",
-              encoding="utf-8") as f_in, open(backup_path,
-                                              "w",
-                                              encoding="utf-8") as f_out:
-        f_out.write(f_in.read())
-    return backup_path
-
-
 def unsupported_action(action):
     return {
         "success": False,
@@ -482,145 +465,41 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
-    filename = plan.get("filename")
-    content = plan.get("content", "")
-    if not filename or "/" in filename or "\\" in filename or ".." in filename:
-        return {"success": False, "error": "Invalid filename."}
-    full_path = os.path.join(PROJECT_ROOT, filename)
-    try:
-        with open(full_path, "w") as f:
-            f.write(content)
-        return {"success": True, "message": f"✅ File created at: {full_path}"}
-
-    except PermissionError:
-        logging.error(
-            f"Permission denied when trying to write to: {full_path}")
-        return {"success": False, "error": f"Permission denied: {full_path}"}
-
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error while writing to {full_path}: {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
-
-    except Exception as e:
-        logging.error(f"Unexpected error during file creation: {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
-
+    # Delegate entirely to FileOps
+    return FileOps.create_file(
+        filename=plan.get("filename", ""),
+        content=plan.get("content", "")
+    )
 
 def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'append_to_file' intent by delegating to FileOps.append_to_file,
     which performs validation, locking, backup, diff generation, etc.
     """
-    # 1) Ensure required field is present
-    if "filename" not in plan:
-        return {
-            "success": False,
-            "error": "Missing required field: 'filename'"
-        }
-
-    # 2) Extract and type‑check
-    filename = plan["filename"]
-    content = plan.get("content", "")
-    if not isinstance(filename, str) or not isinstance(content, str):
-        return {
-            "success": False,
-            "error": "Fields 'filename' and 'content' must both be strings"
-        }
-
-    # 3) (Optional) re‑validate filepath here, or let FileOps do it
-    if not FileOps.validate_filepath(filename):
-        return {
-            "success": False,
-            "error": f"Invalid filename path: {filename}"
-        }
-
-    # 4) Delegate the real work
-    try:
-        return FileOps.append_to_file(filename=filename, content=content)
-    except Exception as e:
-        # Catch any unexpected errors
-        return {"success": False, "error": f"append_to_file failed: {e}"}
-
-
+    return FileOps.append_to_file(
+        filename=plan.get("filename", ""),
+        content=plan.get("content", "")
+    )
+    
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
-    filename = plan.get("filename")
-    old_content = plan.get("old_content")
-    new_content = plan.get("new_content")
-    if not filename or "/" in filename or "\\" in filename or ".." in filename:
-        return {"success": False, "error": "Invalid filename."}
-    full_path = os.path.join(PROJECT_ROOT, filename)
-    if not os.path.exists(full_path):
-        return {
-            "success": False,
-            "error": f"File '{full_path}' does not exist. Cannot edit."
-        }
-    try:
-        with open(full_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        if old_content not in content:
-            return {"success": False, "error": "Old content not found in file"}
-
-        backup_path = backup_file(full_path)
-        if not backup_path:
-            return {"success": False, "error": "Failed to create backup"}
-
-        new_content_full = content.replace(old_content, new_content)
-        with open(full_path, "w", encoding="utf-8") as f:
-            f.write(new_content_full)
-
-        return {
-            "success": True,
-            "message": f"File modified: {filename}",
-            "backup": backup_path
-        }
-
-    except FileNotFoundError:
-        logging.error(f"File not found: {full_path}")
-        return {"success": False, "error": f"File not found: {filename}"}
-
-    except PermissionError:
-        logging.error(f"Permission denied modifying file: {full_path}")
-        return {"success": False, "error": f"Permission denied for {filename}"}
-
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error modifying file {filename}: {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
-
-    except Exception as e:
-        logging.error(f"Unexpected error modifying file: {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
-
-
+    """
+    Handle the 'edit_file' intent by delegating entirely to FileOps.modify_file,
+    which handles validation, locking, backup, diff generation, etc.
+    """
+    return FileOps.modify_file(
+        filename=plan.get("filename", ""),
+        old_content=plan.get("old_content", ""),
+        new_content=plan.get("new_content", "")
+    )
+    
 def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'delete_file' intent by delegating to FileOps.delete_file,
-    which performs path‑validation, locking, backup, diff generation, etc.
+    which performs validation, locking, backup, diff generation, etc.
     """
-    # 1) Early validation: filename must be present
-    if "filename" not in plan or not isinstance(
-            plan["filename"], str) or not plan["filename"].strip():
-        return {
-            "success": False,
-            "error": "Missing required field: 'filename'"
-        }
-
-    filename = plan["filename"]
-
-    # 2) Optional further validation (FileOps also validates internally)
-    if not FileOps._validate_filepath(filename):
-        return {
-            "success": False,
-            "error": f"Invalid filename path: {filename}"
-        }
-
-    # 3) Delegate to the centralized FileOps API
-    try:
-        return FileOps.delete_file(filename=filename)
-    except Exception as e:
-        # Catch any truly unexpected errors
-        return {"success": False, "error": f"delete_file failed: {e}"}
-
+    return FileOps.delete_file(
+        filename=plan.get("filename", "")
+    )
 
 def simulate_push():
     return {
@@ -729,18 +608,6 @@ def deploy_to_replit(project_name, config=None):
             "success": False,
             "error": f"Unexpected error during deployment: {str(e)}"
         }
-
-
-def validate_filepath(filename: str) -> bool:
-    """Validate if a filepath is safe"""
-    import os.path
-    if not filename or not isinstance(filename, str):
-        return False
-    norm_path = os.path.normpath(filename)
-    return not (".." in norm_path or norm_path.startswith("/")
-                or norm_path.startswith("\\")
-                or any(c in norm_path for c in ["<", ">", "|", "*", "?"]))
-
 
 def execute_action(plan: dict) -> dict:
     """Execute actions with consistent status handling"""
