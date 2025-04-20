@@ -5,14 +5,14 @@ import shutil
 import difflib
 from datetime import datetime, timezone
 
-# ─── STEP 1: DEFINE CORE FILES ──────────────────────────────────────────────
+# ─── STEP 1: DEFINE CORE FILES ─────────────────────────────────────────────
 # These files can only be edited when SELF_MODIFY_MODE is enabled.
 CORE_FILES = {
     "file_ops.py",
     "task_executor.py",
     # Add any other filenames here, relative to your project root.
 }
-# ───────────────────────────────────────────────────────────────────────────
+# ────────────────────────────────────────────────────────────────────────────
 
 # Global lock to prevent race conditions
 _file_ops_lock = threading.Lock()
@@ -56,11 +56,10 @@ class FileOps:
         2) Not a core file unless SELF_MODIFY_MODE is enabled.
         """
         # 1) Basic path validation
-        if not FileOps.validate_filepath(filename):
+        if not _validate_filepath(filename):
             return False
 
-        # 2) Core‐file protection
-        #    Only allow edits to CORE_FILES if SELF_MODIFY_MODE == "1"
+        # 2) Core-file protection
         if filename in CORE_FILES and os.environ.get("SELF_MODIFY_MODE") != "1":
             return False
 
@@ -94,13 +93,22 @@ class FileOps:
         with _file_ops_lock:
             backup = _backup_file(full)
             try:
-                os.makedirs(os.path.dirname(full), exist_ok=True)
                 with open(full, "a", encoding="utf-8") as f:
                     f.write(content)
+                # Show only the appended diff
+                with open(full, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                diff = ''.join(
+                    difflib.unified_diff(lines[:-len(content.splitlines(keepends=True))],
+                                         lines,
+                                         fromfile=filename,
+                                         tofile=filename)
+                )
                 return {
                     "success": True,
                     "message": f"Appended to: {filename}",
-                    "backup": backup
+                    "backup": backup,
+                    "diff": diff
                 }
             except Exception as e:
                 logging.error(f"append_to_file error: {e}")
@@ -115,16 +123,7 @@ class FileOps:
             try:
                 with open(full, "r", encoding="utf-8") as f:
                     lines = f.readlines()
-                new_lines = []
-                replaced = False
-                for line in lines:
-                    if not replaced and target in line:
-                        new_lines.append(replacement + "\n")
-                        replaced = True
-                    else:
-                        new_lines.append(line)
-                if not replaced:
-                    return {"success": False, "message": "Target not found."}
+                new_lines = [line.replace(target, replacement) for line in lines]
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.writelines(new_lines)
@@ -132,10 +131,11 @@ class FileOps:
                     difflib.unified_diff(lines,
                                          new_lines,
                                          fromfile=filename,
-                                         tofile=filename))
+                                         tofile=filename)
+                )
                 return {
                     "success": True,
-                    "message": f"Line replaced in {filename}",
+                    "message": f"Replaced line in {filename}",
                     "backup": backup,
                     "diff": diff
                 }
@@ -168,7 +168,8 @@ class FileOps:
                     difflib.unified_diff(lines,
                                          new_lines,
                                          fromfile=filename,
-                                         tofile=filename))
+                                         tofile=filename)
+                )
                 return {
                     "success": True,
                     "message": f"Inserted below in {filename}",
@@ -187,24 +188,22 @@ class FileOps:
         with _file_ops_lock:
             try:
                 with open(full, "r", encoding="utf-8") as f:
-                    content = f.read().splitlines(keepends=True)
-                if old_content not in ''.join(content):
-                    return {
-                        "success": False,
-                        "message": "Old content not found."
-                    }
+                    data = f.read()
+                new_data = data.replace(old_content, new_content)
+                if data == new_data:
+                    return {"success": False, "message": "No occurrences found."}
                 backup = _backup_file(full)
-                updated = ''.join(content).replace(old_content, new_content)
                 with open(full, "w", encoding="utf-8") as f:
-                    f.write(updated)
+                    f.write(new_data)
                 diff = ''.join(
-                    difflib.unified_diff(content,
-                                         updated.splitlines(keepends=True),
+                    difflib.unified_diff(data.splitlines(keepends=True),
+                                         new_data.splitlines(keepends=True),
                                          fromfile=filename,
-                                         tofile=filename))
+                                         tofile=filename)
+                )
                 return {
                     "success": True,
-                    "message": f"Modified content in {filename}",
+                    "message": f"Modified file: {filename}",
                     "backup": backup,
                     "diff": diff
                 }
@@ -218,14 +217,12 @@ class FileOps:
             return {"success": False, "error": "Invalid filename path."}
         full = os.path.join(PROJECT_ROOT, filename)
         with _file_ops_lock:
-            if not os.path.exists(full):
-                return {"success": False, "message": "File not found."}
-            backup = _backup_file(full)
             try:
+                backup = _backup_file(full)
                 os.remove(full)
                 return {
                     "success": True,
-                    "message": f"Deleted {filename}",
+                    "message": f"Deleted file: {filename}",
                     "backup": backup
                 }
             except Exception as e:
@@ -234,11 +231,37 @@ class FileOps:
 
     @staticmethod
     def patch(filename: str, after_line: str, new_code: str) -> dict:
-        """
-        Apply a code patch by inserting `new_code` after the first occurrence
-        of `after_line`. Delegates to insert_below (so you get locking, backup,
-        diff, etc. for free).
-        """
-        return FileOps.insert_below(filename=filename,
-                                    target=after_line,
-                                    new_line=new_code)
+        if not FileOps.validate_filepath(filename):
+            return {"success": False, "error": "Invalid filename path."}
+        full = os.path.join(PROJECT_ROOT, filename)
+        with _file_ops_lock:
+            try:
+                with open(full, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                new_lines = []
+                patched = False
+                for line in lines:
+                    new_lines.append(line)
+                    if not patched and after_line in line:
+                        new_lines.extend(new_code.splitlines(keepends=True))
+                        patched = True
+                if not patched:
+                    return {"success": False, "message": "After_line not found."}
+                backup = _backup_file(full)
+                with open(full, "w", encoding="utf-8") as f:
+                    f.writelines(new_lines)
+                diff = ''.join(
+                    difflib.unified_diff(lines,
+                                         new_lines,
+                                         fromfile=filename,
+                                         tofile=filename)
+                )
+                return {
+                    "success": True,
+                    "message": f"Patched code in {filename}",
+                    "backup": backup,
+                    "diff": diff
+                }
+            except Exception as e:
+                logging.error(f"patch error: {e}")
+                return {"success": False, "error": str(e)}

@@ -622,29 +622,54 @@ def execute_action(plan: dict) -> dict:
             return {"success": False, "error": "Invalid action type"}
 
         action_handlers = {
-            "create_file":    lambda p: FileOps.create_file(p["filename"], p.get("content","")),
-            "append_to_file": lambda p: FileOps.append_to_file(p["filename"], p.get("content","")),
-            "modify_file":    lambda p: FileOps.modify_file(p["filename"], p["old_content"], p["new_content"]),
-            "replace_line":   lambda p: FileOps.replace_line(p["filename"], p["target"], p["replacement"]),
-            "insert_below":   lambda p: FileOps.insert_below(p["filename"], p["target"], p["new_line"]),
-            "delete_file":    lambda p: FileOps.delete_file(p["filename"]),
-            "patch_code":     lambda p: FileOps.patch(p["filename"], p["after_line"], p["new_code"]),
-            "execute_code":   lambda p: run_code_in_sandbox(
-                                     p["code"],
-                                     timeout=min(p.get("timeout",5),30),
-                                     memory_limit=min(p.get("memory_limit",100*1024*1024),512*1024*1024),
-                                     inputs=p.get("inputs",{}))
+            "create_file":
+            lambda p: FileOps.create_file(p["filename"], p.get("content", "")),
+            "append_to_file":
+            lambda p: FileOps.append_to_file(p["filename"], p.get(
+                "content", "")),
+            "modify_file":
+            lambda p: FileOps.modify_file(p["filename"], p["old_content"], p[
+                "new_content"]),
+            "replace_line":
+            lambda p: FileOps.replace_line(p["filename"], p["target"], p[
+                "replacement"]),
+            "insert_below":
+            lambda p: FileOps.insert_below(p["filename"], p["target"], p[
+                "new_line"]),
+            "delete_file":
+            lambda p: FileOps.delete_file(p["filename"]),
+            "patch_code":
+            lambda p: FileOps.patch(p["filename"], p["after_line"], p[
+                "new_code"]),
+            "execute_code":
+            lambda p: run_code_in_sandbox(
+                p["code"],
+                timeout=min(p.get("timeout", 5), 30),
+                memory_limit=min(p.get("memory_limit", 100 * 1024 * 1024), 512
+                                 * 1024 * 1024),
+                inputs=p.get("inputs", {}))
         }
 
         if action in action_handlers:
             return action_handlers[action](plan)
         elif action == "create_and_run":
             # Implement create_and_run logic if needed
-            return {"success": False, "error": "create_and_run action not implemented"}
+            return {
+                "success": False,
+                "error": "create_and_run action not implemented"
+            }
         else:
             return {"success": False, "error": f"Unsupported action: {action}"}
 
     except (ValueError, TypeError) as e:
-        return {"success": False, "error": f"Invalid input parameters: {e}", "error_type": "validation_error"}
+        return {
+            "success": False,
+            "error": f"Invalid input parameters: {e}",
+            "error_type": "validation_error"
+        }
     except Exception as e:
-        return {"success": False, "error": f"Action execution failed: {e}", "error_type": "execution_error"}
+        return {
+            "success": False,
+            "error": f"Action execution failed: {e}",
+            "error_type": "execution_error"
+        }
