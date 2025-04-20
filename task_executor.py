@@ -473,7 +473,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
     # Add execution metadata
     result["execution_metadata"] = {
         "start_time": execution_start.isoformat(),
-        "end_time": datetime.now(UTC).isoformat(),
+        "end_time": datetime.now(timezone.utc).isoformat(),
         "status": "completed" if result.get("success") else "failed",
         "task_type": plan.get("action") or plan.get("intent")
     }
