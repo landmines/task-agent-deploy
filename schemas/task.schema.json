@@ -29,7 +29,59 @@
         "function":    { "type": "string" },
         "new_code":    { "type": "string" }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "intent": { "const": "create_file" }
+            }
+          },
+          "then": {
+            "required": ["content"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": { "const": "append_to_file" }
+            }
+          },
+          "then": {
+            "required": ["content"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": { "const": "replace_line" }
+            }
+          },
+          "then": {
+            "required": ["target", "replacement"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": { "const": "insert_below" }
+            }
+          },
+          "then": {
+            "required": ["target", "new_line"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "intent": { "const": "patch_code" }
+            }
+          },
+          "then": {
+            "required": ["after_line", "new_code"]
+          }
+        }
+      ]
     }
   },
   "additionalProperties": false
