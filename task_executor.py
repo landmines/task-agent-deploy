@@ -2,7 +2,7 @@ import os
 import re
 import json
 import logging
-from file_editor import append_to_file, replace_line, insert_below
+from file_ops import FileOps
 from sandbox_runner import run_code_in_sandbox
 from typing import Dict, Any, Optional
 from datetime import datetime, UTC
@@ -78,61 +78,51 @@ def restore_from_backup(backup_path: str) -> Dict[str, Any]:
             "error": f"I/O error occurred: {str(e)}"
         }
 
-def modify_file(plan):
-    """Modify existing file content with proper validation"""
-    filename = plan.get("filename")
-    old_content = plan.get("old_content")
-    new_content = plan.get("new_content")
-
-    if not all([filename, old_content, new_content]):
-        return {"success": False, "error": "Missing required fields"}
-
-    if not isinstance(filename, str) or not isinstance(old_content, str) or not isinstance(new_content, str):
-        return {"success": False, "error": "Invalid data types provided"}
-
-    if not validate_filepath(filename):
-        return {"success": False, "error": "Invalid filename path"}
-
-    full_path = os.path.join(PROJECT_ROOT, filename)
-    if not os.path.exists(full_path):
-        return {"success": False, "error": f"File {filename} not found"}
-
-    try:
-        with open(full_path, "r") as f:
-            content = f.read()
-
-        if old_content not in content:
-            return {"success": False, "error": "Old content not found in file"}
-
-        backup_path = backup_file(full_path)
-        if not backup_path:
-            return {"success": False, "error": "Failed to create backup"}
-
-        new_content_full = content.replace(old_content, new_content)
-        with open(full_path, "w") as f:
-            f.write(new_content_full)
-
+def modify_file(plan: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle the 'modify_file' intent by delegating to FileOps.modify_file,
+    which performs validation, locking, backup, diff generation, etc.
+    """
+    # 1) Check for required fields
+    required = ("filename", "old_content", "new_content")
+    missing = [k for k in required if k not in plan or not plan.get(k)]
+    if missing:
         return {
-            "success": True,
-            "message": f"File modified: {filename}",
-            "backup": backup_path
+            "success": False,
+            "error": f"Missing required field(s): {', '.join(missing)}"
         }
-    except FileNotFoundError:
-        logging.error(f"File not found: {full_path}")
-        return {"success": False, "error": f"File '{filename}' not found."}
 
-    except PermissionError:
-        logging.error(f"Permission denied modifying file: {full_path}")
-        return {"success": False, "error": f"Permission denied for file '{filename}'."}
+    # 2) Extract and type‑check
+    filename    = plan["filename"]
+    old_content = plan["old_content"]
+    new_content = plan["new_content"]
+    if not all(isinstance(plan[k], str) for k in required):
+        return {
+            "success": False,
+            "error": "Fields 'filename', 'old_content' and 'new_content' must all be strings"
+        }
 
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error modifying file '{filename}': {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
+    # 3) (Optional) Re‑validate filepath here or let FileOps do it
+    if not FileOps.validate_filepath(filename):
+        return {
+            "success": False,
+            "error": f"Invalid filename path: {filename}"
+        }
 
+    # 4) Delegate to FileOps.modify_file
+    try:
+        return FileOps.modify_file(
+            filename=filename,
+            old_content=old_content,
+            new_content=new_content
+        )
     except Exception as e:
-        logging.error(f"Unexpected error modifying file '{filename}': {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
-
+        # Catch any unexpected errors
+        return {
+            "success": False,
+            "error": f"modify_file failed: {e}"
+        }
+        
 def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
@@ -187,43 +177,73 @@ def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
 
 def handle_replace_line(plan: Dict[str, Any]) -> Dict[str, Any]:
-    filename = plan.get("filename")
-    target = plan.get("target")
+    """
+    Handle the 'replace_line' intent by delegating to FileOps.replace_line,
+    which performs validation, locking, backup, diff generation, etc.
+    """
+    filename    = plan.get("filename")
+    target      = plan.get("target")
     replacement = plan.get("replacement")
 
-    if not filename or not target or not replacement:
-        return {"success": False, "error": "Missing required fields for replace_line"}
+    # 1) Early validation of required fields
+    missing = [k for k in ("filename","target","replacement") if not plan.get(k)]
+    if missing:
+        return {
+            "success": False,
+            "error": f"Missing required field(s): {', '.join(missing)}"
+        }
 
-    if not validate_filepath(filename):
-        return {"success": False, "error": "Invalid filename path"}
-
+    # 2) Delegate to your single FileOps API
     try:
-        backup_path = backup_file(filename)
-        result = replace_line(filename, target, replacement)
-        result["backup"] = backup_path
-        return result
+        return FileOps.replace_line(
+            filename=filename,
+            target=target,
+            replacement=replacement,
+        )
     except Exception as e:
-        return {"success": False, "error": f"replace_line failed: {str(e)}"}
-
+        # Only catch truly unexpected errors here
+        return {
+            "success": False,
+            "error": f"replace_line failed: {e}"
+        }
 
 def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Handle the 'insert_below' intent by delegating to FileOps.insert_below,
+    which performs validation, locking, backup, diff generation, etc.
+    """
     filename = plan.get("filename")
-    target = plan.get("target")
+    target   = plan.get("target")
     new_line = plan.get("new_line")
 
-    if not filename or not target or not new_line:
-        return {"success": False, "error": "Missing required fields for insert_below"}
+    # 1) Early validation of required fields
+    missing = [k for k in ("filename", "target", "new_line") if not plan.get(k)]
+    if missing:
+        return {
+            "success": False,
+            "error": f"Missing required field(s): {', '.join(missing)}"
+        }
 
-    if not validate_filepath(filename):
-        return {"success": False, "error": "Invalid filename path"}
+    # 2) Optional: re‑validate filepath here or let FileOps do it
+    if not FileOps.validate_filepath(filename):
+        return {
+            "success": False,
+            "error": f"Invalid filename path: {filename}"
+        }
 
+    # 3) Delegate to the centralized FileOps API
     try:
-        backup_path = backup_file(filename)
-        result = insert_below(filename, target, new_line)
-        result["backup"] = backup_path
-        return result
+        return FileOps.insert_below(
+            filename=filename,
+            target=target,
+            new_line=new_line
+        )
     except Exception as e:
-        return {"success": False, "error": f"insert_below failed: {str(e)}"}
+        # Only catch truly unexpected errors
+        return {
+            "success": False,
+            "error": f"insert_below failed: {e}"
+        }
 
 def handle_execute_code(plan: dict) -> dict:
     """
