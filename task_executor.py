@@ -596,37 +596,26 @@ def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
-    filename = plan.get("filename")
-    if not filename or "/" in filename or "\\" in filename or ".." in filename:
-        return {"success": False, "error": "Invalid filename."}
-    full_path = os.path.join(PROJECT_ROOT, filename)
-    if not os.path.exists(full_path):
-        return {
-            "success": False,
-            "error": f"File '{full_path}' not found. Nothing to delete."
-        }
+    """
+    Handle the 'delete_file' intent by delegating to FileOps.delete_file,
+    which performs path‑validation, locking, backup, diff generation, etc.
+    """
+    # 1) Early validation: filename must be present
+    if "filename" not in plan or not isinstance(plan["filename"], str) or not plan["filename"].strip():
+        return {"success": False, "error": "Missing required field: 'filename'"}
+
+    filename = plan["filename"]
+
+    # 2) Optional further validation (FileOps also validates internally)
+    if not FileOps._validate_filepath(filename):
+        return {"success": False, "error": f"Invalid filename path: {filename}"}
+
+    # 3) Delegate to the centralized FileOps API
     try:
-        os.remove(full_path)
-        return {
-            "success": True,
-            "message": f"🗑️ File deleted: {full_path}"
-        }
-
-    except FileNotFoundError:
-        logging.warning(f"File to delete not found: {full_path}")
-        return {"success": False, "error": f"File '{filename}' not found."}
-
-    except PermissionError:
-        logging.error(f"Permission denied deleting: {full_path}")
-        return {"success": False, "error": f"Permission denied for file '{filename}'."}
-
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error deleting file '{filename}': {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
-
+        return FileOps.delete_file(filename=filename)
     except Exception as e:
-        logging.error(f"Unexpected error deleting file '{filename}': {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
+        # Catch any truly unexpected errors
+        return {"success": False, "error": f"delete_file failed: {e}"}
 
 def simulate_push():
     return {
