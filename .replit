@@ -23,3 +23,15 @@ externalPort = 80
 localPort = 5000
 externalPort = 5000
 
+[workflows]
+runButton = "Run"
+
+[[workflows.workflow]]
+name = "Run"
+author = 41100971
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app.py"
+

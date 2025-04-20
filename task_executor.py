@@ -639,7 +639,8 @@ def execute_action(plan: dict) -> dict:
         if action in action_handlers:
             return action_handlers[action](plan)
         elif action == "create_and_run":
-            …  # your existing base64/subprocess code
+            # Implement create_and_run logic if needed
+            return {"success": False, "error": "create_and_run action not implemented"}
         else:
             return {"success": False, "error": f"Unsupported action: {action}"}
 
