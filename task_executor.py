@@ -757,28 +757,32 @@ def execute_action(plan: dict) -> dict:
             return {"success": False, "error": "Invalid action type"}
 
         action_handlers = {
-            "execute_code":
-            handle_execute_code,
             "create_file":
             lambda p: FileOps.create_file(p["filename"], p.get("content", "")),
             "append_to_file":
             lambda p: FileOps.append_to_file(p["filename"], p.get(
                 "content", "")),
+            "modify_file":
+            lambda p: FileOps.modify_file(p["filename"], p["old_content"], p[
+                "new_content"]),
             "replace_line":
             lambda p: FileOps.replace_line(p["filename"], p["target"], p[
                 "replacement"]),
             "insert_below":
             lambda p: FileOps.insert_below(p["filename"], p["target"], p[
                 "new_line"]),
-            "modify_file":
-            lambda p: FileOps.modify_file(p["filename"], p["old_content"], p[
-                "new_content"]),
             "delete_file":
             lambda p: FileOps.delete_file(p["filename"]),
             "patch_code":
             lambda p: FileOps.patch(p["filename"], p["after_line"], p[
                 "new_code"]),
-            # …
+            "execute_code":
+            lambda p: run_code_in_sandbox(
+                p["code"],
+                timeout=min(p.get("timeout", 5), 30),
+                memory_limit=min(p.get("memory_limit", 100 * 1024 * 1024), 512
+                                 * 1024 * 1024),
+                inputs=p.get("inputs", {}))
         }
 
         if action in action_handlers:
