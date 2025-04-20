@@ -12,6 +12,7 @@ _file_ops_lock = threading.Lock()
 PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 
+
 def _ensure_backup_dir():
     os.makedirs(BACKUP_DIR, exist_ok=True)
 
@@ -32,12 +33,12 @@ def _backup_file(filepath: str) -> str:
 def _validate_filepath(filename: str) -> bool:
     """Disallow absolute or traversal paths."""
     norm = os.path.normpath(filename)
-    return not (
-        norm.startswith("/") or norm.startswith("\\") or
-        ".." in norm or any(c in norm for c in "<>|*?"))
+    return not (norm.startswith("/") or norm.startswith("\\") or ".." in norm
+                or any(c in norm for c in "<>|*?"))
 
 
 class FileOps:
+
     @staticmethod
     def create_file(filename: str, content: str) -> dict:
         if not _validate_filepath(filename):
@@ -49,7 +50,11 @@ class FileOps:
                 os.makedirs(os.path.dirname(full), exist_ok=True)
                 with open(full, "w", encoding="utf-8") as f:
                     f.write(content)
-                return {"success": True, "message": f"File created: {filename}", "backup": backup}
+                return {
+                    "success": True,
+                    "message": f"File created: {filename}",
+                    "backup": backup
+                }
             except Exception as e:
                 logging.error(f"create_file error: {e}")
                 return {"success": False, "error": str(e)}
@@ -65,7 +70,11 @@ class FileOps:
                 os.makedirs(os.path.dirname(full), exist_ok=True)
                 with open(full, "a", encoding="utf-8") as f:
                     f.write(content)
-                return {"success": True, "message": f"Appended to: {filename}", "backup": backup}
+                return {
+                    "success": True,
+                    "message": f"Appended to: {filename}",
+                    "backup": backup
+                }
             except Exception as e:
                 logging.error(f"append_to_file error: {e}")
                 return {"success": False, "error": str(e)}
@@ -92,8 +101,17 @@ class FileOps:
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.writelines(new_lines)
-                diff = ''.join(difflib.unified_diff(lines, new_lines, fromfile=filename, tofile=filename))
-                return {"success": True, "message": f"Line replaced in {filename}", "backup": backup, "diff": diff}
+                diff = ''.join(
+                    difflib.unified_diff(lines,
+                                         new_lines,
+                                         fromfile=filename,
+                                         tofile=filename))
+                return {
+                    "success": True,
+                    "message": f"Line replaced in {filename}",
+                    "backup": backup,
+                    "diff": diff
+                }
             except Exception as e:
                 logging.error(f"replace_line error: {e}")
                 return {"success": False, "error": str(e)}
@@ -119,8 +137,17 @@ class FileOps:
                 backup = _backup_file(full)
                 with open(full, "w", encoding="utf-8") as f:
                     f.writelines(new_lines)
-                diff = ''.join(difflib.unified_diff(lines, new_lines, fromfile=filename, tofile=filename))
-                return {"success": True, "message": f"Inserted below in {filename}", "backup": backup, "diff": diff}
+                diff = ''.join(
+                    difflib.unified_diff(lines,
+                                         new_lines,
+                                         fromfile=filename,
+                                         tofile=filename))
+                return {
+                    "success": True,
+                    "message": f"Inserted below in {filename}",
+                    "backup": backup,
+                    "diff": diff
+                }
             except Exception as e:
                 logging.error(f"insert_below error: {e}")
                 return {"success": False, "error": str(e)}
@@ -135,13 +162,25 @@ class FileOps:
                 with open(full, "r", encoding="utf-8") as f:
                     content = f.read().splitlines(keepends=True)
                 if old_content not in ''.join(content):
-                    return {"success": False, "message": "Old content not found."}
+                    return {
+                        "success": False,
+                        "message": "Old content not found."
+                    }
                 backup = _backup_file(full)
                 updated = ''.join(content).replace(old_content, new_content)
                 with open(full, "w", encoding="utf-8") as f:
                     f.write(updated)
-                diff = ''.join(difflib.unified_diff(content, updated.splitlines(keepends=True), fromfile=filename, tofile=filename))
-                return {"success": True, "message": f"Modified content in {filename}", "backup": backup, "diff": diff}
+                diff = ''.join(
+                    difflib.unified_diff(content,
+                                         updated.splitlines(keepends=True),
+                                         fromfile=filename,
+                                         tofile=filename))
+                return {
+                    "success": True,
+                    "message": f"Modified content in {filename}",
+                    "backup": backup,
+                    "diff": diff
+                }
             except Exception as e:
                 logging.error(f"modify_file error: {e}")
                 return {"success": False, "error": str(e)}
@@ -157,7 +196,22 @@ class FileOps:
             backup = _backup_file(full)
             try:
                 os.remove(full)
-                return {"success": True, "message": f"Deleted {filename}", "backup": backup}
+                return {
+                    "success": True,
+                    "message": f"Deleted {filename}",
+                    "backup": backup
+                }
             except Exception as e:
                 logging.error(f"delete_file error: {e}")
                 return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def patch(filename: str, after_line: str, new_code: str) -> dict:
+        """
+        Apply a code patch by inserting `new_code` after the first occurrence
+        of `after_line`. Delegates to insert_below (so you get locking, backup,
+        diff, etc. for free).
+        """
+        return FileOps.insert_below(filename=filename,
+                                    target=after_line,
+                                    new_line=new_code)

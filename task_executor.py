@@ -12,6 +12,7 @@ PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
+
 def backup_file(filepath: str) -> Optional[str]:
     if not os.path.exists(filepath):
         return None
@@ -20,9 +21,13 @@ def backup_file(filepath: str) -> Optional[str]:
     timestamp = datetime.now(UTC).strftime("%Y-%m-%d_%H-%M-%S")
     backup_name = f"{filename}_BACKUP_{timestamp}"
     backup_path = os.path.join(BACKUP_DIR, backup_name)
-    with open(filepath, "r", encoding="utf-8") as f_in, open(backup_path, "w", encoding="utf-8") as f_out:
+    with open(filepath, "r",
+              encoding="utf-8") as f_in, open(backup_path,
+                                              "w",
+                                              encoding="utf-8") as f_out:
         f_out.write(f_in.read())
     return backup_path
+
 
 def unsupported_action(action):
     return {
@@ -30,6 +35,7 @@ def unsupported_action(action):
         "error": f"Unsupported or unimplemented action: {action}.",
         "hint": "Check your task type or add implementation for this action."
     }
+
 
 def restore_from_backup(backup_path: str) -> Dict[str, Any]:
     """Restore a file from its backup"""
@@ -64,7 +70,9 @@ def restore_from_backup(backup_path: str) -> Dict[str, Any]:
 
     # Permission issue reading or writing file
     except PermissionError:
-        logging.error(f"Permission denied accessing files: {backup_path} or {original_path}")
+        logging.error(
+            f"Permission denied accessing files: {backup_path} or {original_path}"
+        )
         return {
             "success": False,
             "error": "Permission denied accessing backup or original file."
@@ -73,10 +81,8 @@ def restore_from_backup(backup_path: str) -> Dict[str, Any]:
     # General I/O problems (disk errors, corrupted file)
     except (IOError, OSError) as e:
         logging.error(f"I/O error restoring backup: {str(e)}")
-        return {
-            "success": False,
-            "error": f"I/O error occurred: {str(e)}"
-        }
+        return {"success": False, "error": f"I/O error occurred: {str(e)}"}
+
 
 def modify_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -93,13 +99,15 @@ def modify_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     # 2) Extract and type‑check
-    filename    = plan["filename"]
+    filename = plan["filename"]
     old_content = plan["old_content"]
     new_content = plan["new_content"]
     if not all(isinstance(plan[k], str) for k in required):
         return {
-            "success": False,
-            "error": "Fields 'filename', 'old_content' and 'new_content' must all be strings"
+            "success":
+            False,
+            "error":
+            "Fields 'filename', 'old_content' and 'new_content' must all be strings"
         }
 
     # 3) (Optional) Re‑validate filepath here or let FileOps do it
@@ -111,42 +119,38 @@ def modify_file(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     # 4) Delegate to FileOps.modify_file
     try:
-        return FileOps.modify_file(
-            filename=filename,
-            old_content=old_content,
-            new_content=new_content
-        )
+        return FileOps.modify_file(filename=filename,
+                                   old_content=old_content,
+                                   new_content=new_content)
     except Exception as e:
         # Catch any unexpected errors
-        return {
-            "success": False,
-            "error": f"modify_file failed: {e}"
-        }
-        
+        return {"success": False, "error": f"modify_file failed: {e}"}
+
+
 def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Execute code in sandbox environment with proper resource limits"""
     code = plan.get("code")
     inputs = plan.get("inputs", {})
     timeout = min(plan.get("timeout", 5), 30)  # Cap at 30 seconds
-    memory_limit = min(plan.get("memory_limit", 100 * 1024 * 1024), 512 * 1024 * 1024)  # Cap at 512MB
+    memory_limit = min(plan.get("memory_limit", 100 * 1024 * 1024),
+                       512 * 1024 * 1024)  # Cap at 512MB
 
     if not code:
         return {"success": False, "error": "No code provided"}
 
     try:
-        result = run_code_in_sandbox(
-            code,
-            timeout=timeout,
-            memory_limit=memory_limit,
-            inputs=inputs
-        )
+        result = run_code_in_sandbox(code,
+                                     timeout=timeout,
+                                     memory_limit=memory_limit,
+                                     inputs=inputs)
         return result
 
     except ModuleNotFoundError:
         logging.error("Sandbox runner module 'sandbox_runner' is not found.")
         return {
             "success": False,
-            "error": "Sandbox execution module not found. Ensure it's correctly installed.",
+            "error":
+            "Sandbox execution module not found. Ensure it's correctly installed.",
             "details": {
                 "timeout": timeout,
                 "memory_limit": memory_limit
@@ -176,17 +180,20 @@ def execute_code(plan: Dict[str, Any]) -> Dict[str, Any]:
             }
         }
 
+
 def handle_replace_line(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'replace_line' intent by delegating to FileOps.replace_line,
     which performs validation, locking, backup, diff generation, etc.
     """
-    filename    = plan.get("filename")
-    target      = plan.get("target")
+    filename = plan.get("filename")
+    target = plan.get("target")
     replacement = plan.get("replacement")
 
     # 1) Early validation of required fields
-    missing = [k for k in ("filename","target","replacement") if not plan.get(k)]
+    missing = [
+        k for k in ("filename", "target", "replacement") if not plan.get(k)
+    ]
     if missing:
         return {
             "success": False,
@@ -202,10 +209,8 @@ def handle_replace_line(plan: Dict[str, Any]) -> Dict[str, Any]:
         )
     except Exception as e:
         # Only catch truly unexpected errors here
-        return {
-            "success": False,
-            "error": f"replace_line failed: {e}"
-        }
+        return {"success": False, "error": f"replace_line failed: {e}"}
+
 
 def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -213,11 +218,13 @@ def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
     which performs validation, locking, backup, diff generation, etc.
     """
     filename = plan.get("filename")
-    target   = plan.get("target")
+    target = plan.get("target")
     new_line = plan.get("new_line")
 
     # 1) Early validation of required fields
-    missing = [k for k in ("filename", "target", "new_line") if not plan.get(k)]
+    missing = [
+        k for k in ("filename", "target", "new_line") if not plan.get(k)
+    ]
     if missing:
         return {
             "success": False,
@@ -233,17 +240,13 @@ def handle_insert_below(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     # 3) Delegate to the centralized FileOps API
     try:
-        return FileOps.insert_below(
-            filename=filename,
-            target=target,
-            new_line=new_line
-        )
+        return FileOps.insert_below(filename=filename,
+                                    target=target,
+                                    new_line=new_line)
     except Exception as e:
         # Only catch truly unexpected errors
-        return {
-            "success": False,
-            "error": f"insert_below failed: {e}"
-        }
+        return {"success": False, "error": f"insert_below failed: {e}"}
+
 
 def handle_execute_code(plan: dict) -> dict:
     """
@@ -259,12 +262,12 @@ def handle_execute_code(plan: dict) -> dict:
     else:
         memory_limit_mb = plan.get("memory_limit_mb", 100)
 
+
 # actually run the sandbox and return its dict result
-    return run_code_in_sandbox(
-        code,
-        timeout=timeout,
-        memory_limit_mb=memory_limit_mb
-    )
+    return run_code_in_sandbox(code,
+                               timeout=timeout,
+                               memory_limit_mb=memory_limit_mb)
+
 
 def estimate_risk(plan: Dict[str, Any]) -> int:
     """Estimate risk level of a task"""
@@ -280,7 +283,9 @@ def estimate_risk(plan: Dict[str, Any]) -> int:
     }
     return risk_levels.get(plan.get("action") or plan.get("intent"), 2)
 
-def validate_execution_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
+
+def validate_execution_plan(
+        plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
     """Validate execution plan before running"""
     if not isinstance(plan, dict):
         return False, "Plan must be a dictionary"
@@ -290,9 +295,9 @@ def validate_execution_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
         return False, "Missing required fields in plan"
 
     valid_actions = {
-        "patch_code", "modify_file",
-        "create_file", "append_to_file", "edit_file", "delete_file",
-        "execute_code", "push_changes", "create_app", "deploy", "modify_self", "replace_line", "insert_below",
+        "patch_code", "modify_file", "create_file", "append_to_file",
+        "edit_file", "delete_file", "execute_code", "push_changes",
+        "create_app", "deploy", "modify_self", "replace_line", "insert_below",
         "create_and_run", "confirm_latest"
     }
 
@@ -320,6 +325,7 @@ def validate_execution_plan(plan: Dict[str, Any]) -> tuple[bool, Optional[str]]:
 
     return True, None
 
+
 def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
     execution_start = datetime.now(UTC)
     risk_level = estimate_risk(plan)
@@ -344,9 +350,11 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
     estimated_cost = 0.0
     if plan.get("uses_gpt"):
         # Calculate GPT costs based on token usage
-        input_tokens = len(str(plan.get("prompt", ""))) / 4  # Approximate tokens
+        input_tokens = len(str(plan.get("prompt",
+                                        ""))) / 4  # Approximate tokens
         output_tokens = len(str(plan.get("response", ""))) / 4
-        gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006)  # Current GPT-4 pricing
+        gpt_cost = (input_tokens * 0.00003) + (output_tokens * 0.00006
+                                               )  # Current GPT-4 pricing
         estimated_cost += gpt_cost
 
     # Update cost tracking in memory
@@ -375,7 +383,8 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     except json.JSONDecodeError:
-        logging.warning("Memory file is not valid JSON. Initializing new memory.")
+        logging.warning(
+            "Memory file is not valid JSON. Initializing new memory.")
         memory = {
             "cost_tracking": {
                 "total_estimated": 0.0,
@@ -409,7 +418,8 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
-        print(f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
+        print(
+            f"⚠️ Warning: This action may incur costs: ${estimated_cost:.2f}")
 
         # Hard threshold - block actions over $10
         if estimated_cost > 10.0:
@@ -470,6 +480,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     return result
 
+
 def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
     content = plan.get("content", "")
@@ -479,31 +490,21 @@ def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     try:
         with open(full_path, "w") as f:
             f.write(content)
-        return {
-            "success": True,
-            "message": f"✅ File created at: {full_path}"
-        }
+        return {"success": True, "message": f"✅ File created at: {full_path}"}
 
     except PermissionError:
-        logging.error(f"Permission denied when trying to write to: {full_path}")
-        return {
-            "success": False,
-            "error": f"Permission denied: {full_path}"
-        }
+        logging.error(
+            f"Permission denied when trying to write to: {full_path}")
+        return {"success": False, "error": f"Permission denied: {full_path}"}
 
     except (IOError, OSError) as e:
         logging.error(f"I/O error while writing to {full_path}: {str(e)}")
-        return {
-            "success": False,
-            "error": f"I/O error: {str(e)}"
-        }
+        return {"success": False, "error": f"I/O error: {str(e)}"}
 
     except Exception as e:
         logging.error(f"Unexpected error during file creation: {str(e)}")
-        return {
-            "success": False,
-            "error": f"Unexpected error: {str(e)}"
-        }
+        return {"success": False, "error": f"Unexpected error: {str(e)}"}
+
 
 def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -519,7 +520,7 @@ def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     # 2) Extract and type‑check
     filename = plan["filename"]
-    content  = plan.get("content", "")
+    content = plan.get("content", "")
     if not isinstance(filename, str) or not isinstance(content, str):
         return {
             "success": False,
@@ -535,16 +536,11 @@ def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
 
     # 4) Delegate the real work
     try:
-        return FileOps.append_to_file(
-            filename=filename,
-            content=content
-        )
+        return FileOps.append_to_file(filename=filename, content=content)
     except Exception as e:
         # Catch any unexpected errors
-        return {
-            "success": False,
-            "error": f"append_to_file failed: {e}"
-        }
+        return {"success": False, "error": f"append_to_file failed: {e}"}
+
 
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     filename = plan.get("filename")
@@ -595,20 +591,28 @@ def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         logging.error(f"Unexpected error modifying file: {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
+
 def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'delete_file' intent by delegating to FileOps.delete_file,
     which performs path‑validation, locking, backup, diff generation, etc.
     """
     # 1) Early validation: filename must be present
-    if "filename" not in plan or not isinstance(plan["filename"], str) or not plan["filename"].strip():
-        return {"success": False, "error": "Missing required field: 'filename'"}
+    if "filename" not in plan or not isinstance(
+            plan["filename"], str) or not plan["filename"].strip():
+        return {
+            "success": False,
+            "error": "Missing required field: 'filename'"
+        }
 
     filename = plan["filename"]
 
     # 2) Optional further validation (FileOps also validates internally)
     if not FileOps._validate_filepath(filename):
-        return {"success": False, "error": f"Invalid filename path: {filename}"}
+        return {
+            "success": False,
+            "error": f"Invalid filename path: {filename}"
+        }
 
     # 3) Delegate to the centralized FileOps API
     try:
@@ -617,12 +621,15 @@ def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
         # Catch any truly unexpected errors
         return {"success": False, "error": f"delete_file failed: {e}"}
 
+
 def simulate_push():
     return {
         "success": True,
-        "message": "🚀 Simulated push: Git command not run (unsupported in current environment).",
+        "message":
+        "🚀 Simulated push: Git command not run (unsupported in current environment).",
         "note": "Try again after migrating to Vercel or enabling Git"
     }
+
 
 def write_diagnostic(plan: Dict[str, Any]) -> Dict[str, Any]:
     """Write diagnostic information to a log file"""
@@ -647,28 +654,32 @@ def write_diagnostic(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
     except PermissionError:
         logging.error(f"Permission denied writing diagnostic log: {filepath}")
-        return {"success": False, "error": "Permission denied writing diagnostic file."}
+        return {
+            "success": False,
+            "error": "Permission denied writing diagnostic file."
+        }
 
     except (IOError, OSError) as e:
-        logging.error(f"I/O error writing diagnostic file '{filepath}': {str(e)}")
+        logging.error(
+            f"I/O error writing diagnostic file '{filepath}': {str(e)}")
         return {"success": False, "error": f"I/O error: {str(e)}"}
 
     except Exception as e:
-        logging.error(f"Unexpected error writing diagnostic file '{filepath}': {str(e)}")
+        logging.error(
+            f"Unexpected error writing diagnostic file '{filepath}': {str(e)}")
         return {"success": False, "error": f"Unexpected error: {str(e)}"}
+
 
 def generate_app_template(template_type):
     # Placeholder for app template generation
     return f"Template for {template_type} app"
 
+
 def deploy_to_replit(project_name, config=None):
     """Deploy project to Replit with proper configuration"""
     try:
         if not project_name:
-            return {
-                "success": False,
-                "error": "Project name is required"
-            }
+            return {"success": False, "error": "Project name is required"}
 
         config = config or {}
         config.setdefault("port", 5000)
@@ -719,67 +730,17 @@ def deploy_to_replit(project_name, config=None):
             "error": f"Unexpected error during deployment: {str(e)}"
         }
 
+
 def validate_filepath(filename: str) -> bool:
     """Validate if a filepath is safe"""
     import os.path
     if not filename or not isinstance(filename, str):
         return False
     norm_path = os.path.normpath(filename)
-    return not (
-        ".." in norm_path or
-        norm_path.startswith("/") or
-        norm_path.startswith("\\") or
-        any(c in norm_path for c in ["<", ">", "|", "*", "?"])
-    )
+    return not (".." in norm_path or norm_path.startswith("/")
+                or norm_path.startswith("\\")
+                or any(c in norm_path for c in ["<", ">", "|", "*", "?"]))
 
-def patch_code(plan: dict) -> dict:
-    """Patch existing code with new implementation"""
-    filename = plan.get("filename")
-    if not validate_filepath(filename):
-        return {"success": False, "error": "Invalid filename"}
-
-    function_name = plan.get("function")
-    new_code = plan.get("new_code")
-    after_line = plan.get("after_line")
-
-    if not all([function_name, new_code, after_line]):
-        return {"success": False, "error": "Missing required fields"}
-
-    try:
-        backup_path = backup_file(filename)
-        with open(filename, "r", encoding="utf-8") as f:
-            content = f.readlines()
-
-        for i, line in enumerate(content):
-            if after_line in line:
-                content.insert(i + 1, new_code + "\n")
-                break
-        else:
-            return {"success": False, "error": "Target line not found"}
-
-        with open(filename, "w", encoding="utf-8") as f:
-            f.writelines(content)
-
-        return {
-            "success": True,
-            "message": f"Code patched in {filename}",
-            "backup": backup_path
-        }
-    except FileNotFoundError:
-        logging.error(f"File to patch not found: {filename}")
-        return {"success": False, "error": f"File '{filename}' not found."}
-
-    except PermissionError:
-        logging.error(f"Permission denied when patching: {filename}")
-        return {"success": False, "error": f"Permission denied for file '{filename}'."}
-
-    except (IOError, OSError) as e:
-        logging.error(f"I/O error while patching file '{filename}': {str(e)}")
-        return {"success": False, "error": f"I/O error: {str(e)}"}
-
-    except Exception as e:
-        logging.error(f"Unexpected error patching file '{filename}': {str(e)}")
-        return {"success": False, "error": f"Unexpected error: {str(e)}"}
 
 def execute_action(plan: dict) -> dict:
     """Execute actions with consistent status handling"""
@@ -796,14 +757,28 @@ def execute_action(plan: dict) -> dict:
             return {"success": False, "error": "Invalid action type"}
 
         action_handlers = {
-            "modify_file": modify_file,
-            "create_file": create_file,
-            "append_to_file": append_to_file,
-            "delete_file": delete_file,
-            "execute_code": handle_execute_code,
-            "patch_code": patch_code,
-            "insert_below": handle_insert_below, 
-            "replace_line": handle_replace_line
+            "execute_code":
+            handle_execute_code,
+            "create_file":
+            lambda p: FileOps.create_file(p["filename"], p.get("content", "")),
+            "append_to_file":
+            lambda p: FileOps.append_to_file(p["filename"], p.get(
+                "content", "")),
+            "replace_line":
+            lambda p: FileOps.replace_line(p["filename"], p["target"], p[
+                "replacement"]),
+            "insert_below":
+            lambda p: FileOps.insert_below(p["filename"], p["target"], p[
+                "new_line"]),
+            "modify_file":
+            lambda p: FileOps.modify_file(p["filename"], p["old_content"], p[
+                "new_content"]),
+            "delete_file":
+            lambda p: FileOps.delete_file(p["filename"]),
+            "patch_code":
+            lambda p: FileOps.patch(p["filename"], p["after_line"], p[
+                "new_code"]),
+            # …
         }
 
         if action in action_handlers:
@@ -814,7 +789,8 @@ def execute_action(plan: dict) -> dict:
                 import subprocess
 
                 if "code" not in plan or "filename" not in plan:
-                    raise ValueError("Missing required fields: code and filename")
+                    raise ValueError(
+                        "Missing required fields: code and filename")
 
                 try:
                     code = b64decode(plan["code"]).decode("utf-8")
@@ -837,13 +813,16 @@ def execute_action(plan: dict) -> dict:
                     )
                     result.update({
                         "success": True,
-                        "message": f"✅ File '{filename}' created and executed successfully",
+                        "message":
+                        f"✅ File '{filename}' created and executed successfully",
                         "output": run_output
                     })
                 else:
                     result.update({
-                        "success": True,
-                        "message": f"✅ File '{filename}' created successfully"
+                        "success":
+                        True,
+                        "message":
+                        f"✅ File '{filename}' created successfully"
                     })
             except subprocess.TimeoutExpired:
                 result.update({
