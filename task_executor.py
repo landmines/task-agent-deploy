@@ -5,7 +5,7 @@ import logging
 from file_ops import FileOps
 from sandbox_runner import run_code_in_sandbox
 from typing import Dict, Any, Optional
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from context_manager import load_memory
 
 PROJECT_ROOT = os.getcwd()
@@ -327,7 +327,7 @@ def validate_execution_plan(
 
 
 def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
-    execution_start = datetime.now(UTC)
+    execution_start = datetime.now(timezone.utc)
     risk_level = estimate_risk(plan)
     task_id = plan.get("task_id")
 
@@ -414,7 +414,7 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     memory["cost_tracking"]["total_estimated"] += estimated_cost
-    memory["cost_tracking"]["last_updated"] = datetime.now(UTC).isoformat()
+    memory["cost_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:

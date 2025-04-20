@@ -1,7 +1,7 @@
 
 import os
 from typing import List, Dict, Any
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 def plan_tasks(goal_description: str) -> List[Dict[str, Any]]:
     """Break down a high-level goal into executable steps."""

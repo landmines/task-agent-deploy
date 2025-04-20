@@ -6,9 +6,7 @@ import zipfile
 import time
 import requests
 import hashlib
-from zoneinfo import ZoneInfo
-
-UTC = ZoneInfo("UTC")
+from datetime import timezone
 
 class DeploymentManager:
     def __init__(self):

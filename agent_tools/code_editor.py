@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 def insert_code_after_line_in_function(filename, function_name, anchor_line, new_code_block):
     with open(filename, "r", encoding="utf-8") as f:

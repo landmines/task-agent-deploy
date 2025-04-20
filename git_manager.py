@@ -1,6 +1,6 @@
 import os
 import subprocess
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 def is_git_repo():
     """Check if the current directory is a Git repository."""
@@ -41,7 +41,7 @@ def commit_changes(message, files=None):
         commit_meta = {
             "hash": commit_hash,
             "message": message,
-            "timestamp": datetime.now(UTC).isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "files": files or [],
             "previous_hash": pre_commit_hash
         }
@@ -57,7 +57,7 @@ def commit_changes(message, files=None):
 def backup_file(filepath):
     """Create a backup of a file before modification"""
     import shutil
-    from datetime import datetime, UTC
+    from datetime import datetime, timezone
 
     if not os.path.exists(filepath):
         return None
@@ -65,7 +65,7 @@ def backup_file(filepath):
     backup_dir = os.path.join(os.getcwd(), "backups")
     os.makedirs(backup_dir, exist_ok=True)
 
-    timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     backup_path = os.path.join(backup_dir, f"{os.path.basename(filepath)}.{timestamp}.bak")
 
     shutil.copy2(filepath, backup_path)
