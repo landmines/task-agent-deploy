@@ -1,176 +1,28 @@
 {
-  "confirmed_count": 3,
+  "confirmed_count": 5,
   "rejected_count": 0,
   "created": "2025-04-10T13:17:16.307875",
-  "last_updated": "2025-04-20T00:19:43.471467+00:00",
+  "last_updated": "2025-04-20T15:27:09.634950+00:00",
   "last_result": {
     "task": {
-      "intent": "create_file",
-      "filename": "hello.txt",
-      "content": "Hello, world!"
+      "intent": "insert_below",
+      "filename": "dummy_target.py",
+      "target": "return \"Original code line\"",
+      "new_line": "    print(\"Agent inserted this line!\")"
     },
-    "intent": "create_file",
-    "status": "success",
-    "timestamp": "2025-04-20T00:19:43.470051+00:00",
+    "intent": "insert_below",
+    "status": "failure",
+    "timestamp": "2025-04-20T15:27:09.634950+00:00",
     "result": {
-      "success": true,
+      "success": false,
       "action": null,
-      "message": "\u2705 File created at: /home/runner/workspace/hello.txt",
-      "timestamp": "2025-04-20T00:19:43.469800+00:00",
-      "execution_metadata": {
-        "start_time": "2025-04-20T00:19:43.469474+00:00",
-        "end_time": "2025-04-20T00:19:43.470018+00:00",
-        "status": "completed",
-        "task_type": "create_file"
-      }
+      "message": "",
+      "timestamp": "2025-04-20T15:27:09.574121+00:00",
+      "error": "Action execution failed: maximum recursion depth exceeded",
+      "error_type": "execution_error"
     }
   },
   "recent_tasks": [
-    {
-      "task": {
-        "intent": "insert_below",
-        "filename": "demo_code.py",
-        "target": "def multiply(self, a, b):",
-        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
-      },
-      "intent": "insert_below",
-      "status": "failure",
-      "timestamp": "2025-04-19T19:23:15.894036+00:00",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T19:23:15.894011+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:23:15.893710+00:00",
-          "end_time": "2025-04-19T19:23:15.894020+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "insert_below",
-        "filename": "demo_code.py",
-        "target": "    def multiply(self, a, b):",
-        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
-      },
-      "intent": "insert_below",
-      "status": "failure",
-      "timestamp": "2025-04-19T19:27:20.192138+00:00",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T19:27:20.192066+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:27:20.191871+00:00",
-          "end_time": "2025-04-19T19:27:20.192119+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "patch_code",
-        "filename": "demo_code.py",
-        "function": "main",
-        "after_line": "def main():",
-        "new_code": "    print(\"[DEBUG] Entering main()\")"
-      },
-      "intent": "patch_code",
-      "status": "success",
-      "timestamp": "2025-04-19T19:28:08.643210+00:00",
-      "result": {
-        "success": true,
-        "action": null,
-        "message": "Code patched in demo_code.py",
-        "timestamp": "2025-04-19T19:28:08.642612+00:00",
-        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_2025-04-19_19-28-08",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:28:08.642379+00:00",
-          "end_time": "2025-04-19T19:28:08.643164+00:00",
-          "status": "completed",
-          "task_type": "patch_code"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "insert_below",
-        "filename": "demo_code.py",
-        "after_line": "    def multiply(self, a, b):",
-        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
-      },
-      "intent": "insert_below",
-      "status": "failure",
-      "timestamp": "2025-04-19T22:16:38.311425+00:00",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T22:16:38.311401+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T22:16:38.311148+00:00",
-          "end_time": "2025-04-19T22:16:38.311410+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "insert_below",
-        "filename": "demo_code.py",
-        "target": "    def multiply(self, a, b):",
-        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
-      },
-      "intent": "insert_below",
-      "status": "failure",
-      "timestamp": "2025-04-19T22:19:23.066409+00:00",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T22:19:23.066385+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T22:19:23.066189+00:00",
-          "end_time": "2025-04-19T22:19:23.066394+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      }
-    },
-    {
-      "task": {
-        "intent": "insert_below",
-        "filename": "demo_code.py",
-        "target": "    def multiply(self, a, b):",
-        "new_line": "    def subtract(self, a, b):\n        \"\"\"Return the difference of two numbers\"\"\"\n        return a - b"
-      },
-      "intent": "insert_below",
-      "status": "failure",
-      "timestamp": "2025-04-19T22:23:52.498106+00:00",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T22:23:52.498084+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T22:23:52.497889+00:00",
-          "end_time": "2025-04-19T22:23:52.498092+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      }
-    },
     {
       "task": {
         "intent": "insert_below",
@@ -264,80 +116,151 @@
           "task_type": "create_file"
         }
       }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "file_ops.py",
+        "target": "def create_file",
+        "new_line": "# TEST: no self-modify"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:11:36.348036+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:11:36.347664+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:11:36.347420+00:00",
+          "end_time": "2025-04-20T15:11:36.348021+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 This file was queued and executed by /run_next"
+      },
+      "intent": "create_file",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:14:20.262846+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:14:20.262319+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:14:20.262035+00:00",
+          "end_time": "2025-04-20T15:14:20.262821+00:00",
+          "status": "failed",
+          "task_type": "create_file"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 This file was queued and executed by /run_next"
+      },
+      "intent": "create_file",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:15:50.010740+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:15:49.995044+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:15:49.994803+00:00",
+          "end_time": "2025-04-20T15:15:49.995982+00:00",
+          "status": "failed",
+          "task_type": "create_file"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "new_line": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:20:43.226667+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:20:43.226215+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:20:43.225848+00:00",
+          "end_time": "2025-04-20T15:20:43.226649+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "new_line": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:26:49.815686+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:26:49.815063+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:26:49.814587+00:00",
+          "end_time": "2025-04-20T15:26:49.815662+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    {
+      "task": {
+        "intent": "insert_below",
+        "filename": "dummy_target.py",
+        "target": "return \"Original code line\"",
+        "new_line": "    print(\"Agent inserted this line!\")"
+      },
+      "intent": "insert_below",
+      "status": "failure",
+      "timestamp": "2025-04-20T15:27:09.634950+00:00",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:27:09.574121+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error"
+      }
     }
   ],
   "failure_patterns": [
-    {
-      "task": "[execute_code]  -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-18T13:47:24.574009+00:00",
-        "output": "",
-        "error": "\u274c Execution failed: signal only works in main thread of the main interpreter",
-        "return_value": null,
-        "resource_usage": {},
-        "execution_metadata": {
-          "start_time": "2025-04-18T13:47:24.573666+00:00",
-          "end_time": "2025-04-18T13:47:24.574302+00:00",
-          "status": "failed",
-          "task_type": "execute_code"
-        }
-      },
-      "timestamp": "2025-04-18T13:47:24.575491+00:00"
-    },
-    {
-      "task": "[insert_below] demo_code.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T19:19:42.141984+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:19:42.141749+00:00",
-          "end_time": "2025-04-19T19:19:42.141993+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-19T19:19:42.143452+00:00"
-    },
-    {
-      "task": "[patch_code] demo_code.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T19:22:24.387946+00:00",
-        "error": "Missing required fields",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:22:24.387633+00:00",
-          "end_time": "2025-04-19T19:22:24.387969+00:00",
-          "status": "failed",
-          "task_type": "patch_code"
-        }
-      },
-      "timestamp": "2025-04-19T19:22:24.389767+00:00"
-    },
-    {
-      "task": "[insert_below] demo_code.py -",
-      "result": {
-        "success": false,
-        "action": null,
-        "message": "",
-        "timestamp": "2025-04-19T19:23:15.894011+00:00",
-        "error": "Missing required fields for insert_below",
-        "execution_metadata": {
-          "start_time": "2025-04-19T19:23:15.893710+00:00",
-          "end_time": "2025-04-19T19:23:15.894020+00:00",
-          "status": "failed",
-          "task_type": "insert_below"
-        }
-      },
-      "timestamp": "2025-04-19T19:23:15.895806+00:00"
-    },
     {
       "task": "[insert_below] demo_code.py -",
       "result": {
@@ -439,12 +362,84 @@
         }
       },
       "timestamp": "2025-04-19T22:35:27.297122+00:00"
+    },
+    {
+      "task": "[insert_below] file_ops.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:11:36.347664+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:11:36.347420+00:00",
+          "end_time": "2025-04-20T15:11:36.348021+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-20T15:11:36.349300+00:00"
+    },
+    {
+      "task": "[create_file] queued_test_file.txt \u2013",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:14:20.262319+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:14:20.262035+00:00",
+          "end_time": "2025-04-20T15:14:20.262821+00:00",
+          "status": "failed",
+          "task_type": "create_file"
+        }
+      },
+      "timestamp": "2025-04-20T15:14:20.277909+00:00"
+    },
+    {
+      "task": "[insert_below] dummy_target.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:20:43.226215+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:20:43.225848+00:00",
+          "end_time": "2025-04-20T15:20:43.226649+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-20T15:20:43.228424+00:00"
+    },
+    {
+      "task": "[insert_below] dummy_target.py -",
+      "result": {
+        "success": false,
+        "action": null,
+        "message": "",
+        "timestamp": "2025-04-20T15:26:49.815063+00:00",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "error_type": "execution_error",
+        "execution_metadata": {
+          "start_time": "2025-04-20T15:26:49.814587+00:00",
+          "end_time": "2025-04-20T15:26:49.815662+00:00",
+          "status": "failed",
+          "task_type": "insert_below"
+        }
+      },
+      "timestamp": "2025-04-20T15:26:49.817654+00:00"
     }
   ],
   "intent_stats": {
     "create_file": {
-      "success": 9,
-      "failure": 0
+      "success": 10,
+      "failure": 2
     },
     "patch_code": {
       "success": 7,
@@ -467,8 +462,8 @@
       "failure": 2
     },
     "insert_below": {
-      "success": 2,
-      "failure": 13
+      "success": 3,
+      "failure": 17
     },
     "execute_code": {
       "success": 2,
@@ -482,14 +477,6 @@
   "project_name": "Task Agent",
   "purpose": "Build and manage projects via user or ChatGPT instructions.",
   "next_steps": [
-    {
-      "step": {
-        "intent": "create_file",
-        "filename": "queued_test_file.txt",
-        "content": "\u2705 This file was queued and executed by /run_next"
-      },
-      "timestamp": "2025-04-10T13:17:16.307882"
-    },
     {
       "step": {
         "intent": "create_file",
@@ -759,9 +746,39 @@
         "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
       },
       "timestamp": "2025-04-19T22:35:27.297137+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] file_ops.py -",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] file_ops.py -"
+      },
+      "timestamp": "2025-04-20T15:11:36.349314+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] dummy_target.py -",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+      },
+      "timestamp": "2025-04-20T15:20:43.228455+00:00"
+    },
+    {
+      "step": {
+        "intent": "fix_failure",
+        "original_task": "[insert_below] dummy_target.py -",
+        "error": "Action execution failed: maximum recursion depth exceeded",
+        "requires_confirmation": true,
+        "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+      },
+      "timestamp": "2025-04-20T15:26:49.817669+00:00"
     }
   ],
-  "current_execution": "20250420_001943",
+  "current_execution": "20250420_152649",
   "confirmation_decisions": [
     {
       "intent": "create_file",

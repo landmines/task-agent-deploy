@@ -12,6 +12,7 @@ PROJECT_ROOT = os.getcwd()
 BACKUP_DIR = os.path.join(PROJECT_ROOT, "backups")
 DIAGNOSTICS_DIR = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
 
+
 def unsupported_action(action):
     return {
         "success": False,
@@ -310,6 +311,12 @@ def validate_execution_plan(
 
 
 def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
+    # ─── SHORT‑CIRCUIT IN SELF‑MODIFY MODE ────────────────────
+    if os.environ.get("SELF_MODIFY_MODE") == "1":
+        # Execute immediately, skipping confirmation/queuing
+        return execute_action(plan)
+    # ────────────────────────────────────────────────────────────
+
     execution_start = datetime.now(timezone.utc)
     risk_level = estimate_risk(plan)
     task_id = plan.get("task_id")
@@ -397,7 +404,8 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
         }
 
     memory["cost_tracking"]["total_estimated"] += estimated_cost
-    memory["cost_tracking"]["last_updated"] = datetime.now(timezone.utc).isoformat()
+    memory["cost_tracking"]["last_updated"] = datetime.now(
+        timezone.utc).isoformat()
 
     # Enforce cost thresholds and warn if costs exceed free tier
     if estimated_cost > 0:
@@ -466,40 +474,36 @@ def execute_task(plan: Dict[str, Any]) -> Dict[str, Any]:
 
 def create_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     # Delegate entirely to FileOps
-    return FileOps.create_file(
-        filename=plan.get("filename", ""),
-        content=plan.get("content", "")
-    )
+    return FileOps.create_file(filename=plan.get("filename", ""),
+                               content=plan.get("content", ""))
+
 
 def handle_append_to_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'append_to_file' intent by delegating to FileOps.append_to_file,
     which performs validation, locking, backup, diff generation, etc.
     """
-    return FileOps.append_to_file(
-        filename=plan.get("filename", ""),
-        content=plan.get("content", "")
-    )
-    
+    return FileOps.append_to_file(filename=plan.get("filename", ""),
+                                  content=plan.get("content", ""))
+
+
 def edit_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'edit_file' intent by delegating entirely to FileOps.modify_file,
     which handles validation, locking, backup, diff generation, etc.
     """
-    return FileOps.modify_file(
-        filename=plan.get("filename", ""),
-        old_content=plan.get("old_content", ""),
-        new_content=plan.get("new_content", "")
-    )
-    
+    return FileOps.modify_file(filename=plan.get("filename", ""),
+                               old_content=plan.get("old_content", ""),
+                               new_content=plan.get("new_content", ""))
+
+
 def delete_file(plan: Dict[str, Any]) -> Dict[str, Any]:
     """
     Handle the 'delete_file' intent by delegating to FileOps.delete_file,
     which performs validation, locking, backup, diff generation, etc.
     """
-    return FileOps.delete_file(
-        filename=plan.get("filename", "")
-    )
+    return FileOps.delete_file(filename=plan.get("filename", ""))
+
 
 def simulate_push():
     return {
@@ -609,7 +613,11 @@ def deploy_to_replit(project_name, config=None):
             "error": f"Unexpected error during deployment: {str(e)}"
         }
 
+
 def execute_action(plan: dict) -> dict:
+    execution_start = datetime.now(timezone.utc)
+    risk_level = estimate_risk(plan)
+    ...
     """Execute actions with consistent status handling"""
     result = {
         "success": False,
