@@ -9,7 +9,7 @@ def insert_code_after_line_in_function(filename, function_name, anchor_line, new
     indent = ""
     inserted = False
     new_lines = []
-    backup_path = f"{filename}.bak.{datetime.now(UTC).isoformat().replace(':', '_')}"
+    backup_path = f"{filename}.bak.{datetime.now(timezone.utc).isoformat().replace(':', '_')}"
 
     for line in lines:
         stripped = line.strip()
