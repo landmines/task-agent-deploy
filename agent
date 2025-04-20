@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import os, sys, json
+import os
+import sys
+import json
 import requests
 import click
 
@@ -10,9 +12,8 @@ def _call(payload, self_modify=False):
     headers = {"Content-Type": "application/json"}
     if self_modify:
         headers["X-Self-Modify"] = "1"
-    r = requests.post(f"{AGENT_URL}/run", json=payload, headers=headers)
-    # unwrap the 'result' if present
-    data = r.json()
+    response = requests.post(f"{AGENT_URL}/run", json=payload, headers=headers)
+    data = response.json()
     out = data.get("result", data)
     print(json.dumps(out, indent=2))
 
@@ -26,18 +27,26 @@ def cli():
 @click.argument("content")
 def create_file(filename, content):
     """Create a new file."""
-    _call({"task":{"intent":"create_file",
-                   "filename":filename,
-                   "content":content}})
+    _call({
+        "task": {
+            "intent": "create_file",
+            "filename": filename,
+            "content": content
+        }
+    })
 
 @cli.command("append-to-file")
 @click.argument("filename")
 @click.argument("content")
 def append_to_file(filename, content):
     """Append to an existing file."""
-    _call({"task":{"intent":"append_to_file",
-                   "filename":filename,
-                   "content":content}})
+    _call({
+        "task": {
+            "intent": "append_to_file",
+            "filename": filename,
+            "content": content
+        }
+    })
 
 @cli.command("insert-below")
 @click.argument("filename")
@@ -45,10 +54,14 @@ def append_to_file(filename, content):
 @click.argument("new_line")
 def insert_below(filename, target, new_line):
     """Insert a line below the first occurrence of TARGET."""
-    _call({"task":{"intent":"insert_below",
-                   "filename":filename,
-                   "target":target,
-                   "new_line":new_line}})
+    _call({
+        "task": {
+            "intent": "insert_below",
+            "filename": filename,
+            "target": target,
+            "new_line": new_line
+        }
+    })
 
 @cli.command("replace-line")
 @click.argument("filename")
@@ -58,11 +71,86 @@ def insert_below(filename, target, new_line):
               help="Allow editing core files (sends X-Self-Modify header).")
 def replace_line(filename, target, replacement, self_modify):
     """Replace the first line containing TARGET with REPLACEMENT."""
-    _call({"task":{"intent":"replace_line",
-                   "filename":filename,
-                   "target":target,
-                   "replacement":replacement}},
-          self_modify=self_modify)
+    _call({
+        "task": {
+            "intent": "replace_line",
+            "filename": filename,
+            "target": target,
+            "replacement": replacement
+        }
+    }, self_modify=self_modify)
 
-if __name__=="__main__":
+@cli.command("patch-code")
+@click.argument("filename")
+@click.argument("after_line")
+@click.argument("new_code")
+def patch_code(filename, after_line, new_code):
+    """
+    Insert NEW_CODE immediately after the first line matching AFTER_LINE
+    in FILENAME.
+    """
+    _call({
+        "task": {
+            "intent": "patch_code",
+            "filename": filename,
+            "after_line": after_line,
+            "new_code": new_code
+        }
+    })
+
+@cli.command("modify-file")
+@click.argument("filename")
+@click.argument("old_content")
+@click.argument("new_content")
+def modify_file(filename, old_content, new_content):
+    """
+    Replace the first occurrence of OLD_CONTENT with NEW_CONTENT in FILENAME.
+    """
+    _call({
+        "task": {
+            "intent": "modify_file",
+            "filename": filename,
+            "old_content": old_content,
+            "new_content": new_content
+        }
+    })
+
+@cli.command("delete-file")
+@click.argument("filename")
+def delete_file(filename):
+    """
+    Delete the specified file from disk.
+    """
+    _call({
+        "task": {
+            "intent": "delete_file",
+            "filename": filename
+        }
+    })
+
+@cli.command("run-next")
+def run_next():
+    """Pop the next queued task and execute it."""
+    response = requests.post(f"{AGENT_URL}/run_next")
+    print(json.dumps(response.json(), indent=2))
+
+@cli.command("latest")
+def latest():
+    """Fetch the most recent log entry."""
+    response = requests.get(f"{AGENT_URL}/latest")
+    print(json.dumps(response.json(), indent=2))
+
+@cli.command("confirm")
+@click.argument("task_id")
+@click.option("--yes/--no", default=True,
+              help="Approve (yes) or reject (no) the task.")
+def confirm(task_id, yes):
+    """
+    Confirm or reject a pending task by its log ID.
+    """
+    payload = {"taskId": task_id, "confirm": yes}
+    response = requests.post(f"{AGENT_URL}/confirm", json=payload)
+    print(json.dumps(response.json(), indent=2))
+
+if __name__ == "__main__":
     cli()

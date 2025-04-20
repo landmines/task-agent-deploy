@@ -5,7 +5,7 @@
 CONSTANT_VALUE = 100
 
 def greet(name):
-    print('[PATCHED]')    """Return a greeting message"""
+    """Return a greeting message"""
     return f"Hello, {name}!"
 
 class Calculator:
