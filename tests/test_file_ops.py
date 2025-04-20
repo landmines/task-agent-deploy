@@ -9,7 +9,7 @@ from file_ops import FileOps
 
 # ──────────────────────────────────────────────────────────────
 # TEST SETUP HACK: disable filepath validation for tests
-FileOps.validate_filepath = staticmethod(lambda filename: True)
+# FileOps.validate_filepath = staticmethod(lambda filename: True)
 # ──────────────────────────────────────────────────────────────
 
 def test_create_and_read(tmp_path):

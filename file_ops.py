@@ -82,17 +82,26 @@ class FileOps:
     @staticmethod
     def validate_filepath(filename: str) -> bool:
         """
-        Returns True if the filename is safe to operate on:
-        1) No traversal/absolute paths or unsafe characters.
-        2) Not a core file unless SELF_MODIFY_MODE is enabled.
+        Returns True if:
+         - The path is inside PROJECT_ROOT (no ../ escapes).
+         - It doesn’t contain unsafe chars.
+         - It isn’t a core file unless SELF_MODIFY_MODE=1.
         """
-        # 1) Basic path validation
-        if not _validate_filepath(filename):
+        # 1) Resolve an absolute path for the target
+        full = os.path.abspath(os.path.join(PROJECT_ROOT, filename))
+
+        # 2) Must live under PROJECT_ROOT
+        project_root = os.path.abspath(PROJECT_ROOT)
+        if not full.startswith(project_root + os.sep):
             return False
 
-        # 2) Core-file protection
-        if filename in CORE_FILES and os.environ.get(
-                "SELF_MODIFY_MODE") != "1":
+        # 3) Disallow unsafe characters in the *relative* part
+        rel = os.path.relpath(full, project_root)
+        if any(c in rel for c in "<>|*?") or ".." in rel:
+            return False
+
+        # 4) Prevent editing core files unless flagged
+        if rel in CORE_FILES and os.environ.get("SELF_MODIFY_MODE") != "1":
             return False
 
         return True
