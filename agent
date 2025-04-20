@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+import os, sys, json
+import requests
+import click
+
+# Default URL, override via AGENT_URL env var
+AGENT_URL = os.getenv("AGENT_URL", "http://127.0.0.1:5000")
+
+def _call(payload, self_modify=False):
+    headers = {"Content-Type": "application/json"}
+    if self_modify:
+        headers["X-Self-Modify"] = "1"
+    r = requests.post(f"{AGENT_URL}/run", json=payload, headers=headers)
+    # unwrap the 'result' if present
+    data = r.json()
+    out = data.get("result", data)
+    print(json.dumps(out, indent=2))
+
+@click.group()
+def cli():
+    """Simple wrapper around your Task Agent."""
+    pass
+
+@cli.command("create-file")
+@click.argument("filename")
+@click.argument("content")
+def create_file(filename, content):
+    """Create a new file."""
+    _call({"task":{"intent":"create_file",
+                   "filename":filename,
+                   "content":content}})
+
+@cli.command("append-to-file")
+@click.argument("filename")
+@click.argument("content")
+def append_to_file(filename, content):
+    """Append to an existing file."""
+    _call({"task":{"intent":"append_to_file",
+                   "filename":filename,
+                   "content":content}})
+
+@cli.command("insert-below")
+@click.argument("filename")
+@click.argument("target")
+@click.argument("new_line")
+def insert_below(filename, target, new_line):
+    """Insert a line below the first occurrence of TARGET."""
+    _call({"task":{"intent":"insert_below",
+                   "filename":filename,
+                   "target":target,
+                   "new_line":new_line}})
+
+@cli.command("replace-line")
+@click.argument("filename")
+@click.argument("target")
+@click.argument("replacement")
+@click.option("--self-modify", is_flag=True,
+              help="Allow editing core files (sends X-Self-Modify header).")
+def replace_line(filename, target, replacement, self_modify):
+    """Replace the first line containing TARGET with REPLACEMENT."""
+    _call({"task":{"intent":"replace_line",
+                   "filename":filename,
+                   "target":target,
+                   "replacement":replacement}},
+          self_modify=self_modify)
+
+if __name__=="__main__":
+    cli()

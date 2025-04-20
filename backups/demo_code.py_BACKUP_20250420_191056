@@ -26,7 +26,6 @@ class Calculator:
 
 def main():
     print("[DEBUG] Entering main()")
-    print("[TEST] main is running")
     print(greet("Tester"))
     calc = Calculator()
     print("2 + 3 =", calc.add(2, 3))

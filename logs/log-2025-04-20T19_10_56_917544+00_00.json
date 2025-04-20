@@ -1,0 +1,1020 @@
+{
+  "timestamp": "2025-04-20T19:10:56.917544+00:00",
+  "taskId": "2025-04-20T19_10_56_917544+00_00",
+  "log_filename": "log-2025-04-20T19_10_56_917544+00_00.json",
+  "input": {
+    "task": {
+      "intent": "insert_below",
+      "filename": "demo_code.py",
+      "target": "print(\"[DEBUG] Entering main()\")",
+      "new_line": "    print(\"[TEST] main is running\")"
+    }
+  },
+  "execution": {
+    "intent": "insert_below",
+    "filename": "demo_code.py",
+    "target": "print(\"[DEBUG] Entering main()\")",
+    "new_line": "    print(\"[TEST] main is running\")"
+  },
+  "result": {
+    "success": true,
+    "message": "Inserted below in demo_code.py",
+    "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_20250420_191056",
+    "diff": "--- demo_code.py\n+++ demo_code.py\n@@ -26,6 +26,7 @@\n \n def main():\n     print(\"[DEBUG] Entering main()\")\n+    print(\"[TEST] main is running\")\n     print(greet(\"Tester\"))\n     calc = Calculator()\n     print(\"2 + 3 =\", calc.add(2, 3))\n",
+    "execution_metadata": {
+      "start_time": "2025-04-20T19:10:56.917563+00:00",
+      "end_time": "2025-04-20T19:10:56.918596+00:00",
+      "status": "completed",
+      "task_type": "insert_below"
+    }
+  },
+  "memory": {
+    "confirmed_count": 5,
+    "rejected_count": 0,
+    "created": "2025-04-10T13:17:16.307875",
+    "last_updated": "2025-04-20T19:10:56.920128+00:00",
+    "last_result": {
+      "task": {
+        "intent": "insert_below",
+        "filename": "demo_code.py",
+        "target": "print(\"[DEBUG] Entering main()\")",
+        "new_line": "    print(\"[TEST] main is running\")"
+      },
+      "intent": "insert_below",
+      "status": "success",
+      "timestamp": "2025-04-20T19:10:56.918625+00:00",
+      "result": {
+        "success": true,
+        "message": "Inserted below in demo_code.py",
+        "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_20250420_191056",
+        "diff": "--- demo_code.py\n+++ demo_code.py\n@@ -26,6 +26,7 @@\n \n def main():\n     print(\"[DEBUG] Entering main()\")\n+    print(\"[TEST] main is running\")\n     print(greet(\"Tester\"))\n     calc = Calculator()\n     print(\"2 + 3 =\", calc.add(2, 3))\n",
+        "execution_metadata": {
+          "start_time": "2025-04-20T19:10:56.917563+00:00",
+          "end_time": "2025-04-20T19:10:56.918596+00:00",
+          "status": "completed",
+          "task_type": "insert_below"
+        }
+      }
+    },
+    "recent_tasks": [
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "smoke_test.txt",
+          "content": "Line one\nLine two\n"
+        },
+        "intent": "create_file",
+        "status": "failure",
+        "timestamp": "2025-04-20T18:38:49.940994+00:00",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:38:49.940457+00:00",
+            "end_time": "2025-04-20T18:38:49.940957+00:00",
+            "status": "failed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "smoke_test.txt",
+          "content": "Line one\nLine two\n"
+        },
+        "intent": "create_file",
+        "status": "failure",
+        "timestamp": "2025-04-20T18:39:20.764063+00:00",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:39:20.762874+00:00",
+            "end_time": "2025-04-20T18:39:20.764018+00:00",
+            "status": "failed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "create_file",
+          "filename": "smoke_test.txt",
+          "content": "Line one\nLine two\n"
+        },
+        "intent": "create_file",
+        "status": "success",
+        "timestamp": "2025-04-20T18:43:42.842995+00:00",
+        "result": {
+          "success": true,
+          "message": "File created: smoke_test.txt",
+          "backup": "",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:43:42.842154+00:00",
+            "end_time": "2025-04-20T18:43:42.842970+00:00",
+            "status": "completed",
+            "task_type": "create_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "append_to_file",
+          "filename": "smoke_test.txt",
+          "content": "Line three\n"
+        },
+        "intent": "append_to_file",
+        "status": "success",
+        "timestamp": "2025-04-20T18:44:29.136967+00:00",
+        "result": {
+          "success": true,
+          "message": "Appended to: smoke_test.txt",
+          "backup": "/home/runner/workspace/backups/smoke_test.txt_BACKUP_20250420_184429",
+          "diff": "--- smoke_test.txt\n+++ smoke_test.txt\n@@ -1,2 +1,3 @@\n Line one\n Line two\n+Line three\n",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:44:29.136087+00:00",
+            "end_time": "2025-04-20T18:44:29.136949+00:00",
+            "status": "completed",
+            "task_type": "append_to_file"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "smoke_test.txt",
+          "target": "Line one",
+          "new_line": "Inserted after line one"
+        },
+        "intent": "insert_below",
+        "status": "success",
+        "timestamp": "2025-04-20T18:44:56.235227+00:00",
+        "result": {
+          "success": true,
+          "message": "Inserted below in smoke_test.txt",
+          "backup": "/home/runner/workspace/backups/smoke_test.txt_BACKUP_20250420_184456",
+          "diff": "--- smoke_test.txt\n+++ smoke_test.txt\n@@ -1,3 +1,4 @@\n Line one\n+Inserted after line one\n Line two\n Line three\n",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:44:56.234303+00:00",
+            "end_time": "2025-04-20T18:44:56.235185+00:00",
+            "status": "completed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "replace_line",
+          "filename": "file_ops.py",
+          "target": "def create_file",
+          "replacement": "def create_file_patched"
+        },
+        "intent": "replace_line",
+        "status": "failure",
+        "timestamp": "2025-04-20T18:45:31.258144+00:00",
+        "result": {
+          "success": false,
+          "error": "Invalid filename path.",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:45:31.257908+00:00",
+            "end_time": "2025-04-20T18:45:31.258129+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "dummy_agent.py",
+          "target": "if __name__ == \"__main__\":",
+          "new_line": "    print(\"[TEST] dummy_agent started\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-20T19:07:12.043648+00:00",
+        "result": {
+          "success": false,
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_agent.py'",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:07:12.043132+00:00",
+            "end_time": "2025-04-20T19:07:12.043632+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "dummy_code.py",
+          "target": "def hello_world():",
+          "new_line": "    print(\"[TEST] dummy_code started\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-20T19:07:49.508458+00:00",
+        "result": {
+          "success": false,
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_code.py'",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:07:49.508143+00:00",
+            "end_time": "2025-04-20T19:07:49.508438+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "demo_code.py",
+          "target": "def hello_world():",
+          "new_line": "    print(\"[TEST] dummy_code started\")"
+        },
+        "intent": "insert_below",
+        "status": "failure",
+        "timestamp": "2025-04-20T19:08:47.452026+00:00",
+        "result": {
+          "success": false,
+          "message": "Target not found.",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:08:47.451732+00:00",
+            "end_time": "2025-04-20T19:08:47.452010+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        }
+      },
+      {
+        "task": {
+          "intent": "insert_below",
+          "filename": "demo_code.py",
+          "target": "print(\"[DEBUG] Entering main()\")",
+          "new_line": "    print(\"[TEST] main is running\")"
+        },
+        "intent": "insert_below",
+        "status": "success",
+        "timestamp": "2025-04-20T19:10:56.918625+00:00",
+        "result": {
+          "success": true,
+          "message": "Inserted below in demo_code.py",
+          "backup": "/home/runner/workspace/backups/demo_code.py_BACKUP_20250420_191056",
+          "diff": "--- demo_code.py\n+++ demo_code.py\n@@ -26,6 +26,7 @@\n \n def main():\n     print(\"[DEBUG] Entering main()\")\n+    print(\"[TEST] main is running\")\n     print(greet(\"Tester\"))\n     calc = Calculator()\n     print(\"2 + 3 =\", calc.add(2, 3))\n",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:10:56.917563+00:00",
+            "end_time": "2025-04-20T19:10:56.918596+00:00",
+            "status": "completed",
+            "task_type": "insert_below"
+          }
+        }
+      }
+    ],
+    "failure_patterns": [
+      {
+        "task": "[create_file] dummy_code.py -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error"
+        },
+        "timestamp": "2025-04-20T18:21:15.160263+00:00"
+      },
+      {
+        "task": "[create_file] dummy_code.py -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error"
+        },
+        "timestamp": "2025-04-20T18:22:57.593411+00:00"
+      },
+      {
+        "task": "[create_file] dummy_code.py -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error"
+        },
+        "timestamp": "2025-04-20T18:24:32.030616+00:00"
+      },
+      {
+        "task": "[create_file] smoke_test.txt -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:36:13.803958+00:00",
+            "end_time": "2025-04-20T18:36:13.804624+00:00",
+            "status": "failed",
+            "task_type": "create_file"
+          }
+        },
+        "timestamp": "2025-04-20T18:36:13.806375+00:00"
+      },
+      {
+        "task": "[create_file] smoke_test.txt -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:38:49.940457+00:00",
+            "end_time": "2025-04-20T18:38:49.940957+00:00",
+            "status": "failed",
+            "task_type": "create_file"
+          }
+        },
+        "timestamp": "2025-04-20T18:38:49.942190+00:00"
+      },
+      {
+        "task": "[create_file] smoke_test.txt -",
+        "result": {
+          "success": false,
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "error_type": "execution_error",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:39:20.762874+00:00",
+            "end_time": "2025-04-20T18:39:20.764018+00:00",
+            "status": "failed",
+            "task_type": "create_file"
+          }
+        },
+        "timestamp": "2025-04-20T18:39:20.765872+00:00"
+      },
+      {
+        "task": "[replace_line] file_ops.py -",
+        "result": {
+          "success": false,
+          "error": "Invalid filename path.",
+          "execution_metadata": {
+            "start_time": "2025-04-20T18:45:31.257908+00:00",
+            "end_time": "2025-04-20T18:45:31.258129+00:00",
+            "status": "failed",
+            "task_type": "replace_line"
+          }
+        },
+        "timestamp": "2025-04-20T18:45:31.259411+00:00"
+      },
+      {
+        "task": "[insert_below] dummy_agent.py -",
+        "result": {
+          "success": false,
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_agent.py'",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:07:12.043132+00:00",
+            "end_time": "2025-04-20T19:07:12.043632+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-20T19:07:12.045251+00:00"
+      },
+      {
+        "task": "[insert_below] dummy_code.py -",
+        "result": {
+          "success": false,
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_code.py'",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:07:49.508143+00:00",
+            "end_time": "2025-04-20T19:07:49.508438+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-20T19:07:49.509801+00:00"
+      },
+      {
+        "task": "[insert_below] demo_code.py -",
+        "result": {
+          "success": false,
+          "message": "Target not found.",
+          "execution_metadata": {
+            "start_time": "2025-04-20T19:08:47.451732+00:00",
+            "end_time": "2025-04-20T19:08:47.452010+00:00",
+            "status": "failed",
+            "task_type": "insert_below"
+          }
+        },
+        "timestamp": "2025-04-20T19:08:47.453609+00:00"
+      }
+    ],
+    "intent_stats": {
+      "create_file": {
+        "success": 11,
+        "failure": 11
+      },
+      "patch_code": {
+        "success": 7,
+        "failure": 3
+      },
+      "create_file_from_dropin": {
+        "success": 1,
+        "failure": 1
+      },
+      "create_and_run": {
+        "success": 8,
+        "failure": 1
+      },
+      "confirm_latest": {
+        "success": 8,
+        "failure": 1
+      },
+      "replace_line": {
+        "success": 1,
+        "failure": 3
+      },
+      "insert_below": {
+        "success": 5,
+        "failure": 25
+      },
+      "execute_code": {
+        "success": 2,
+        "failure": 4
+      },
+      "append_to_file": {
+        "success": 1,
+        "failure": 0
+      }
+    },
+    "self_notes": [],
+    "task_links": [],
+    "self_edits": [],
+    "deployment_events": [],
+    "project_name": "Task Agent",
+    "purpose": "Build and manage projects via user or ChatGPT instructions.",
+    "next_steps": [
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T13:21:51.438957"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T15:19:50.652334"
+      },
+      {
+        "step": {
+          "intent": "create_file",
+          "filename": "queued_test_file.txt",
+          "content": "\u2705 Queued by /run_next test"
+        },
+        "timestamp": "2025-04-10T15:22:15.200386"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file_from_dropin]  -",
+          "error": "Invalid action: create_file_from_dropin",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file_from_dropin]  -"
+        },
+        "timestamp": "2025-04-16T22:42:08.846023+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_and_run] hello.py -",
+          "error": "Invalid action: create_and_run",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_and_run] hello.py -"
+        },
+        "timestamp": "2025-04-17T03:24:30.772467+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[confirm_latest]  -",
+          "error": "Invalid action: confirm_latest",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [confirm_latest]  -"
+        },
+        "timestamp": "2025-04-17T03:25:22.948720+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[replace_line] dummy_target.py -",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [replace_line] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T22:49:23.054908+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[replace_line] dummy_target.py -",
+          "error": "Invalid input parameters: replace_line() missing 2 required positional arguments: 'target' and 'replacement'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [replace_line] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T22:57:48.629721+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:16:38.566846+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Invalid input parameters: insert_below() missing 2 required positional arguments: 'target' and 'new_line'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:17:47.824975+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Unsupported action: insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:31:01.029209+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Unsupported action: insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-17T23:38:28.916830+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Unsupported action: insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-18T00:19:15.982998+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[execute_code]  -",
+          "error": "Unexpected error during sandbox execution.",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [execute_code]  -"
+        },
+        "timestamp": "2025-04-18T13:24:21.079226+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[execute_code]  -",
+          "error": "Unexpected error during sandbox execution.",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [execute_code]  -"
+        },
+        "timestamp": "2025-04-18T13:30:50.181368+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[execute_code]  -",
+          "error": "Invalid input parameters: 'NoneType' object is not iterable",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [execute_code]  -"
+        },
+        "timestamp": "2025-04-18T13:42:33.686664+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[execute_code]  -",
+          "error": "\u274c Execution failed: signal only works in main thread of the main interpreter",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [execute_code]  -"
+        },
+        "timestamp": "2025-04-18T13:47:24.575504+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T19:19:42.143466+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[patch_code] demo_code.py -",
+          "error": "Missing required fields",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [patch_code] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T19:22:24.389781+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T19:23:15.895819+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T19:27:20.193753+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T22:16:38.312681+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T22:19:23.068055+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T22:23:52.499305+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T22:29:33.780817+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Missing required fields for insert_below",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-19T22:35:27.297137+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] file_ops.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] file_ops.py -"
+        },
+        "timestamp": "2025-04-20T15:11:36.349314+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T15:20:43.228455+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T15:26:49.817669+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T15:44:35.470588+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T18:11:21.883518+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T18:11:59.321386+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T18:13:14.430632+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_target.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_target.py -"
+        },
+        "timestamp": "2025-04-20T18:14:28.801926+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] dummy_code.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] dummy_code.py -"
+        },
+        "timestamp": "2025-04-20T18:18:08.882179+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] dummy_code.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] dummy_code.py -"
+        },
+        "timestamp": "2025-04-20T18:21:15.160278+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] dummy_code.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] dummy_code.py -"
+        },
+        "timestamp": "2025-04-20T18:22:57.593426+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] dummy_code.py -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] dummy_code.py -"
+        },
+        "timestamp": "2025-04-20T18:24:32.030628+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] smoke_test.txt -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] smoke_test.txt -"
+        },
+        "timestamp": "2025-04-20T18:36:13.806391+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] smoke_test.txt -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] smoke_test.txt -"
+        },
+        "timestamp": "2025-04-20T18:38:49.942203+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[create_file] smoke_test.txt -",
+          "error": "Action execution failed: maximum recursion depth exceeded",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [create_file] smoke_test.txt -"
+        },
+        "timestamp": "2025-04-20T18:39:20.765928+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[replace_line] file_ops.py -",
+          "error": "Invalid filename path.",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [replace_line] file_ops.py -"
+        },
+        "timestamp": "2025-04-20T18:45:31.259427+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_agent.py -",
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_agent.py'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_agent.py -"
+        },
+        "timestamp": "2025-04-20T19:07:12.045265+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] dummy_code.py -",
+          "error": "[Errno 2] No such file or directory: '/home/runner/workspace/dummy_code.py'",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] dummy_code.py -"
+        },
+        "timestamp": "2025-04-20T19:07:49.509816+00:00"
+      },
+      {
+        "step": {
+          "intent": "fix_failure",
+          "original_task": "[insert_below] demo_code.py -",
+          "error": "Unknown error",
+          "requires_confirmation": true,
+          "notes": "Auto-generated fix attempt for failed task: [insert_below] demo_code.py -"
+        },
+        "timestamp": "2025-04-20T19:08:47.453624+00:00"
+      }
+    ],
+    "current_execution": "20250420_191056",
+    "confirmation_decisions": [
+      {
+        "intent": "create_file",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "patch_code",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "patch_code",
+        "trust_score": 0.6,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_file",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_file_from_dropin",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_file_from_dropin",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 1.0,
+        "confirmation_required": false
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.5,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.6666666666666666,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.6666666666666666,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.75,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.75,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8333333333333334,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8333333333333334,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.8571428571428571,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.8571428571428571,
+        "confirmation_required": true
+      },
+      {
+        "intent": "create_and_run",
+        "trust_score": 0.875,
+        "confirmation_required": true
+      },
+      {
+        "intent": "confirm_latest",
+        "trust_score": 0.875,
+        "confirmation_required": true
+      }
+    ]
+  }
+}
