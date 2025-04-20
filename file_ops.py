@@ -47,6 +47,37 @@ def _validate_filepath(filename: str) -> bool:
 
 
 class FileOps:
+    
+    @staticmethod
+    def patch_code(filename: str, target: str, new_code: str) -> dict:
+        """Patch code by inserting new_code after the target line."""
+        if not FileOps.validate_filepath(filename):
+            return {"success": False, "error": "Invalid filename path."}
+        full = os.path.join(PROJECT_ROOT, filename)
+        with _file_ops_lock:
+            backup = _backup_file(full)
+            try:
+                with open(full, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                new_lines = []
+                patched = False
+                for line in lines:
+                    new_lines.append(line)
+                    if not patched and target in line:
+                        new_lines.append(new_code + "\n")
+                        patched = True
+                if not patched:
+                    return {"success": False, "message": "Target line not found"}
+                with open(full, "w", encoding="utf-8") as f:
+                    f.writelines(new_lines)
+                return {
+                    "success": True, 
+                    "message": f"Patched code in {filename}",
+                    "backup": backup
+                }
+            except Exception as e:
+                logging.error(f"patch_code error: {e}")
+                return {"success": False, "error": str(e)}
 
     @staticmethod
     def validate_filepath(filename: str) -> bool:
