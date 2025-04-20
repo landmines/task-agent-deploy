@@ -18,7 +18,7 @@ def backup_file(filepath: str) -> Optional[str]:
         return None
     os.makedirs(BACKUP_DIR, exist_ok=True)
     filename = os.path.basename(filepath)
-    timestamp = datetime.now(UTC).strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H-%M-%S")
     backup_name = f"{filename}_BACKUP_{timestamp}"
     backup_path = os.path.join(BACKUP_DIR, backup_name)
     with open(filepath, "r",
