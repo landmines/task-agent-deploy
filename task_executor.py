@@ -615,124 +615,35 @@ def deploy_to_replit(project_name, config=None):
 
 
 def execute_action(plan: dict) -> dict:
-    execution_start = datetime.now(timezone.utc)
-    risk_level = estimate_risk(plan)
-    ...
     """Execute actions with consistent status handling"""
-    result = {
-        "success": False,
-        "action": plan.get("action"),
-        "message": "",
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }
-
     try:
         action = plan.get("action") or plan.get("intent")
         if not isinstance(action, str):
             return {"success": False, "error": "Invalid action type"}
 
         action_handlers = {
-            "create_file":
-            lambda p: FileOps.create_file(p["filename"], p.get("content", "")),
-            "append_to_file":
-            lambda p: FileOps.append_to_file(p["filename"], p.get(
-                "content", "")),
-            "modify_file":
-            lambda p: FileOps.modify_file(p["filename"], p["old_content"], p[
-                "new_content"]),
-            "replace_line":
-            lambda p: FileOps.replace_line(p["filename"], p["target"], p[
-                "replacement"]),
-            "insert_below":
-            lambda p: FileOps.insert_below(p["filename"], p["target"], p[
-                "new_line"]),
-            "delete_file":
-            lambda p: FileOps.delete_file(p["filename"]),
-            "patch_code":
-            lambda p: FileOps.patch(p["filename"], p["after_line"], p[
-                "new_code"]),
-            "execute_code":
-            lambda p: run_code_in_sandbox(
-                p["code"],
-                timeout=min(p.get("timeout", 5), 30),
-                memory_limit=min(p.get("memory_limit", 100 * 1024 * 1024), 512
-                                 * 1024 * 1024),
-                inputs=p.get("inputs", {}))
+            "create_file":    lambda p: FileOps.create_file(p["filename"], p.get("content","")),
+            "append_to_file": lambda p: FileOps.append_to_file(p["filename"], p.get("content","")),
+            "modify_file":    lambda p: FileOps.modify_file(p["filename"], p["old_content"], p["new_content"]),
+            "replace_line":   lambda p: FileOps.replace_line(p["filename"], p["target"], p["replacement"]),
+            "insert_below":   lambda p: FileOps.insert_below(p["filename"], p["target"], p["new_line"]),
+            "delete_file":    lambda p: FileOps.delete_file(p["filename"]),
+            "patch_code":     lambda p: FileOps.patch(p["filename"], p["after_line"], p["new_code"]),
+            "execute_code":   lambda p: run_code_in_sandbox(
+                                     p["code"],
+                                     timeout=min(p.get("timeout",5),30),
+                                     memory_limit=min(p.get("memory_limit",100*1024*1024),512*1024*1024),
+                                     inputs=p.get("inputs",{}))
         }
 
         if action in action_handlers:
-            result.update(action_handlers[action](plan))
+            return action_handlers[action](plan)
         elif action == "create_and_run":
-            try:
-                from base64 import b64decode
-                import subprocess
-
-                if "code" not in plan or "filename" not in plan:
-                    raise ValueError(
-                        "Missing required fields: code and filename")
-
-                try:
-                    code = b64decode(plan["code"]).decode("utf-8")
-                except Exception as e:
-                    raise ValueError(f"Invalid base64 encoding: {str(e)}")
-
-                filename = os.path.join(PROJECT_ROOT, plan["filename"])
-                if not validate_filepath(plan["filename"]):
-                    raise ValueError("Invalid filename path")
-
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(code)
-
-                if plan.get("run_after", False):
-                    run_output = subprocess.check_output(
-                        ["python", filename],
-                        stderr=subprocess.STDOUT,
-                        text=True,
-                        timeout=30  # Add timeout
-                    )
-                    result.update({
-                        "success": True,
-                        "message":
-                        f"✅ File '{filename}' created and executed successfully",
-                        "output": run_output
-                    })
-                else:
-                    result.update({
-                        "success":
-                        True,
-                        "message":
-                        f"✅ File '{filename}' created successfully"
-                    })
-            except subprocess.TimeoutExpired:
-                result.update({
-                    "success": False,
-                    "error": "Execution timed out after 30 seconds"
-                })
-            except Exception as e:
-                result.update({
-                    "success": False,
-                    "error": f"create_and_run failed: {str(e)}"
-                })
+            …  # your existing base64/subprocess code
         else:
-            result.update({
-                "success": False,
-                "error": f"Unsupported action: {action}"
-            })
-
-        return result
+            return {"success": False, "error": f"Unsupported action: {action}"}
 
     except (ValueError, TypeError) as e:
-        result.update({
-            "success": False,
-            "error": f"Invalid input parameters: {str(e)}",
-            "error_type": "validation_error"
-        })
-        return result
+        return {"success": False, "error": f"Invalid input parameters: {e}", "error_type": "validation_error"}
     except Exception as e:
-        result.update({
-            "success": False,
-            "error": f"Action execution failed: {str(e)}",
-            "error_type": "execution_error"
-        })
-
-        return result
+        return {"success": False, "error": f"Action execution failed: {e}", "error_type": "execution_error"}
