@@ -1,0 +1,49 @@
+{
+  // Standard draft‑07 meta‑schema
+  "$schema": "http://json-schema.org/draft-07/schema#",
+
+  // Top‑level must be an object with exactly one property: "task"
+  "type": "object",
+  "required": ["task"],
+  "properties": {
+    "task": {
+      "type": "object",
+
+      // The task object must include at least intent & filename
+      "required": ["intent", "filename"],
+
+      // These are all the keys your agent recognizes.
+      "properties": {
+        "intent": {
+          "type": "string",
+          "enum": [
+            "create_file",
+            "append_to_file",
+            "replace_line",
+            "insert_below",
+            "patch_code"
+            // …add more as you support them
+          ]
+        },
+        "filename": {
+          "type": "string",
+          // disallow path traversal or absolute paths
+          "pattern": "^[^/\\\\][\\w\\-. ]+$"
+        },
+        "content":     { "type": "string" },
+        "target":      { "type": "string" },
+        "replacement": { "type": "string" },
+        "new_line":    { "type": "string" },
+        "after_line":  { "type": "string" },
+        "function":    { "type": "string" },
+        "new_code":    { "type": "string" }
+      },
+
+      // Forbid any extra properties in the task payload
+      "additionalProperties": false
+    }
+  },
+
+  // Also forbid any top‑level extras
+  "additionalProperties": false
+}

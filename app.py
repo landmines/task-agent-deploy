@@ -7,6 +7,8 @@ from pathlib import Path
 import traceback
 import logging
 from datetime import datetime, timezone as tz
+from jsonschema import validate, ValidationError
+from schemas import TASK_REQUEST_SCHEMA
 
 UTC = tz.utc
 
@@ -37,7 +39,16 @@ def run():
     try:
         data = request.get_json()
         print("Info: /run received:", data)
-
+        # ── SCHEMA VALIDATION ──
+        try:
+            validate(instance=data, schema=TASK_REQUEST_SCHEMA)
+        except ValidationError as ve:
+            write_render_log(f"Validation error: {ve.message}")
+            return jsonify({
+                "error":   "Invalid request format",
+                "details": ve.message
+            }), 400
+        # ──────────────────────
         result = run_agent(data)
         print("Info: run_agent result:", result)
         write_render_log(f"Task received: {data}")
