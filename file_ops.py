@@ -21,30 +21,35 @@ _file_ops_lock = threading.Lock()
 def _project_root() -> str:
     """
     The directory under which all safe edits must live,
-    and which your tests will chdir into.
+    based on this script's location.
     """
-    return os.getcwd()
+    return os.path.abspath(os.path.dirname(__file__))
 
 
-# backups under cwd/backups
-_BACKUP_DIR = os.path.join(_project_root(), "backups")
-
-
-def _ensure_backup_dir():
-    os.makedirs(_BACKUP_DIR, exist_ok=True)
+def _ensure_backup_dir() -> str:
+    """
+    Ensure a <project_root>/backups directory exists and return its path.
+    """
+    root = _project_root()
+    path = os.path.join(root, "backups")
+    os.makedirs(path, exist_ok=True)
+    return path
 
 
 def _backup_file(filepath: str) -> str:
     """Copy filepath → backups/NAME_BACKUP_TIMESTAMP, return backup path (or "" if missing)."""
     if not os.path.exists(filepath):
-        return ""
-    _ensure_backup_dir()
-    name = os.path.basename(filepath)
-    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    backup = f"{name}_BACKUP_{ts}"
-    dest = os.path.join(_BACKUP_DIR, backup)
+    return ""
+backup_dir = _ensure_backup_dir()
+name = os.path.basename(filepath)
+ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+backup_name = f"{name}_BACKUP_{ts}"
+dest = os.path.join(backup_dir, backup_name)
+    try:
     shutil.copy2(filepath, dest)
-    return dest
+    except Exception as e:
+    logging.error(f"backup failed for {filepath}: {e}")
+    return ""
 
 
 class FileOps:
