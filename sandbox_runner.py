@@ -59,12 +59,15 @@ def resource_limits(max_cpu_time: int = 5, max_memory_mb: int = 100):
     finally:
         # Attempt to clear/reset limits, ignore errors if not permitted
         try:
-            resource.setrlimit(resource.RLIMIT_CPU,
-                               (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
-            resource.setrlimit(resource.RLIMIT_AS,
-                               (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+            resource.setrlimit(
+                resource.RLIMIT_CPU,
+                (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+            resource.setrlimit(
+                resource.RLIMIT_AS,
+                (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
         except Exception:
             pass
+
 
 @contextmanager
 def timeout_handler(seconds: int):
@@ -94,11 +97,18 @@ def timeout_handler(seconds: int):
             signal.alarm(0)
         except:
             pass
+RESTRICTED_MODULES = [ 'os.system', 'subprocess', 'socket', 'requests', 'multiprocessing', 'threading', 'asyncio', 'concurrent', 'ctypes', 'importlib', 'pickle', 'marshal' ] TIMEOUT_SECONDS = 10 MAX_MEMORY_MB = 256 MAX_CPU_TIME = 3 MAX_DISK_MB = 50 ALLOWED_MODULES = { 'math', 'random', 'time', 'datetime', 'json', 'collections', 'itertools', 'functools' }
 
-def run_code_in_sandbox(code: str,
-                        inputs: Optional[Dict[str, Any]] = None,
-                        timeout: int = 5,
-                        memory_limit_mb: int = 100) -> Dict[str, Any]:
+
+def run_code_in_sandbox(
+        code: str,
+        inputs: Optional[Dict[str, Any]] = None,
+        timeout: int = TIMEOUT_SECONDS,
+        memory_limit_mb: int = MAX_MEMORY_MB) -> Dict[str, Any]:
+    # 0) Static AST safety check
+    safe, message = analyze_code_safety(code)
+    if not safe:
+        return {"success": False, "error": message}
     monitor = ResourceMonitor()
     result = {
         "success": False,
@@ -157,19 +167,7 @@ def run_code_in_sandbox(code: str,
     return result
 
 
-RESTRICTED_MODULES = [
-    'os.system', 'subprocess', 'socket', 'requests', 'multiprocessing',
-    'threading', 'asyncio', 'concurrent', 'ctypes', 'importlib', 'pickle',
-    'marshal'
-]
-TIMEOUT_SECONDS = 10
-MAX_MEMORY_MB = 256
-MAX_CPU_TIME = 3
-MAX_DISK_MB = 50
-ALLOWED_MODULES = {
-    'math', 'random', 'time', 'datetime', 'json', 'collections', 'itertools',
-    'functools'
-}
+
 
 
 def analyze_code_safety(code: str) -> tuple[bool, str]:
