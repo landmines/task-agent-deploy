@@ -909,6 +909,14 @@
         "content": "\u2705 Queued by /run_next test"
       },
       "timestamp": "2025-04-22T17:34:09.027336+00:00"
+    },
+    {
+      "step": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 Queued by /run_next test"
+      },
+      "timestamp": "2025-04-22T17:41:51.162448+00:00"
     }
   ],
   "current_execution": "20250422_130445",
