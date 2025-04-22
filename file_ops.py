@@ -39,17 +39,18 @@ def _ensure_backup_dir() -> str:
 def _backup_file(filepath: str) -> str:
     """Copy filepath → backups/NAME_BACKUP_TIMESTAMP, return backup path (or "" if missing)."""
     if not os.path.exists(filepath):
-    return ""
-backup_dir = _ensure_backup_dir()
-name = os.path.basename(filepath)
-ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-backup_name = f"{name}_BACKUP_{ts}"
-dest = os.path.join(backup_dir, backup_name)
+        return ""
+    backup_dir = _ensure_backup_dir()
+    name = os.path.basename(filepath)
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    backup_name = f"{name}_BACKUP_{ts}"
+    dest = os.path.join(backup_dir, backup_name)
     try:
-    shutil.copy2(filepath, dest)
+        shutil.copy2(filepath, dest)
+        return dest
     except Exception as e:
-    logging.error(f"backup failed for {filepath}: {e}")
-    return ""
+        logging.error(f"backup failed for {filepath}: {e}")
+        return ""
 
 
 class FileOps:
