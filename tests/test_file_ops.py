@@ -3,14 +3,11 @@ import sys
 import pytest
 
 # allow import of file_ops.py from repo root
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0,
+                os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from file_ops import FileOps
 
-# ──────────────────────────────────────────────────────────────
-# TEST SETUP HACK: disable filepath validation for tests
-# FileOps.validate_filepath = staticmethod(lambda filename: True)
-# ──────────────────────────────────────────────────────────────
 
 def test_create_and_read(tmp_path):
     os.chdir(tmp_path)  # operate in tmp_path as CWD (optional)
@@ -19,6 +16,7 @@ def test_create_and_read(tmp_path):
     assert res1["success"]
     assert fn.read_text() == "A\n"
 
+
 def test_append(tmp_path):
     os.chdir(tmp_path)
     fn = tmp_path / "u.txt"
@@ -26,6 +24,7 @@ def test_append(tmp_path):
     res2 = FileOps.append_to_file(str(fn), "Y\n")
     assert res2["success"]
     assert fn.read_text().endswith("Y\n")
+
 
 def test_insert_below(tmp_path):
     os.chdir(tmp_path)
@@ -36,6 +35,7 @@ def test_insert_below(tmp_path):
     lines = fn.read_text().splitlines()
     assert lines[1] == "inserted"
 
+
 def test_replace_line(tmp_path):
     os.chdir(tmp_path)
     fn = tmp_path / "u.txt"
@@ -44,10 +44,9 @@ def test_replace_line(tmp_path):
     assert res4["success"]
     assert fn.read_text().splitlines()[0] == "new_line"
 
-@pytest.mark.skipif(
-    not hasattr(FileOps, "patch_code"),
-    reason="patch_code not implemented yet in FileOps"
-)
+
+@pytest.mark.skipif(not hasattr(FileOps, "patch_code"),
+                    reason="patch_code not implemented yet in FileOps")
 def test_patch_code(tmp_path):
     os.chdir(tmp_path)
     fn = tmp_path / "u.py"
@@ -56,6 +55,7 @@ def test_patch_code(tmp_path):
     assert res5["success"]
     lines = fn.read_text().splitlines()
     assert "# patched" in lines[1]
+
 
 def test_delete_file(tmp_path):
     os.chdir(tmp_path)
