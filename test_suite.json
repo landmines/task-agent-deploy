@@ -6,7 +6,8 @@
       "intent": "execute_code",
       "code": "x = 1 + 1; print(x)",
       "expected": {
-        "success": true
+        "success": true,
+        "return_value": 2
       }
     },
     {
@@ -14,7 +15,7 @@
       "code": "while True: pass",
       "expected": {
         "success": false,
-        "error": "timeout"
+        "error": "timed out"
       }
     },
     {

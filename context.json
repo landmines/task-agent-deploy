@@ -877,6 +877,38 @@
         "content": "\u2705 Queued by /run_next test"
       },
       "timestamp": "2025-04-22T16:29:33.187109+00:00"
+    },
+    {
+      "step": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 Queued by /run_next test"
+      },
+      "timestamp": "2025-04-22T17:03:24.094974+00:00"
+    },
+    {
+      "step": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 Queued by /run_next test"
+      },
+      "timestamp": "2025-04-22T17:21:11.841124+00:00"
+    },
+    {
+      "step": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 Queued by /run_next test"
+      },
+      "timestamp": "2025-04-22T17:30:24.233858+00:00"
+    },
+    {
+      "step": {
+        "intent": "create_file",
+        "filename": "queued_test_file.txt",
+        "content": "\u2705 Queued by /run_next test"
+      },
+      "timestamp": "2025-04-22T17:34:09.027336+00:00"
     }
   ],
   "current_execution": "20250422_130445",
