@@ -1,0 +1,243 @@
+FF......FFF.FFFF..FFF                                                    [100%]
+=================================== FAILURES ===================================
+____________________ TaskAgentTests.test_core_functionality ____________________
+
+self = <test_runner.TaskAgentTests testMethod=test_core_functionality>
+
+    def test_core_functionality(self):
+        for test in self.test_suite['tests']:
+            if test['intent'] == 'execute_code':
+                result = run_code_in_sandbox(test['code'])
+                self.assertEqual(result['success'], test['expected']['success'])
+                if result['success']:
+>                   self.assertEqual(result['return_value'], test['expected']['return_value'])
+E                   KeyError: 'return_value'
+
+test_runner.py:20: KeyError
+----------------------------- Captured stdout call -----------------------------
+2
+__________________ TaskAgentTests.test_deployment_validation ___________________
+
+self = <test_runner.TaskAgentTests testMethod=test_deployment_validation>
+
+    def test_deployment_validation(self):
+        dm = DeploymentManager()
+>       result = dm.validate_deployment({
+            'project_name': 'test-project',
+            'provider': 'replit'
+        })
+E       AttributeError: 'DeploymentManager' object has no attribute 'validate_deployment'
+
+test_runner.py:32: AttributeError
+____________________ TestSandboxRunner.test_basic_execution ____________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_basic_execution>
+
+        def test_basic_execution(self):
+            """Test basic code execution"""
+            code = """
+    x = 1 + 1
+    print(x)
+    result = x
+    """
+            result = run_code_in_sandbox(code)
+            self.assertTrue(result["success"])
+>           self.assertEqual(result["output"].strip(), "2")
+E           KeyError: 'output'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:14: KeyError
+----------------------------- Captured stdout call -----------------------------
+2
+_______________________ TestSandboxRunner.test_cpu_limit _______________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_cpu_limit>
+
+        def test_cpu_limit(self):
+            """Test CPU time limit"""
+            code = """
+    while True: pass
+    """
+            result = run_code_in_sandbox(code)
+            self.assertFalse(result["success"])
+>           self.assertIn("time", result["error"].lower())
+E           AssertionError: 'time' not found in '❌ child crashed or was killed'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:33: AssertionError
+__________________ TestSandboxRunner.test_deployment_manager ___________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_deployment_manager>
+
+    def test_deployment_manager(self):
+        """Test deployment management functionality"""
+        from deployment_manager import DeploymentManager
+    
+        dm = DeploymentManager()
+    
+        # Test free tier usage
+        free_resources = {
+            "compute_hours": 100,
+            "storage_mb": 200,
+            "bandwidth_mb": 50000
+        }
+        estimate = dm.estimate_deployment_cost(free_resources)
+        self.assertTrue(estimate["within_free_tier"])
+        self.assertEqual(estimate["total_cost"], 0)
+    
+        # Test paid tier usage
+        paid_resources = {
+            "compute_hours": 1000,
+            "storage_mb": 1000,
+            "bandwidth_mb": 150000
+        }
+        estimate = dm.estimate_deployment_cost(paid_resources)
+        self.assertFalse(estimate["within_free_tier"])
+        self.assertGreater(estimate["total_cost"], 0)
+    
+        # Test cost estimation
+        costs = dm.estimate_deployment_cost({
+            "compute_hours": 24,
+            "storage_mb": 100,
+            "bandwidth_mb": 1000
+        })
+        self.assertIsInstance(costs["total_cost"], float)
+>       self.assertTrue(costs["total_cost"] > 0)
+E       AssertionError: False is not true
+
+/home/runner/workspace/tests/test_sandbox_runner.py:158: AssertionError
+__________________ TestSandboxRunner.test_file_system_access ___________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_file_system_access>
+
+        def test_file_system_access(self):
+            """Test file system restrictions"""
+            code = """
+    with open('test.txt', 'w') as f:
+        f.write('test')
+    """
+            result = run_code_in_sandbox(code)
+            self.assertFalse(result["success"])
+>           self.assertIn("restricted", result["error"].lower())
+E           AssertionError: 'restricted' not found in '🛑 file operations not allowed in sandbox'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:53: AssertionError
+_____________________ TestSandboxRunner.test_memory_limit ______________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_memory_limit>
+
+        def test_memory_limit(self):
+            """Test memory limit enforcement"""
+            code = """
+    x = bytearray(300 * 1024 * 1024)  # Try to allocate 300MB
+    """
+            result = run_code_in_sandbox(code)
+            self.assertFalse(result["success"])
+>           self.assertIn("memory", result["error"].lower())
+E           AssertionError: 'memory' not found in 'traceback (most recent call last):\n  file "/home/runner/workspace/sandbox_runner.py", line 149, in _sandbox_worker\n    exec(code, builtins, ns)\n  file "<string>", line 2, in <module>\nnameerror: name \'bytearray\' is not defined\n'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:24: AssertionError
+______________________ TestSandboxRunner.test_plan_tasks _______________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_plan_tasks>
+
+    def test_plan_tasks(self):
+        """Test that the planner generates valid task sequences"""
+        from planner import plan_tasks, validate_plan
+    
+        # Test app creation plan
+        plan = plan_tasks("Create a new web app")
+        self.assertTrue(validate_plan(plan))
+        self.assertEqual(plan[0]["intent"], "create_app")
+    
+        # Test modification plan
+        plan = plan_tasks("Update the database code")
+        self.assertTrue(validate_plan(plan))
+        self.assertEqual(plan[0]["intent"], "modify_file")
+    
+        # Test deploy plan
+        plan = plan_tasks("Deploy my changes")
+        self.assertTrue(validate_plan(plan))
+>       self.assertEqual(plan[0]["intent"], "run_tests")
+E       AssertionError: 'modify_file' != 'run_tests'
+E       - modify_file
+E       + run_tests
+
+/home/runner/workspace/tests/test_sandbox_runner.py:122: AssertionError
+____________________ TestSandboxRunner.test_resource_limits ____________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_resource_limits>
+
+    def test_resource_limits(self):
+        """Test that resource limits are enforced"""
+        # Test memory limit
+        memory_heavy_code = "x = ' ' * (1024 * 1024 * 1000)"  # Try to allocate 1GB
+        result = run_code_in_sandbox(memory_heavy_code)
+        self.assertFalse(result["success"])
+        self.assertIn("memory", result["error"].lower())
+    
+        # Test CPU limit
+        cpu_heavy_code = "while True: pass"
+        result = run_code_in_sandbox(cpu_heavy_code)
+        self.assertFalse(result["success"])
+>       self.assertIn("timeout", result["error"].lower())
+E       AssertionError: 'timeout' not found in '❌ child crashed or was killed'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:188: AssertionError
+__________________ TestSandboxRunner.test_run_code_in_sandbox __________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_run_code_in_sandbox>
+
+    def test_run_code_in_sandbox(self):
+        # Test basic code execution
+        result = run_code_in_sandbox("print('test')")
+        self.assertTrue(result["success"])
+>       self.assertIn("test", result["output"])
+E       KeyError: 'output'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:208: KeyError
+----------------------------- Captured stdout call -----------------------------
+test
+____________________ TestSandboxRunner.test_safe_execution _____________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_safe_execution>
+
+    def test_safe_execution(self):
+        """Test that safe code executes properly"""
+        safe_code = "x = [i * 2 for i in range(10)]; result = sum(x)"
+        result = run_code_in_sandbox(safe_code)
+>       self.assertTrue(result["success"])
+E       AssertionError: False is not true
+
+/home/runner/workspace/tests/test_sandbox_runner.py:201: AssertionError
+__________________ TestSandboxRunner.test_sandboxed_execution __________________
+
+self = <test_sandbox_runner.TestSandboxRunner testMethod=test_sandboxed_execution>
+
+    def test_sandboxed_execution(self):
+        """Test code execution in sandbox"""
+        # Test basic execution
+        code = "result = 2 + 2"
+        result = run_code_in_sandbox(code)
+        self.assertTrue(result["success"])
+    
+        # Test restricted builtins
+        code = "import os; os.system('ls')"
+        result = run_code_in_sandbox(code)
+        self.assertFalse(result["success"])
+>       self.assertIn("ImportError", str(result["error"]))
+E       AssertionError: 'ImportError' not found in '❌ Restricted module: os'
+
+/home/runner/workspace/tests/test_sandbox_runner.py:92: AssertionError
+=========================== short test summary info ============================
+FAILED test_runner.py::TaskAgentTests::test_core_functionality - KeyError: 'r...
+FAILED test_runner.py::TaskAgentTests::test_deployment_validation - Attribute...
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_basic_execution
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_cpu_limit - Asse...
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_deployment_manager
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_file_system_access
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_memory_limit - A...
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_plan_tasks - Ass...
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_resource_limits
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_run_code_in_sandbox
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_safe_execution
+FAILED tests/test_sandbox_runner.py::TestSandboxRunner::test_sandboxed_execution
+12 failed, 9 passed in 20.39s
