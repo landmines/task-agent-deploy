@@ -110,28 +110,27 @@ def _sandbox_worker(code: str, inputs: Dict[str, Any], out_q: mp.Queue):
     sys.stdout = buffer
 
     try:
-    exec(code, builtins_dict, ns)
-    output = buffer.getvalue()
+        exec(code, builtins_dict, ns)
+        output = buffer.getvalue()
 
-    # Determine the return_value:
-    # 1) If user code set `result`, use that.
-    # 2) Otherwise, attempt to parse the last printed line as an integer.
-    rv = ns.get("result", None)
-    if rv is None:
-        last_line = output.strip().splitlines()[-1] if output.strip() else ""
-        try:
-            rv = int(last_line)
-        except ValueError:
-            rv = None
+        # Determine the return_value:
+        # 1) If user code set `result`, use that.
+        # 2) Otherwise, attempt to parse the last printed line as an integer.
+        rv = ns.get("result", None)
+        if rv is None:
+            last_line = output.strip().splitlines()[-1] if output.strip() else ""
+            try:
+                rv = int(last_line)
+            except ValueError:
+                rv = None
 
-    out_q.put({
-        "success": True,
-        "output": output,
-        "return_value": rv
-    })
+        out_q.put({
+            "success": True,
+            "output": output,
+            "return_value": rv
+        })
     except TimeoutError:
         out_q.put({"success": False, "error": "timed out"})
-        return
     except MemoryError:
         out_q.put({"success": False, "error": "memory limit exceeded"})
     except Exception:
